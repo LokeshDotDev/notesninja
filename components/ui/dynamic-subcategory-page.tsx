@@ -82,9 +82,11 @@ export function DynamicSubcategoryPage({ categoryName, subcategoryName }: Dynami
         
         if (postsResponse.ok) {
           const postsData = await postsResponse.json();
+          console.log("Fetched posts:", postsData.length, postsData.map(p => ({ id: p.id, title: p.title, productTypeId: p.productTypeId })));
           setAllPosts(postsData); // Store all posts
           setPosts(postsData); // Initially show all posts
         } else {
+          console.log("Failed to fetch posts:", postsResponse.status);
           setAllPosts([]);
           setPosts([]);
         }
@@ -108,10 +110,18 @@ export function DynamicSubcategoryPage({ categoryName, subcategoryName }: Dynami
 
   // Filter posts based on selected product type
   useEffect(() => {
+    console.log("Filtering posts:", {
+      selectedProductType,
+      allPostsCount: allPosts.length,
+      allPosts: allPosts.map(p => ({ id: p.id, title: p.title, productTypeId: p.productTypeId }))
+    });
+    
     if (selectedProductType) {
       const filtered = allPosts.filter(post => post.productTypeId === selectedProductType);
+      console.log("Filtered posts:", filtered.length, filtered.map(p => ({ id: p.id, title: p.title, productTypeId: p.productTypeId })));
       setPosts(filtered);
     } else {
+      console.log("Showing all posts:", allPosts.length);
       setPosts(allPosts);
     }
   }, [selectedProductType, allPosts]);
@@ -205,7 +215,12 @@ export function DynamicSubcategoryPage({ categoryName, subcategoryName }: Dynami
       {/* Posts Grid */}
       <div className="w-full max-w-6xl mt-12 mb-24 px-4">
         {posts.length > 0 ? (
-          <GalleryGridCombined items={posts} />
+          <>
+            <div className="mb-4 text-sm text-gray-600 dark:text-gray-300">
+              Debug: Showing {posts.length} posts
+            </div>
+            <GalleryGridCombined items={posts} />
+          </>
         ) : (
           <div className="text-center py-16">
             <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
@@ -219,6 +234,9 @@ export function DynamicSubcategoryPage({ categoryName, subcategoryName }: Dynami
             <p className="text-neutral-600 dark:text-neutral-300 mb-6">
               There are currently no resources available in this topic. Check back later!
             </p>
+            <div className="mb-4 text-sm text-gray-500">
+              Debug: allPosts={allPosts.length}, selectedProductType={selectedProductType}
+            </div>
             <a 
               href={`/${encodeURIComponent(categoryName)}`} 
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

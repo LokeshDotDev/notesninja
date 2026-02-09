@@ -4,12 +4,15 @@ import prisma from "@/lib/prisma";
 // GET single category (by ID or name)
 export async function GET(
 	request: Request,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
+		const resolvedParams = await params;
+		const categoryId = resolvedParams.id;
+
 		// Try to find by ID first, then by name
 		let category = await prisma.category.findUnique({
-			where: { id: params.id },
+			where: { id: categoryId },
 			include: {
 				subcategories: {
 					select: {
@@ -38,7 +41,7 @@ export async function GET(
 			category = await prisma.category.findFirst({
 				where: {
 					name: {
-						equals: decodeURIComponent(params.id),
+						equals: decodeURIComponent(categoryId),
 						mode: "insensitive",
 					},
 				},

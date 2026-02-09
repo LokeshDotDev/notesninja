@@ -13,6 +13,9 @@ model Post {
   description   String
   imageUrl      String?      // Make optional for backward compatibility
   publicId      String?      // Make optional for backward compatibility
+  price         Float?       // Price for digital products
+  compareAtPrice Float?       // Scratch/MRP price for showing discounts
+  isDigital     Boolean      @default(false) // Flag to identify digital products
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   categoryId    String
@@ -22,6 +25,8 @@ model Post {
   productTypeId String?
   productType  ProductType? @relation(fields: [productTypeId], references: [id])
   images        PostImage[]
+  digitalFiles  DigitalFile[]
+  purchases     Purchase[]
 }
 
 model PostImage {
@@ -73,6 +78,32 @@ model ProductType {
   updatedAt DateTime  @updatedAt
   posts     Post[]
   featured  Featured[]
+}
+
+model DigitalFile {
+  id          String   @id @default(cuid())
+  fileName    String
+  fileUrl     String   // Cloudinary URL
+  publicId    String   // Cloudinary public ID
+  fileSize    Int      // File size in bytes
+  fileType    String   // File extension/type (pdf, docx, etc.)
+  postId      String
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model Purchase {
+  id            String   @id @default(cuid())
+  postId        String
+  post          Post     @relation(fields: [postId], references: [id])
+  userEmail     String
+  paymentId     String?  // Payment gateway transaction ID
+  amount        Float
+  currency      String   @default("USD")
+  status        String   @default("pending") // pending, completed, failed
+  downloadCount Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Visitor {

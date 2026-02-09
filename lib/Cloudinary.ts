@@ -4,7 +4,7 @@ import { v2 as cloudinary } from "cloudinary";
 cloudinary.config({
 	cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
 	api_key: process.env.CLOUDINARY_API_KEY,
-	api_secret: process.env.CLOUDINARY_API_SECREAT,
+	api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 // Interface for Cloudinary upload result
@@ -21,7 +21,7 @@ export async function uploadContent(
 	if (
 		!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ||
 		!process.env.CLOUDINARY_API_KEY ||
-		!process.env.CLOUDINARY_API_SECREAT
+		!process.env.CLOUDINARY_API_SECRET
 	) {
 		throw new Error(
 			"Cloudinary credentials are not found, please provide the credentials first and start uploading the content in Cloudinary!"
@@ -61,7 +61,7 @@ export async function deleteContent(publicId: string): Promise<unknown> {
 	if (
 		!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ||
 		!process.env.CLOUDINARY_API_KEY ||
-		!process.env.CLOUDINARY_API_SECREAT
+		!process.env.CLOUDINARY_API_SECRET
 	) {
 		throw new Error(
 			"Cloudinary credentials are not found, please provide the credentials first and start deleting the content from Cloudinary!"
@@ -69,8 +69,22 @@ export async function deleteContent(publicId: string): Promise<unknown> {
 	}
 
 	try {
-		const deletingResult = await cloudinary.uploader.destroy(publicId);
-		return deletingResult;
+		console.log(`Attempting to delete Cloudinary resource: ${publicId}`);
+		
+		// First try to delete as image
+		let result = await cloudinary.uploader.destroy(publicId);
+		console.log(`Delete result for ${publicId}:`, result);
+		
+		// If result is 'not found' as image, try to delete as raw resource
+		if (result.result === 'not found') {
+			console.log(`Trying to delete ${publicId} as raw resource...`);
+			result = await cloudinary.uploader.destroy(publicId, { 
+				resource_type: 'raw' 
+			});
+			console.log(`Raw delete result for ${publicId}:`, result);
+		}
+		
+		return result;
 	} catch (error) {
 		console.error("Error deleting the content from Cloudinary:", error);
 		throw new Error("Error deleting the content from Cloudinary!");

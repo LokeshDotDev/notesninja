@@ -4,12 +4,13 @@ import prisma from "@/lib/prisma";
 // GET single subcategory (by ID or name)
 export async function GET(
 	request: Request,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
+		const resolvedParams = await params;
 		// Try to find by ID first, then by name
 		let subcategory = await prisma.subcategory.findUnique({
-			where: { id: params.id },
+			where: { id: resolvedParams.id },
 			include: {
 				category: {
 					select: {
@@ -30,7 +31,7 @@ export async function GET(
 			subcategory = await prisma.subcategory.findFirst({
 				where: {
 					name: {
-						equals: decodeURIComponent(params.id),
+						equals: decodeURIComponent(resolvedParams.id),
 						mode: "insensitive",
 					},
 				},
@@ -70,9 +71,10 @@ export async function GET(
 // PUT update subcategory
 export async function PUT(
 	request: Request,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
+		const resolvedParams = await params;
 		const formData = await request.formData();
 		const name = formData.get("name") as string | null;
 		const categoryId = formData.get("categoryId") as string | null;
@@ -112,7 +114,7 @@ export async function PUT(
 				},
 				categoryId,
 				NOT: {
-					id: params.id,
+					id: resolvedParams.id,
 				},
 			},
 		});
@@ -125,7 +127,7 @@ export async function PUT(
 		}
 
 		const subcategory = await prisma.subcategory.update({
-			where: { id: params.id },
+			where: { id: resolvedParams.id },
 			data: {
 				name: name.trim(),
 				categoryId,
@@ -158,12 +160,13 @@ export async function PUT(
 // DELETE subcategory
 export async function DELETE(
 	request: Request,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
+		const resolvedParams = await params;
 		// Check if subcategory has posts
 		const postCount = await prisma.post.count({
-			where: { subcategoryId: params.id },
+			where: { subcategoryId: resolvedParams.id },
 		});
 
 		if (postCount > 0) {
@@ -177,7 +180,7 @@ export async function DELETE(
 
 		// Delete the subcategory
 		await prisma.subcategory.delete({
-			where: { id: params.id },
+			where: { id: resolvedParams.id },
 		});
 
 		return NextResponse.json(

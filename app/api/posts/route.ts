@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
 				images: {
 					orderBy: { order: "asc" },
 				},
+				digitalFiles: true,
 				category: {
 					select: {
 						id: true,
@@ -31,9 +32,9 @@ export async function GET(req: NextRequest) {
 			orderBy: { createdAt: "desc" },
 		});
 
-		// Set cache headers
+		// Set cache headers (reduced cache time for better UX)
 		const response = NextResponse.json(posts);
-		response.headers.set("Cache-Control", "public, max-age=300, s-maxage=300");
+		response.headers.set("Cache-Control", "public, max-age=60, s-maxage=60"); // Reduced to 1 minute
 		return response;
 	} catch (error) {
 		console.log("Error fetching posts:", error);
@@ -52,18 +53,36 @@ export async function POST(req: NextRequest) {
 		// Handle both multiple files and single file for backward compatibility
 		const files = formData.getAll("files") as File[];
 		const singleFile = formData.get("file") as File | null;
+		const digitalFiles = formData.getAll("digitalFiles") as File[];
 
 		const allFiles = files.length > 0 ? files : singleFile ? [singleFile] : [];
 
-		const title = formData.get("title") as string | null;
-		const description = formData.get("description") as string | null;
-		const categoryId = formData.get("categoryId") as string | null;
+		const title = formData.get("title") as string;
+		const description = formData.get("description") as string;
+		const categoryId = formData.get("categoryId") as string;
 		const subcategoryId = formData.get("subcategoryId") as string | null;
 		const productTypeId = formData.get("productTypeId") as string | null;
+		const price = formData.get("price") as string | null;
+		const compareAtPrice = formData.get("compareAtPrice") as string | null;
+		const isDigital = formData.get("isDigital") === "true";
 
-		if (!allFiles.length || !title || !description || !categoryId) {
+		if (!title || !description || !categoryId) {
 			return NextResponse.json(
-				{ error: "Missing required fields or no images provided" },
+				{ error: "Missing required fields" },
+				{ status: 400 }
+			);
+		}
+
+		if (isDigital && !digitalFiles.length) {
+			return NextResponse.json(
+				{ error: "Digital products require at least one file" },
+				{ status: 400 }
+			);
+		}
+
+		if (!isDigital && !allFiles.length) {
+			return NextResponse.json(
+				{ error: "Physical products require at least one image" },
 				{ status: 400 }
 			);
 		}
@@ -76,32 +95,58 @@ export async function POST(req: NextRequest) {
 				categoryId,
 				subcategoryId: subcategoryId || null,
 				productTypeId: productTypeId || null,
+				price: price ? parseFloat(price) : null,
+				compareAtPrice: compareAtPrice ? parseFloat(compareAtPrice) : null,
+				isDigital,
 			},
 		});
 
-		// Upload all images to Cloudinary and create PostImage records
-		const imagePromises = allFiles.map(async (file, index) => {
-			const uploadResult: CloudinaryUploadResult = await uploadContent(file);
+		// Upload images to Cloudinary and create PostImage records (for all products)
+		if (allFiles.length > 0) {
+			const imagePromises = allFiles.map(async (file, index) => {
+				const uploadResult: CloudinaryUploadResult = await uploadContent(file);
 
-			return prisma.postImage.create({
-				data: {
-					postId: newPost.id,
-					imageUrl: uploadResult.secure_url,
-					publicId: uploadResult.public_id,
-					order: index,
-				},
+				return prisma.postImage.create({
+					data: {
+						postId: newPost.id,
+						imageUrl: uploadResult.secure_url,
+						publicId: uploadResult.public_id,
+						order: index,
+					},
+				});
 			});
-		});
 
-		await Promise.all(imagePromises);
+			await Promise.all(imagePromises);
+		}
 
-		// Return post with its images
-		const postWithImages = await prisma.post.findUnique({
+		// Upload digital files to Cloudinary and create DigitalFile records (for digital products)
+		if (digitalFiles.length > 0) {
+			const filePromises = digitalFiles.map(async (file) => {
+				const uploadResult: CloudinaryUploadResult = await uploadContent(file);
+
+				return prisma.digitalFile.create({
+					data: {
+						postId: newPost.id,
+						fileName: file.name,
+						fileUrl: uploadResult.secure_url,
+						publicId: uploadResult.public_id,
+						fileSize: file.size,
+						fileType: file.name.split('.').pop() || 'unknown',
+					},
+				});
+			});
+
+			await Promise.all(filePromises);
+		}
+
+		// Return post with its images and digital files
+		const postWithFiles = await prisma.post.findUnique({
 			where: { id: newPost.id },
 			include: {
 				images: {
 					orderBy: { order: "asc" },
 				},
+				digitalFiles: true,
 				category: {
 					select: {
 						id: true,
@@ -117,7 +162,7 @@ export async function POST(req: NextRequest) {
 			},
 		});
 
-		return NextResponse.json(postWithImages, { status: 201 });
+		return NextResponse.json(postWithFiles, { status: 201 });
 	} catch (error) {
 		console.error("Error creating post:", error);
 		return NextResponse.json(

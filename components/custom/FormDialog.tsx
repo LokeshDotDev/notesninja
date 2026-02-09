@@ -7,600 +7,706 @@ import {
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
-	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Image from "next/image";
+import { Textarea } from "@/components/ui/textarea";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Upload, X, FileText, Image } from "lucide-react";
 
 interface FormDialogProps {
 	type: "post" | "featured" | "category" | "subcategory" | "product-type";
-	initialData?: {
-		id?: string;
-		title?: string;
-		description?: string;
-		descripition?: string; // Added for featured items
-		name?: string;
-		categoryId?: string;
-		subcategoryId?: string;
-		productTypeId?: string;
-		imageUrl?: string; // Added for displaying existing images
-	};
-	onSave: (data: { id?: string; formData: FormData }) => Promise<void>;
-	triggerLabel: string | null;
-	categories?: { id: string; name: string }[];
-	subcategories?: { id: string; name: string; categoryId: string }[];
-	productTypes?: { id: string; name: string }[];
-	onClose?: () => void;
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
+	triggerLabel?: string | null;
+	initialData?: any;
+	onSave: (data: { id?: string; formData: FormData }) => void;
 	isLoading?: boolean;
+}
+
+interface Category {
+	id: string;
+	name: string;
+}
+
+interface Subcategory {
+	id: string;
+	name: string;
+	categoryId: string;
+}
+
+interface ProductType {
+	id: string;
+	name: string;
 }
 
 export default function FormDialog({
 	type,
+	open: controlledOpen,
+	onOpenChange,
+	triggerLabel,
 	initialData,
 	onSave,
-	triggerLabel,
-	categories = [],
-	subcategories = [],
-	productTypes = [],
-	onClose,
 	isLoading = false,
 }: FormDialogProps) {
-	const [open, setOpen] = useState(triggerLabel === null);
-	const [title, setTitle] = useState(initialData?.title || "");
-	const [description, setDescription] = useState(
-		initialData?.descripition || initialData?.description || ""
-	);
-	const [productTypeId, setProductTypeId] = useState(initialData?.productTypeId || "");
-	const [subcategoryId, setSubcategoryId] = useState(initialData?.subcategoryId || "");
-	const [image, setImage] = useState<File | null>(null);
-	const [images, setImages] = useState<File[]>([]);
-	const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
-	const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
-	const [existingImageUrl, setExistingImageUrl] = useState<string | null>(
-		initialData?.imageUrl || null
-	);
-	const [categoryName, setCategoryName] = useState(initialData?.name || "");
-	const [categoryId, setCategoryId] = useState(
-		initialData?.categoryId || categories[0]?.id || ""
-	);
+	const [open, setOpen] = useState(false);
+	const [categories, setCategories] = useState<Category[]>([]);
+	const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+	const [productTypes, setProductTypes] = useState<ProductType[]>([]);
+	const [formData, setFormData] = useState({
+		title: "",
+		description: "",
+		categoryId: "",
+		subcategoryId: "",
+		productTypeId: "",
+		price: "",
+		compareAtPrice: "",
+		isDigital: false,
+		name: "",
+	});
+	const [files, setFiles] = useState<File[]>([]);
+	const [digitalFiles, setDigitalFiles] = useState<File[]>([]);
 
-	// Ensure default category is set when categories load
+	// Fetch categories, subcategories, and product types
 	useEffect(() => {
-		if (!categoryId && categories.length > 0) {
-			setCategoryId(categories[0].id);
-		}
-	}, [categories, categoryId]);
+		async function fetchData() {
+			try {
+				const [categoriesRes, subcategoriesRes, productTypesRes] = await Promise.all([
+					fetch("/api/categories"),
+					fetch("/api/subcategories"),
+					fetch("/api/product-types"),
+				]);
 
+				if (categoriesRes.ok) {
+					const categoriesData = await categoriesRes.json();
+					setCategories(categoriesData);
+				}
+				if (subcategoriesRes.ok) {
+					const subcategoriesData = await subcategoriesRes.json();
+					setSubcategories(subcategoriesData);
+				}
+				if (productTypesRes.ok) {
+					const productTypesData = await productTypesRes.json();
+					setProductTypes(productTypesData);
+				}
+			} catch (error) {
+				console.error("Error fetching form data:", error);
+			}
+		}
+
+		if (type === "post" || type === "subcategory") {
+			fetchData();
+		}
+	}, [type]);
+
+	// Initialize form with initial data
 	useEffect(() => {
 		if (initialData) {
-			setTitle(initialData.title || "");
-			setDescription(initialData.descripition || initialData.description || "");
-			setCategoryName(initialData.name || "");
-			setCategoryId(initialData.categoryId || categories[0]?.id || "");
-			setExistingImageUrl(initialData.imageUrl || null);
+			setFormData({
+				title: initialData.title || "",
+				description: initialData.description || initialData.descripition || "",
+				categoryId: initialData.categoryId || "",
+				subcategoryId: initialData.subcategoryId || "",
+				productTypeId: initialData.productTypeId || "",
+				price: initialData.price?.toString() || "",
+				compareAtPrice: initialData.compareAtPrice?.toString() || "",
+				isDigital: initialData.isDigital || false,
+				name: initialData.name || "",
+			});
+		} else {
+			// Reset form for new item
+			setFormData({
+				title: "",
+				description: "",
+				categoryId: "",
+				subcategoryId: "",
+				productTypeId: "",
+				price: "",
+				compareAtPrice: "",
+				isDigital: false,
+				name: "",
+			});
+			setFiles([]);
+			setDigitalFiles([]);
 		}
-	}, [initialData, categories]);
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	}, [initialData]);
+
+	const isControlled = controlledOpen !== undefined;
+	const isOpen = isControlled ? controlledOpen : open;
+	const setIsOpen = isControlled ? onOpenChange! : setOpen;
+
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		const formData = new FormData();
-		formData.append("type", type);
-		if (type === "category") {
-			formData.append("name", categoryName);
-		} else if (type === "subcategory") {
-			formData.append("name", title);
-			formData.append("categoryId", categoryId);
-			
-			// Handle image upload
-			if (images.length > 0) {
-				// Multiple new images uploaded
-				images.forEach((file) => {
-					formData.append("files", file);
-				});
-			} else if (image) {
-				// Single image uploaded (backward compatibility)
-				formData.append("file", image);
-			} else if (existingImageUrl && initialData?.id) {
-				// No new image, but we have an existing one - explicitly indicate to keep it
-				formData.append("keepExistingImage", "true");
+		
+		const submitData = new FormData();
+		
+		// Add form fields
+		if (type === "post" || type === "featured") {
+			submitData.append("title", formData.title);
+			submitData.append("description", formData.description);
+			if (type === "post") {
+				submitData.append("categoryId", formData.categoryId);
+				if (formData.subcategoryId) {
+					submitData.append("subcategoryId", formData.subcategoryId);
+				}
+				if (formData.productTypeId) {
+					submitData.append("productTypeId", formData.productTypeId);
+				}
+				if (formData.price) {
+					submitData.append("price", formData.price);
+				}
+				submitData.append("isDigital", formData.isDigital.toString());
 			}
-		} else {
-			formData.append("title", title);
-
-			// Use the appropriate field name based on the type
-			// - posts use "description" (correct spelling)
-			// - featured uses "descripition" (with typo in the schema)
-			if (type === "featured") {
-				formData.append("descripition", description);
-			} else {
-				formData.append("description", description);
-			}
-
-			formData.append("categoryId", categoryId);
-			formData.append("subcategoryId", subcategoryId || "");
-			formData.append("productTypeId", productTypeId || ""); // Handle image upload
-			if (images.length > 0) {
-				// Multiple new images uploaded
-				images.forEach((file) => {
-					formData.append("files", file);
-				});
-			} else if (image) {
-				// Single image uploaded (backward compatibility)
-				formData.append("file", image);
-			} else if (existingImageUrl && initialData?.id) {
-				// No new image, but we have an existing one - explicitly indicate to keep it
-				formData.append("keepExistingImage", "true");
+		} else if (type === "category" || type === "subcategory" || type === "product-type") {
+			submitData.append("name", formData.name);
+			if (type === "subcategory") {
+				submitData.append("categoryId", formData.categoryId);
 			}
 		}
+
+		// Add files
+		files.forEach((file) => {
+			submitData.append("files", file);
+		});
+
+		// Add digital files for digital products
+		if (formData.isDigital && digitalFiles.length > 0) {
+			digitalFiles.forEach((file) => {
+				submitData.append("digitalFiles", file);
+			});
+		}
+
+		// Add ID for updates
 		if (initialData?.id) {
-			formData.append("id", initialData.id);
+			submitData.append("id", initialData.id);
 		}
 
-		try {
-			await onSave({ id: initialData?.id, formData });
-			handleClose();
-		} catch (error) {
-			console.error("Error saving form:", error);
-		}
-	};
-	const handleClose = () => {
-		if (onClose) {
-			onClose();
-		} else {
-			setOpen(false);
-		}
-		// Reset form
+		await onSave({ 
+			id: initialData?.id,
+			formData: submitData 
+		});
+		
 		if (!initialData) {
-			setTitle("");
-			setDescription("");
-			setImage(null);
-			setImages([]);
-			setNewImagePreview(null);
-			setNewImagePreviews([]);
-			setCategoryName("");
-			setCategoryId(categories[0]?.id || "");
-		} else {
-			// Just clear the new image preview if we're editing
-			setNewImagePreview(null);
-			setNewImagePreviews([]);
-			setImage(null);
-			setImages([]);
+			// Reset form only for new items
+			setFormData({
+				title: "",
+				description: "",
+				categoryId: "",
+				subcategoryId: "",
+				productTypeId: "",
+				price: "",
+				compareAtPrice: "",
+				isDigital: false,
+				name: "",
+			});
+			setFiles([]);
+			setDigitalFiles([]);
+		}
+		setIsOpen(false);
+	};
+
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const selectedFiles = Array.from(e.target.files || []);
+		setFiles(prev => [...prev, ...selectedFiles]);
+	};
+
+	const handleDigitalFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const selectedFiles = Array.from(e.target.files || []);
+		setDigitalFiles(prev => [...prev, ...selectedFiles]);
+	};
+
+	const removeFile = (index: number) => {
+		setFiles(prev => prev.filter((_, i) => i !== index));
+	};
+
+	const removeDigitalFile = (index: number) => {
+		setDigitalFiles(prev => prev.filter((_, i) => i !== index));
+	};
+
+	const filteredSubcategories = subcategories.filter(
+		sub => sub.categoryId === formData.categoryId
+	);
+
+	const renderForm = () => {
+		switch (type) {
+			case "post":
+				return (
+					<div className="space-y-4">
+						<div>
+							<Label htmlFor="title">Title</Label>
+							<Input
+								id="title"
+								value={formData.title}
+								onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+								placeholder="Enter product title"
+								required
+							/>
+						</div>
+						
+						<div>
+							<Label htmlFor="description">Description</Label>
+							<Textarea
+								id="description"
+								value={formData.description}
+								onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+								placeholder="Enter product description"
+								rows={3}
+								required
+							/>
+						</div>
+
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div>
+								<Label htmlFor="category">Category</Label>
+								<Select value={formData.categoryId} onValueChange={(value: string) => setFormData(prev => ({ ...prev, categoryId: value, subcategoryId: "" }))}>
+									<SelectTrigger>
+										<SelectValue placeholder="Select category" />
+									</SelectTrigger>
+									<SelectContent>
+										{categories.map((category) => (
+											<SelectItem key={category.id} value={category.id}>
+												{category.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							<div>
+								<Label htmlFor="subcategory">Subcategory (Optional)</Label>
+								<Select value={formData.subcategoryId} onValueChange={(value: string) => setFormData(prev => ({ ...prev, subcategoryId: value }))}>
+									<SelectTrigger>
+										<SelectValue placeholder="Select subcategory" />
+									</SelectTrigger>
+									<SelectContent>
+										{filteredSubcategories.map((subcategory) => (
+											<SelectItem key={subcategory.id} value={subcategory.id}>
+												{subcategory.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+						</div>
+
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div>
+								<Label htmlFor="productType">Product Type (Optional)</Label>
+								<Select value={formData.productTypeId} onValueChange={(value: string) => setFormData(prev => ({ ...prev, productTypeId: value }))}>
+									<SelectTrigger>
+										<SelectValue placeholder="Select product type" />
+									</SelectTrigger>
+									<SelectContent>
+										{productTypes.map((productType) => (
+											<SelectItem key={productType.id} value={productType.id}>
+												{productType.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							<div>
+								<Label htmlFor="price">Price ($)</Label>
+								<Input
+									id="price"
+									type="number"
+									step="0.01"
+									min="0"
+									value={formData.price}
+									onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+									placeholder="0.00"
+								/>
+							</div>
+
+							<div>
+								<Label htmlFor="compareAtPrice">M.R.P. / Scratch Price ($) - Optional</Label>
+								<Input
+									id="compareAtPrice"
+									type="number"
+									step="0.01"
+									min="0"
+									value={formData.compareAtPrice}
+									onChange={(e) => setFormData(prev => ({ ...prev, compareAtPrice: e.target.value }))}
+									placeholder="459.00 (higher than actual price)"
+								/>
+								<p className="text-xs text-gray-500 mt-1">
+									Shows as strikethrough price to highlight discount
+								</p>
+							</div>
+						</div>
+
+						<div>
+							<Label className="flex items-center space-x-2">
+								<input
+									type="checkbox"
+									checked={formData.isDigital}
+									onChange={(e) => setFormData(prev => ({ ...prev, isDigital: e.target.checked }))}
+									className="rounded border-gray-300"
+								/>
+								<span>Digital Product</span>
+							</Label>
+							<p className="text-xs text-gray-500 mt-1">
+								{formData.isDigital 
+									? "Upload a cover image for display and digital files for download"
+									: "Upload product images for display"
+								}
+							</p>
+						</div>
+
+						{/* Cover Image Section - Always show for digital products */}
+						{formData.isDigital && (
+							<div>
+								<Label>Cover Image</Label>
+								<div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-4">
+									<input
+										type="file"
+										accept="image/*"
+										onChange={handleFileChange}
+										className="hidden"
+										id="cover-image-upload"
+									/>
+									<label
+										htmlFor="cover-image-upload"
+										className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
+									>
+										<Image className="w-8 h-8 text-gray-400 mb-2" />
+										<span className="text-sm text-gray-600">Click to upload cover image</span>
+										<span className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</span>
+									</label>
+								</div>
+								{files.length > 0 && (
+									<div className="mt-2 space-y-2">
+										{files.map((file, index) => (
+											<div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+												<span className="text-sm truncate">{file.name}</span>
+												<Button
+													type="button"
+													variant="ghost"
+													size="sm"
+													onClick={() => removeFile(index)}
+												>
+													<X className="w-4 h-4" />
+												</Button>
+											</div>
+										))}
+									</div>
+								)}
+							</div>
+						)}
+
+						{/* Product Images Section - Only for physical products */}
+						{!formData.isDigital && (
+							<div>
+								<Label>Product Images</Label>
+								<div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-4">
+									<input
+										type="file"
+										multiple
+										accept="image/*"
+										onChange={handleFileChange}
+										className="hidden"
+										id="file-upload"
+									/>
+									<label
+										htmlFor="file-upload"
+										className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
+									>
+										<Image className="w-8 h-8 text-gray-400 mb-2" />
+										<span className="text-sm text-gray-600">Click to upload images</span>
+										<span className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</span>
+									</label>
+								</div>
+								{files.length > 0 && (
+									<div className="mt-2 space-y-2">
+										{files.map((file, index) => (
+											<div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+												<span className="text-sm truncate">{file.name}</span>
+												<Button
+													type="button"
+													variant="ghost"
+													size="sm"
+													onClick={() => removeFile(index)}
+												>
+													<X className="w-4 h-4" />
+												</Button>
+											</div>
+										))}
+									</div>
+								)}
+							</div>
+						)}
+
+						{/* Digital Files Section - Only for digital products */}
+						{formData.isDigital && (
+							<div>
+								<Label>Digital Files</Label>
+								<div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-4">
+									<input
+										type="file"
+										multiple
+										accept=".pdf,.doc,.docx,.txt,.zip,.rar"
+										onChange={handleDigitalFileChange}
+										className="hidden"
+										id="digital-file-upload"
+									/>
+									<label
+										htmlFor="digital-file-upload"
+										className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
+									>
+										<FileText className="w-8 h-8 text-gray-400 mb-2" />
+										<span className="text-sm text-gray-600">Click to upload digital files</span>
+										<span className="text-xs text-gray-500">PDF, DOCX, TXT, ZIP up to 50MB</span>
+									</label>
+								</div>
+								{digitalFiles.length > 0 && (
+									<div className="mt-2 space-y-2">
+										{digitalFiles.map((file, index) => (
+											<div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+												<span className="text-sm truncate">{file.name}</span>
+												<Button
+													type="button"
+													variant="ghost"
+													size="sm"
+													onClick={() => removeDigitalFile(index)}
+												>
+													<X className="w-4 h-4" />
+												</Button>
+											</div>
+										))}
+									</div>
+								)}
+							</div>
+						)}
+					</div>
+				);
+
+			case "featured":
+				return (
+					<div className="space-y-4">
+						<div>
+							<Label htmlFor="title">Title</Label>
+							<Input
+								id="title"
+								value={formData.title}
+								onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+								placeholder="Enter featured item title"
+								required
+							/>
+						</div>
+						
+						<div>
+							<Label htmlFor="description">Description</Label>
+							<Textarea
+								id="description"
+								value={formData.description}
+								onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+								placeholder="Enter featured item description"
+								rows={3}
+								required
+							/>
+						</div>
+
+						<div>
+							<Label>Featured Image</Label>
+							<div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-4">
+								<input
+									type="file"
+									accept="image/*"
+									onChange={handleFileChange}
+									className="hidden"
+									id="featured-file-upload"
+								/>
+								<label
+									htmlFor="featured-file-upload"
+									className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
+								>
+									<Image className="w-8 h-8 text-gray-400 mb-2" />
+									<span className="text-sm text-gray-600">Click to upload image</span>
+									<span className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</span>
+								</label>
+							</div>
+							{files.length > 0 && (
+								<div className="mt-2 space-y-2">
+									{files.map((file, index) => (
+										<div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+											<span className="text-sm truncate">{file.name}</span>
+											<Button
+												type="button"
+												variant="ghost"
+												size="sm"
+												onClick={() => removeFile(index)}
+											>
+												<X className="w-4 h-4" />
+											</Button>
+										</div>
+									))}
+								</div>
+							)}
+						</div>
+					</div>
+				);
+
+			case "category":
+			case "product-type":
+				return (
+					<div className="space-y-4">
+						<div>
+							<Label htmlFor="name">
+								{type === "category" ? "Category Name" : "Product Type Name"}
+							</Label>
+							<Input
+								id="name"
+								value={formData.name}
+								onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+								placeholder={`Enter ${type === "category" ? "category" : "product type"} name`}
+								required
+							/>
+						</div>
+					</div>
+				);
+
+			case "subcategory":
+				return (
+					<div className="space-y-4">
+						<div>
+							<Label htmlFor="name">Subcategory Name</Label>
+							<Input
+								id="name"
+								value={formData.name}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+								placeholder="Enter subcategory name"
+								required
+							/>
+						</div>
+
+						<div>
+							<Label htmlFor="category">Parent Category</Label>
+							<Select value={formData.categoryId} onValueChange={(value: string) => setFormData(prev => ({ ...prev, categoryId: value }))}>
+								<SelectTrigger>
+									<SelectValue placeholder="Select parent category" />
+								</SelectTrigger>
+								<SelectContent>
+									{categories.map((category) => (
+										<SelectItem key={category.id} value={category.id}>
+											{category.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					</div>
+				);
+
+			default:
+				return null;
 		}
 	};
 
 	const dialogContent = (
-		<DialogContent className='bg-white dark:bg-gray-800 dark:text-white'>
+		<DialogContent className="bg-white dark:bg-gray-800 dark:text-white max-w-2xl max-h-[90vh] overflow-y-auto">
 			<DialogHeader>
-				<DialogTitle className='text-lg font-semibold'>
-					{initialData ? `Edit ${type}` : `Create new ${type}`}
+				<DialogTitle className="text-lg font-semibold">
+					{initialData ? `Edit ${type}` : `Create New ${type}`}
 				</DialogTitle>
 			</DialogHeader>
-			<form onSubmit={handleSubmit} className='space-y-4 mt-4'>
-				{type === "category" ? (
-					<div>
-						<Label className='text-sm font-medium'>Category Name</Label>
-						<Input
-							type='text'
-							value={categoryName}
-							onChange={(e) => setCategoryName(e.target.value)}
-							className='mt-1 dark:bg-gray-700 dark:text-gray-200'
-							required
-							placeholder='Enter category name'
-						/>
-					</div>
-				) : type === "subcategory" ? (
-					<>
-						<div>
-							<Label className='text-sm font-medium'>Subcategory Name</Label>
-							<Input
-								type='text'
-								value={title}
-								onChange={(e) => setTitle(e.target.value)}
-								className='mt-1 dark:bg-gray-700 dark:text-gray-200'
-								required
-								placeholder='Enter subcategory name'
-							/>
-						</div>
-						<div>
-							<Label className='text-sm font-medium'>Category</Label>
-							<select
-								className='mt-1 border rounded w-full p-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
-								value={categoryId}
-								onChange={(e) => setCategoryId(e.target.value)}
-								required>
-								{categories.map((cat) => (
-									<option key={cat.id} value={cat.id}>
-										{cat.name}
-									</option>
-								))}
-							</select>
-						</div>
-					</>
-				) : (
-					<>
-						<div>
-							<Label className='text-sm font-medium'>Title</Label>
-							<Input
-								type='text'
-								value={title}
-								onChange={(e) => setTitle(e.target.value)}
-								className='mt-1 dark:bg-gray-700 dark:text-gray-200'
-								required
-							/>
-						</div>
-						<div>
-							<Label className='text-sm font-medium'>Description</Label>
-							<textarea
-								value={description}
-								onChange={(e) => setDescription(e.target.value)}
-								className='mt-1 w-full min-h-[120px] border rounded dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 p-2'
-								required
-							/>
-						</div>
-						<div>
-							<Label className='text-sm font-medium'>Category</Label>
-							<select
-								className='mt-1 border rounded w-full p-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
-								value={categoryId}
-								onChange={(e) => setCategoryId(e.target.value)}
-								required>
-								{categories.map((cat) => (
-									<option key={cat.id} value={cat.id}>
-										{cat.name}
-									</option>
-								))}
-							</select>
-						</div>
-						<div>
-							<Label className='text-sm font-medium'>Subcategory</Label>
-							<select
-								className='mt-1 border rounded w-full p-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
-								value={subcategoryId}
-								onChange={(e) => setSubcategoryId(e.target.value)}
-								required>
-								<option value="">Select subcategory</option>
-								{subcategories
-									.filter(sub => sub.categoryId === categoryId)
-									.map((sub) => (
-										<option key={sub.id} value={sub.id}>
-											{sub.name}
-										</option>
-									))}
-							</select>
-						</div>
-						<div>
-							<Label className='text-sm font-medium'>Product Type</Label>
-							<select
-								className='mt-1 border rounded w-full p-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
-								value={productTypeId}
-								onChange={(e) => setProductTypeId(e.target.value)}
-								required>
-								<option value="">Select product type</option>
-								{productTypes.map((type) => (
-									<option key={type.id} value={type.id}>
-										{type.name}
-									</option>
-								))}
-							</select>
-						</div>{" "}
-						<div>
-							<Label className='text-sm font-medium'>Image</Label>
-							{existingImageUrl && (
-								<div className='mt-2 mb-3'>
-									<p className='text-xs text-gray-500 mb-2'>Current image:</p>
-									<div className='relative w-full max-w-[200px] h-[150px] border rounded overflow-hidden'>
-										<Image
-											src={existingImageUrl}
-											alt='Current image'
-											className='w-full h-full object-cover'
-											width={200}
-											height={150}
-											loading='lazy'
-										/>
-									</div>
-								</div>
-							)}{" "}
-							<Input
-								type='file'
-								accept='image/*'
-								multiple={type === "post"} // Only allow multiple for posts
-								onChange={(e) => {
-									const files = Array.from(e.target.files || []);
-
-									if (type === "post" && files.length > 0) {
-										// Handle multiple files for posts
-										setImages(files);
-										setImage(null); // Clear single image
-
-										// Create previews for multiple images
-										const previewPromises = files.map((file) => {
-											return new Promise<string>((resolve) => {
-												const reader = new FileReader();
-												reader.onload = (e) => {
-													resolve(e.target?.result as string);
-												};
-												reader.readAsDataURL(file);
-											});
-										});
-
-										Promise.all(previewPromises).then((previews) => {
-											setNewImagePreviews(previews);
-											setNewImagePreview(null); // Clear single preview
-										});
-									} else if (files.length > 0) {
-										// Handle single file for featured/other types
-										const file = files[0];
-										setImage(file);
-										setImages([]); // Clear multiple images
-
-										// Create preview for single image
-										const reader = new FileReader();
-										reader.onload = (e) => {
-											setNewImagePreview(e.target?.result as string);
-										};
-										reader.readAsDataURL(file);
-										setNewImagePreviews([]); // Clear multiple previews
-									} else {
-										// No files selected
-										setImage(null);
-										setImages([]);
-										setNewImagePreview(null);
-										setNewImagePreviews([]);
-									}
-								}}
-								className='mt-2 dark:bg-gray-700 dark:text-gray-200'
-							/>{" "}
-							{newImagePreviews.length > 0 && (
-								<div className='mt-3 mb-2'>
-									<p className='text-xs text-gray-500 mb-2'>
-										New images preview ({newImagePreviews.length} selected):
-									</p>
-									<div className='grid grid-cols-2 sm:grid-cols-3 gap-2'>
-										{newImagePreviews.map((preview, index) => (
-											<div
-												key={index}
-												className='relative w-full h-[100px] border rounded overflow-hidden'>
-												<Image
-													src={preview}
-													alt={`New image preview ${index + 1}`}
-													className='w-full h-full object-cover'
-													width={150}
-													height={100}
-													loading='lazy'
-												/>
-											</div>
-										))}
-									</div>
-								</div>
-							)}
-							{newImagePreview && (
-								<div className='mt-3 mb-2'>
-									<p className='text-xs text-gray-500 mb-2'>
-										New image preview:
-									</p>
-									<div className='relative w-full max-w-[200px] h-[150px] border rounded overflow-hidden'>
-										<Image
-											src={newImagePreview}
-											alt='New image preview'
-											className='w-full h-full object-cover'
-											width={200}
-											height={150}
-											loading='lazy'
-										/>
-									</div>
-								</div>
-							)}{" "}
-							<p className='text-xs text-gray-500 mt-1'>
-								{type === "post"
-									? existingImageUrl
-										? "Upload new images (multiple allowed) to replace existing ones, or leave empty to keep current images."
-										: "Please select image files (multiple images allowed for better product showcase)."
-									: existingImageUrl
-									? "Upload a new image to replace the current one, or leave empty to keep it."
-									: "Please select an image file."}
-							</p>
-						</div>
-					</>
-				)}
-				
-				{/* Image field for all types except category */}
-				{type !== "category" && (
-					<div>
-						<Label className='text-sm font-medium'>Image</Label>
-						{existingImageUrl && (
-							<div className='mt-2 mb-3'>
-								<p className='text-xs text-gray-500 mb-2'>Current image:</p>
-								<div className='relative w-full max-w-[200px] h-[150px] border rounded overflow-hidden'>
-									<Image
-										src={existingImageUrl}
-										alt='Current image'
-										className='w-full h-full object-cover'
-										width={200}
-										height={150}
-										loading='lazy'
-									/>
-								</div>
-							</div>
-						)}{" "}
-						<Input
-							type='file'
-							accept='image/*'
-							multiple={type === "post"} // Only allow multiple for posts
-							onChange={(e) => {
-								const files = Array.from(e.target.files || []);
-
-								if (type === "post" && files.length > 0) {
-									// Handle multiple files for posts
-									setImages(files);
-									setImage(null); // Clear single image
-
-									// Create previews for multiple images
-									const previewPromises = files.map((file) => {
-										return new Promise<string>((resolve) => {
-											const reader = new FileReader();
-											reader.onload = (e) => {
-												resolve(e.target?.result as string);
-											};
-											reader.readAsDataURL(file);
-										});
-									});
-
-									Promise.all(previewPromises).then((previews) => {
-										setNewImagePreviews(previews);
-									});
-								} else if (files.length > 0) {
-									// Handle single file for other types
-									setImage(files[0]);
-									setImages([]); // Clear multiple images
-									setNewImagePreviews([]); // Clear multiple previews
-
-									// Create preview for single image
-									const reader = new FileReader();
-									reader.onload = (e) => {
-										setNewImagePreview(e.target?.result as string);
-									};
-									reader.readAsDataURL(files[0]);
-								}
-							}}
-						/>
-						{newImagePreviews.length > 0 && (
-							<div className='mt-3 mb-2'>
-								<p className='text-xs text-gray-500 mb-2'>
-									New image previews:
-								</p>
-								<div className='flex flex-wrap gap-2'>
-									{newImagePreviews.map((preview, index) => (
-										<div
-											key={index}
-											className='relative w-full h-[100px] border rounded overflow-hidden'>
-											<Image
-												src={preview}
-												alt={`New image preview ${index + 1}`}
-												className='w-full h-full object-cover'
-												width={150}
-												height={100}
-												loading='lazy'
-											/>
-										</div>
-									))}
-								</div>
-							</div>
-						)}
-						{newImagePreview && (
-							<div className='mt-3 mb-2'>
-								<p className='text-xs text-gray-500 mb-2'>
-									New image preview:
-								</p>
-								<div className='relative w-full max-w-[200px] h-[150px] border rounded overflow-hidden'>
-									<Image
-										src={newImagePreview}
-										alt='New image preview'
-										className='w-full h-full object-cover'
-										width={200}
-										height={150}
-										loading='lazy'
-									/>
-								</div>
-							</div>
-						)}{" "}
-						<p className='text-xs text-gray-500 mt-1'>
-							{type === "post"
-								? existingImageUrl
-									? "Upload new images (multiple allowed) to replace existing ones, or leave empty to keep current images."
-									: "Please select image files (multiple images allowed for better product showcase)."
-								: existingImageUrl
-								? "Upload a new image to replace the current one, or leave empty to keep it."
-								: "Please select an image file."}
-						</p>
-					</div>
-				)}
-				
-				<div className='flex justify-end space-x-2 pt-4'>
-				<Button
-					type='submit'
-					className='bg-blue-600 hover:bg-blue-700 text-white'
-					disabled={isLoading}>
-					{isLoading ? (
-						<div className='flex items-center space-x-2'>
-							<svg
-								className='animate-spin -ml-1 mr-2 h-4 w-4 text-white'
-								xmlns='http://www.w3.org/2000/svg'
-								fill='none'
-								viewBox='0 0 24 24'>
-								<circle
-									className='opacity-25'
-									cx='12'
-									cy='12'
-									r='10'
-									stroke='currentColor'
-									strokeWidth='4'></circle>
-								<path
-									className='opacity-75'
-									fill='currentColor'
-									d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
-							</svg>
-							<span>Saving...</span>
-						</div>
-					) : (
-						"Save"
-					)}
-				</Button>
-				{!triggerLabel && (
+			<form onSubmit={handleSubmit}>
+				{renderForm()}
+				<div className="flex justify-end space-x-2 pt-6">
 					<Button
-						type='button'
-						variant='outline'
-						onClick={handleClose}
-						className='ml-2 border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
-						disabled={isLoading}>
+						type="button"
+						variant="outline"
+						onClick={() => setIsOpen(false)}
+						disabled={isLoading}
+						className="border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+					>
 						Cancel
 					</Button>
-				)}
-			</div>
+					<Button
+						type="submit"
+						disabled={isLoading}
+						className="bg-blue-600 hover:bg-blue-700 text-white"
+					>
+						{isLoading ? (
+							<div className="flex items-center space-x-2">
+								<svg
+									className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+								>
+									<circle
+										className="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										strokeWidth="4"
+									></circle>
+									<path
+										className="opacity-75"
+										fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+									></path>
+								</svg>
+								<span>Saving...</span>
+							</div>
+						) : (
+							initialData ? "Update" : "Create"
+						)}
+					</Button>
+				</div>
 			</form>
 		</DialogContent>
 	);
 
-	// When used directly with no trigger (embedded in another dialog)
 	if (triggerLabel === null) {
-		return (
-			<Dialog open={open} onOpenChange={setOpen}>
-				{dialogContent}
-			</Dialog>
-		);
+		return dialogContent;
 	}
-	// Normal usage with a trigger button
+
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
+		<Dialog open={isOpen} onOpenChange={setIsOpen}>
+			{triggerLabel && (
 				<Button
-					className='bg-blue-600 hover:bg-blue-700 text-white'
-					disabled={isLoading}>
+					onClick={() => setIsOpen(true)}
+					disabled={isLoading}
+					className="bg-blue-600 hover:bg-blue-700 text-white"
+				>
 					{isLoading ? (
-						<div className='flex items-center space-x-2'>
+						<div className="flex items-center space-x-2">
 							<svg
-								className='animate-spin -ml-1 mr-2 h-4 w-4 text-white'
-								xmlns='http://www.w3.org/2000/svg'
-								fill='none'
-								viewBox='0 0 24 24'>
+								className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+							>
 								<circle
-									className='opacity-25'
-									cx='12'
-									cy='12'
-									r='10'
-									stroke='currentColor'
-									strokeWidth='4'></circle>
+									className="opacity-25"
+									cx="12"
+									cy="12"
+									r="10"
+									stroke="currentColor"
+									strokeWidth="4"
+								></circle>
 								<path
-									className='opacity-75'
-									fill='currentColor'
-									d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
+									className="opacity-75"
+									fill="currentColor"
+									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+								></path>
 							</svg>
-							<span>Creating...</span>
+							<span>Loading...</span>
 						</div>
 					) : (
 						triggerLabel
 					)}
 				</Button>
-			</DialogTrigger>
+			)}
 			{dialogContent}
 		</Dialog>
 	);
