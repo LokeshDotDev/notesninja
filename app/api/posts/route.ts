@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
 		const description = formData.get("description") as string | null;
 		const categoryId = formData.get("categoryId") as string | null;
 		const subcategoryId = formData.get("subcategoryId") as string | null;
+		const productTypeId = formData.get("productTypeId") as string | null;
 
 		if (!allFiles.length || !title || !description || !categoryId) {
 			return NextResponse.json(
@@ -74,6 +75,7 @@ export async function POST(req: NextRequest) {
 				description,
 				categoryId,
 				subcategoryId: subcategoryId || null,
+				productTypeId: productTypeId || null,
 			},
 		});
 

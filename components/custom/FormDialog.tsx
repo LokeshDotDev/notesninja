@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import Image from "next/image";
 
 interface FormDialogProps {
-	type: "post" | "featured" | "category" | "subcategory";
+	type: "post" | "featured" | "category" | "subcategory" | "product-type";
 	initialData?: {
 		id?: string;
 		title?: string;
@@ -22,11 +22,15 @@ interface FormDialogProps {
 		descripition?: string; // Added for featured items
 		name?: string;
 		categoryId?: string;
+		subcategoryId?: string;
+		productTypeId?: string;
 		imageUrl?: string; // Added for displaying existing images
 	};
 	onSave: (data: { id?: string; formData: FormData }) => Promise<void>;
 	triggerLabel: string | null;
 	categories?: { id: string; name: string }[];
+	subcategories?: { id: string; name: string; categoryId: string }[];
+	productTypes?: { id: string; name: string }[];
 	onClose?: () => void;
 	isLoading?: boolean;
 }
@@ -37,6 +41,8 @@ export default function FormDialog({
 	onSave,
 	triggerLabel,
 	categories = [],
+	subcategories = [],
+	productTypes = [],
 	onClose,
 	isLoading = false,
 }: FormDialogProps) {
@@ -45,6 +51,8 @@ export default function FormDialog({
 	const [description, setDescription] = useState(
 		initialData?.descripition || initialData?.description || ""
 	);
+	const [productTypeId, setProductTypeId] = useState(initialData?.productTypeId || "");
+	const [subcategoryId, setSubcategoryId] = useState(initialData?.subcategoryId || "");
 	const [image, setImage] = useState<File | null>(null);
 	const [images, setImages] = useState<File[]>([]);
 	const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
@@ -108,7 +116,9 @@ export default function FormDialog({
 				formData.append("description", description);
 			}
 
-			formData.append("categoryId", categoryId); // Handle image upload
+			formData.append("categoryId", categoryId);
+			formData.append("subcategoryId", subcategoryId || "");
+			formData.append("productTypeId", productTypeId || ""); // Handle image upload
 			if (images.length > 0) {
 				// Multiple new images uploaded
 				images.forEach((file) => {
@@ -237,6 +247,38 @@ export default function FormDialog({
 								{categories.map((cat) => (
 									<option key={cat.id} value={cat.id}>
 										{cat.name}
+									</option>
+								))}
+							</select>
+						</div>
+						<div>
+							<Label className='text-sm font-medium'>Subcategory</Label>
+							<select
+								className='mt-1 border rounded w-full p-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
+								value={subcategoryId}
+								onChange={(e) => setSubcategoryId(e.target.value)}
+								required>
+								<option value="">Select subcategory</option>
+								{subcategories
+									.filter(sub => sub.categoryId === categoryId)
+									.map((sub) => (
+										<option key={sub.id} value={sub.id}>
+											{sub.name}
+										</option>
+									))}
+							</select>
+						</div>
+						<div>
+							<Label className='text-sm font-medium'>Product Type</Label>
+							<select
+								className='mt-1 border rounded w-full p-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
+								value={productTypeId}
+								onChange={(e) => setProductTypeId(e.target.value)}
+								required>
+								<option value="">Select product type</option>
+								{productTypes.map((type) => (
+									<option key={type.id} value={type.id}>
+										{type.name}
 									</option>
 								))}
 							</select>

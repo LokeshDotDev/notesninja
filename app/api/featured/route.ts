@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
 		const descripition = formData.get("descripition") as string;
 		const categoryId = formData.get("categoryId") as string;
 		const subcategoryId = formData.get("subcategoryId") as string | null;
+		const productTypeId = formData.get("productTypeId") as string | null;
 
 		if (!file || !title || !descripition || !categoryId) {
 			return NextResponse.json(
@@ -80,6 +81,7 @@ export async function POST(req: NextRequest) {
 				publicId: result.public_id,
 				categoryId,
 				subcategoryId: subcategoryId || null,
+				productTypeId: productTypeId || null,
 			},
 			include: {
 				category: {

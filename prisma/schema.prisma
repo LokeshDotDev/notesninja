@@ -19,6 +19,8 @@ model Post {
   category      Category     @relation(fields: [categoryId], references: [id])
   subcategoryId String?
   subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
+  productTypeId String?
+  productType  ProductType? @relation(fields: [productTypeId], references: [id])
   images        PostImage[]
 }
 
@@ -59,7 +61,18 @@ model Featured {
   category      Category     @relation(fields: [categoryId], references: [id])
   subcategoryId String?
   subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
+  productTypeId String?
+  productType  ProductType? @relation(fields: [productTypeId], references: [id])
   publicId      String
+}
+
+model ProductType {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  posts     Post[]
+  featured  Featured[]
 }
 
 model Visitor {

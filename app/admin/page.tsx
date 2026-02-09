@@ -49,6 +49,15 @@ interface Subcategory {
 	};
 }
 
+interface ProductType {
+	id: string;
+	name: string;
+	_count?: {
+		posts: number;
+		featured: number;
+	};
+}
+
 interface Analytics {
 	totalVisits: number;
 	totalPosts: number;
@@ -78,6 +87,10 @@ type SubcategoryEdit = {
 	name?: string;
 	categoryId?: string;
 };
+type ProductTypeEdit = {
+	id?: string;
+	name?: string;
+};
 
 interface Visitor {
 	id: string;
@@ -99,6 +112,7 @@ export default function Dashboard() {
 	const [featured, setFeatured] = useState<Featured[]>([]);
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+	const [productTypes, setProductTypes] = useState<ProductType[]>([]);
 	const [analytics, setAnalytics] = useState<Analytics | null>(null);
 	const [visitors, setVisitors] = useState<Visitor[]>([]);
 	const [deleteDialog, setDeleteDialog] = useState<{
@@ -112,8 +126,8 @@ export default function Dashboard() {
 	});
 	const [editDialog, setEditDialog] = useState<{
 		open: boolean;
-		type: "post" | "featured" | "category" | "subcategory";
-		data: PostEdit | FeaturedEdit | CategoryEdit | SubcategoryEdit | null;
+		type: "post" | "featured" | "category" | "subcategory" | "product-type";
+		data: PostEdit | FeaturedEdit | CategoryEdit | SubcategoryEdit | ProductTypeEdit | null;
 	}>({
 		open: false,
 		type: "post",
@@ -125,10 +139,13 @@ export default function Dashboard() {
 		update: boolean;
 		delete: boolean;
 		id?: string;
+		loading?: boolean;
 	}>({
 		create: false,
 		update: false,
 		delete: false,
+		id: undefined,
+		loading: false,
 	});
 	const [error, setError] = useState<string | null>(null);
 	const [notification, setNotification] = useState<{
@@ -145,33 +162,44 @@ export default function Dashboard() {
 		const fetchData = async () => {
 			setIsLoading(true);
 			try {
-				const [postsRes, featuredRes, categoriesRes, subcategoriesRes, analyticsRes] =
-					await Promise.all([
-						fetch("/api/posts").then((res) => {
-							if (!res.ok) throw new Error("Failed to fetch posts");
-							return res.json();
-						}),
-						fetch("/api/featured").then((res) => {
-							if (!res.ok) throw new Error("Failed to fetch featured items");
-							return res.json();
-						}),
-						fetch("/api/categories").then((res) => {
-							if (!res.ok) throw new Error("Failed to fetch categories");
-							return res.json();
-						}),
-						fetch("/api/subcategories").then((res) => {
-							if (!res.ok) throw new Error("Failed to fetch subcategories");
-							return res.json();
-						}),
-						fetch("/api/analytics/visitors").then((res) => {
-							if (!res.ok) throw new Error("Failed to fetch analytics");
-							return res.json();
-						}),
-					]);
+				const [
+					postsRes,
+					featuredRes,
+					categoriesRes,
+					subcategoriesRes,
+					productTypesRes,
+					analyticsRes,
+				] = await Promise.all([
+					fetch("/api/posts").then((res) => {
+						if (!res.ok) throw new Error("Failed to fetch posts");
+						return res.json();
+					}),
+					fetch("/api/featured").then((res) => {
+						if (!res.ok) throw new Error("Failed to fetch featured items");
+						return res.json();
+					}),
+					fetch("/api/categories").then((res) => {
+						if (!res.ok) throw new Error("Failed to fetch categories");
+						return res.json();
+					}),
+					fetch("/api/subcategories").then((res) => {
+						if (!res.ok) throw new Error("Failed to fetch subcategories");
+						return res.json();
+					}),
+					fetch("/api/product-types").then((res) => {
+						if (!res.ok) throw new Error("Failed to fetch product types");
+						return res.json();
+					}),
+					fetch("/api/analytics/visitors").then((res) => {
+						if (!res.ok) throw new Error("Failed to fetch visitors");
+						return res.json();
+					}),
+				]);
 				setPosts(postsRes);
 				setFeatured(featuredRes);
 				setCategories(categoriesRes);
 				setSubcategories(subcategoriesRes);
+				setProductTypes(productTypesRes);
 
 				const totalVisits = analyticsRes.length;
 				const totalPosts = postsRes.length;
@@ -206,7 +234,7 @@ export default function Dashboard() {
 		fetchData();
 	}, []);
 	const handleSave = async (
-		type: "post" | "featured" | "category" | "subcategory",
+		type: "post" | "featured" | "category" | "subcategory" | "product-type",
 		{ id, formData }: { id?: string; formData: FormData }
 	) => {
 		// Set loading state based on whether it's a create or update operation
@@ -218,18 +246,35 @@ export default function Dashboard() {
 		});
 
 		try {
-			const endpointType =
-				type === "category"
-					? "categories"
-					: type === "subcategory"
-					? "subcategories"
-					: type === "featured"
-					? "featured"
-					: `${type}s`;
-			const url = id ? `/api/${endpointType}/${id}` : `/api/${endpointType}`;
-			const method = id ? "PATCH" : "POST";
-
-			const response = await fetch(url, { method, body: formData });
+			let body;
+			let url;
+			let method;
+			
+			if (type === "product-type") {
+				// For product-type, send JSON instead of FormData
+				body = JSON.stringify(Object.fromEntries(formData));
+				url = id ? `/api/product-types/${id}` : '/api/product-types';
+				method = id ? "PUT" : "POST";
+			} else {
+				// For other types, use FormData
+				const endpointType =
+					type === "category"
+						? "categories"
+						: type === "subcategory"
+						? "subcategories"
+						: type === "featured"
+						? "featured"
+						: `${type}s`;
+				url = id ? `/api/${endpointType}/${id}` : `/api/${endpointType}`;
+				method = id ? "PATCH" : "POST";
+				body = formData;
+			}
+			
+			const response = await fetch(url, { 
+				method, 
+				body,
+				headers: type === "product-type" ? { 'Content-Type': 'application/json' } : undefined
+			});
 
 			let errorMessage = `Failed to save ${type}`;
 
@@ -290,6 +335,12 @@ export default function Dashboard() {
 						? subcategories.map((s) => (s.id === id ? data : s))
 						: [...subcategories, data]
 				);
+			} else if (type === "product-type") {
+				setProductTypes(
+					id
+						? productTypes.map((pt) => (pt.id === id ? data : pt))
+						: [...productTypes, data]
+				);
 			}
 			setError(null);
 			// Show success notification
@@ -335,6 +386,8 @@ export default function Dashboard() {
 				endpointType = "subcategories";
 			} else if (type === "featured") {
 				endpointType = "featured";
+			} else if (type === "product-type") {
+				endpointType = "product-types";
 			} else {
 				endpointType = `${type}s`;
 			}
@@ -353,6 +406,8 @@ export default function Dashboard() {
 				setCategories(categories.filter((c) => c.id !== id));
 			} else if (type === "subcategory") {
 				setSubcategories(subcategories.filter((s) => s.id !== id));
+			} else if (type === "product-type") {
+				setProductTypes(productTypes.filter((pt) => pt.id !== id));
 			}
 			setDeleteDialog({ open: false, type: "", id: "" });
 			setError(null);
@@ -551,6 +606,7 @@ export default function Dashboard() {
 							onSave={(data) => handleSave("post", data)}
 							categories={categories}
 							subcategories={subcategories}
+							productTypes={productTypes}
 							isLoading={actionLoading.create}
 						/>
 					</CardHeader>
@@ -690,6 +746,7 @@ export default function Dashboard() {
 							onSave={(data) => handleSave("featured", data)}
 							categories={categories}
 							subcategories={subcategories}
+							productTypes={productTypes}
 							isLoading={actionLoading.create}
 						/>
 					</CardHeader>
@@ -1093,6 +1150,139 @@ export default function Dashboard() {
 						</div>
 					</CardContent>
 				</Card>
+				{/* Product Types Management Section */}
+				<Card className='mb-10 shadow-xl border-0 bg-white/90 backdrop-blur-md h-[400px] flex flex-col'>
+					<CardHeader className='flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-0 px-4 md:px-8 pt-6 pb-2 flex-shrink-0'>
+						<CardTitle className='text-lg font-bold'>Product Types</CardTitle>
+						<FormDialog
+							type='product-type'
+							triggerLabel='Create Product Type'
+							onSave={(data) => handleSave("product-type", data)}
+							isLoading={actionLoading.create}
+						/>
+					</CardHeader>
+					<CardContent className='flex-1 overflow-hidden px-2 md:px-8 pb-6'>
+						<div className='h-full overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100'>
+							<div className='space-y-6'>
+								<div>
+									<h3 className='text-md font-semibold mb-3 text-purple-700'>Product Types</h3>
+									<table className='w-full text-sm rounded-xl overflow-hidden'>
+										<thead className='sticky top-0 bg-white z-10'>
+											<tr className='border-b border-gray-200'>
+												<th className='text-left p-3 font-semibold'>Name</th>
+												<th className='text-left p-3 font-semibold'>Posts</th>
+												<th className='text-left p-3 font-semibold'>Featured</th>
+												<th className='text-left p-3 font-semibold'>Actions</th>
+											</tr>
+										</thead>
+										<tbody>
+											{productTypes.map((productType) => (
+												<tr
+													key={productType.id}
+													className='border-b border-gray-100 hover:bg-purple-50/40 transition-colors group'>
+													<td className='p-3 font-medium'>
+														{productType.name}
+													</td>
+													<td className='p-3 text-gray-600'>
+														{productType._count?.posts || 0}
+													</td>
+													<td className='p-3 text-gray-600'>
+														{productType._count?.featured || 0}
+													</td>
+													<td className='p-3 flex space-x-2'>
+														<button
+															onClick={() =>
+																setEditDialog({
+																	open: true,
+																	type: "product-type",
+																	data: productType,
+																})
+															}
+															className={`p-2 rounded-full ${
+																editDialog.loading && editDialog.id === productType.id
+																	? "bg-gray-100 text-gray-400"
+																	: "bg-blue-100 text-blue-600 hover:bg-blue-200"
+															} transition-colors`}
+															disabled={
+																editDialog.loading && editDialog.id === productType.id
+															}>
+															{editDialog.loading && editDialog.id === productType.id ? (
+																<svg
+																	xmlns='http://www.w3.org/2000/svg'
+																	fill='none'
+																	viewBox='0 0 24 24'
+																	strokeWidth={1.5}
+																	stroke='currentColor'
+																	className='h-4 w-4 animate-spin'>
+																	<path
+																		strokeLinecap='round'
+																		strokeLinejoin='round'
+																		d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
+																</svg>
+															) : (
+																<svg
+																	xmlns='http://www.w3.org/2000/svg'
+																	fill='none'
+																	viewBox='0 0 24 24'
+																	strokeWidth={1.5}
+																	stroke='currentColor'
+																	className='h-4 w-4'>
+																	<path
+																		strokeLinecap='round'
+																		strokeLinejoin='round'
+																		d='M16.862 4.487a2.25 2.25 0 1 1 3.182 3.182L7.5 20.213l-4 1 1-4 13.362-13.362z'
+																	/>
+																</svg>
+															)}
+														</button>
+														<button
+															onClick={() =>
+																setDeleteDialog({
+																	open: true,
+																	type: "product-type",
+																	id: productType.id,
+																})
+															}
+															className={`p-2 rounded-full ${
+																actionLoading.delete && actionLoading.id === productType.id
+																	? "bg-gray-100 text-gray-400"
+																	: "bg-red-100 text-red-600 hover:bg-red-200"
+															} transition-colors`}
+															disabled={
+																actionLoading.delete && actionLoading.id === productType.id
+															}>
+															{actionLoading.delete && actionLoading.id === productType.id ? (
+																<svg
+																	xmlns='http://www.w3.org/2000/svg'
+																	fill='none'
+																	viewBox='0 0 24 24'
+																	className='h-4 w-4 animate-spin'>
+																	<circle
+																		className='opacity-25'
+																		cx='12'
+																		cy='12'
+																		r='10'
+																		stroke='currentColor'
+																		strokeWidth='4'></circle>
+																	<path
+																		className='opacity-75'
+																		fill='currentColor'
+																		d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
+																</svg>
+															) : (
+																<Trash2 className='h-4 w-4' />
+															)}
+														</button>
+													</td>
+												</tr>
+											))}
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</CardContent>
+				</Card>
 				{/* Visitors Section */}
 				<Card className='mb-10 shadow-xl border-0 bg-white/90 backdrop-blur-md h-[400px] flex flex-col'>
 					<CardHeader className='flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-0 px-4 md:px-8 pt-6 pb-2 flex-shrink-0'>
@@ -1212,6 +1402,7 @@ export default function Dashboard() {
 								}}
 								categories={categories}
 								subcategories={subcategories}
+								productTypes={productTypes}
 								onClose={() => setEditDialog({ ...editDialog, open: false })}
 								isLoading={actionLoading.update}
 							/>

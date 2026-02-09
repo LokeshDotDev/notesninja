@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { PageHero } from "@/components/ui/page-hero";
 import { GalleryGridCombined } from "@/components/ui/gallery-grid";
 import { BlurFade } from "@/components/magicui/blur-fade";
+import ProductTypeFilter from "@/components/custom/ProductTypeFilter";
 
 interface Post {
   id: string;
@@ -12,6 +13,8 @@ interface Post {
   width?: number;
   height?: number;
   categoryId: string;
+  subcategoryId?: string;
+  productTypeId?: string;
   images?: Array<{
     id: string;
     imageUrl: string;
@@ -30,6 +33,12 @@ interface Subcategory {
   };
 }
 
+interface ProductType {
+  id: string;
+  name: string;
+  _count?: { posts: number; featured: number };
+}
+
 interface DynamicSubcategoryPageProps {
   categoryName: string;
   subcategoryName: string;
@@ -37,7 +46,10 @@ interface DynamicSubcategoryPageProps {
 
 export function DynamicSubcategoryPage({ categoryName, subcategoryName }: DynamicSubcategoryPageProps) {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [allPosts, setAllPosts] = useState<Post[]>([]); // Store all posts for filtering
   const [subcategory, setSubcategory] = useState<Subcategory | null>(null);
+  const [productTypes, setProductTypes] = useState<ProductType[]>([]);
+  const [selectedProductType, setSelectedProductType] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,9 +82,18 @@ export function DynamicSubcategoryPage({ categoryName, subcategoryName }: Dynami
         
         if (postsResponse.ok) {
           const postsData = await postsResponse.json();
-          setPosts(postsData);
+          setAllPosts(postsData); // Store all posts
+          setPosts(postsData); // Initially show all posts
         } else {
+          setAllPosts([]);
           setPosts([]);
+        }
+
+        // Fetch product types
+        const productTypesResponse = await fetch('/api/product-types');
+        if (productTypesResponse.ok) {
+          const productTypesData = await productTypesResponse.json();
+          setProductTypes(productTypesData);
         }
       } catch (err) {
         setError("Failed to load content");
@@ -84,6 +105,16 @@ export function DynamicSubcategoryPage({ categoryName, subcategoryName }: Dynami
 
     fetchData();
   }, [categoryName, subcategoryName]);
+
+  // Filter posts based on selected product type
+  useEffect(() => {
+    if (selectedProductType) {
+      const filtered = allPosts.filter(post => post.productTypeId === selectedProductType);
+      setPosts(filtered);
+    } else {
+      setPosts(allPosts);
+    }
+  }, [selectedProductType, allPosts]);
 
   if (loading) {
     return (
@@ -152,6 +183,12 @@ export function DynamicSubcategoryPage({ categoryName, subcategoryName }: Dynami
               </p>
             </div>
             <div className="flex items-center space-x-4">
+              {/* Product Type Filter */}
+              <ProductTypeFilter
+                productTypes={productTypes}
+                selectedProductType={selectedProductType}
+                onProductTypeChange={setSelectedProductType}
+              />
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {posts.length}
