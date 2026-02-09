@@ -1,0 +1,677 @@
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { ImageGalleryModal } from "@/components/ui/image-gallery-modal";
+
+export interface GalleryItem {
+	title: string;
+	description: string;
+	url: string;
+	width: number;
+	height: number;
+}
+
+// Add a type for API post
+interface PostImage {
+	id: string;
+	imageUrl: string;
+	publicId: string;
+	order: number;
+}
+
+interface ApiPost {
+	id: string;
+	title: string;
+	description: string;
+	imageUrl?: string; // Legacy single image support
+	width?: number;
+	height?: number;
+	categoryId: string;
+	images?: PostImage[]; // New multiple images support
+}
+
+// interface GalleryGridProps {
+// 	items?: GalleryItem[];
+// 	categoryLabel?: string;
+// 	categoryId?: string;
+// }
+
+// Combined: always uses items prop, never fetches
+export function GalleryGridCombined({ items = [] }: { items: ApiPost[] | GalleryItem[] }) {
+	const [posts, setPosts] = React.useState<typeof items>(items);
+	React.useEffect(() => {
+		setPosts(items);
+	}, [items]);
+	const [openIdx, setOpenIdx] = React.useState<number | null>(null);
+	const [showFullScreenGallery, setShowFullScreenGallery] =
+		React.useState(false);
+	const [modalImageIndex, setModalImageIndex] = React.useState(0);
+
+	React.useEffect(() => {
+		if (openIdx !== null) {
+			document.body.style.overflow = "hidden";
+			return () => {
+				document.body.style.overflow = "";
+			};
+		} else {
+			document.body.style.overflow = "";
+		}
+	}, [openIdx]);
+
+	// Remove the useEffect that references categoryId and fetches
+	const getImageUrl = (item: ApiPost | GalleryItem): string => {
+		if ("url" in item) return item.url; // GalleryItem
+		if ("images" in item && item.images && item.images.length > 0) {
+			return item.images[0].imageUrl; // ApiPost with new images
+		}
+		return item.imageUrl || ""; // ApiPost with legacy single image
+	};
+
+	const getImages = (item: ApiPost | GalleryItem): PostImage[] => {
+		if ("images" in item && item.images) {
+			return item.images;
+		}
+		// Convert legacy single image to images array format
+		if ("imageUrl" in item && item.imageUrl) {
+			return [
+				{
+					id: "legacy",
+					imageUrl: item.imageUrl,
+					publicId: "",
+					order: 0,
+				},
+			];
+		}
+		return [];
+	};
+	const hasMultipleImages = (item: ApiPost | GalleryItem): boolean => {
+		const images = getImages(item);
+		return images.length > 1;
+	};
+
+	const handleModalClick = (
+		e: React.MouseEvent<HTMLDivElement, MouseEvent>
+	) => {
+		if (e.target === e.currentTarget) {
+			setOpenIdx(null);
+		}
+	};
+
+	const handlePrev = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setOpenIdx((prev) =>
+			prev !== null ? (prev - 1 + posts.length) % posts.length : null
+		);
+	};
+
+	const handleNext = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setOpenIdx((prev) => (prev !== null ? (prev + 1) % posts.length : null));
+	};
+
+	const handleImageClick = (imageIndex: number) => {
+		setModalImageIndex(imageIndex);
+		setShowFullScreenGallery(true);
+	};
+
+	return (
+		<section className='py-8'>
+			{/* categoryLabel and categoryId are not passed to this component, so it will not render a title */}
+			{"loading" in posts ? (
+				// If 'loading' is a property of posts, this will work, but likely you meant to use a loading state variable.
+				// If not, replace with a real loading state variable.
+				<div className='text-center py-8 text-neutral-400'>Loading...</div>
+			) : posts.length > 0 ? (
+				<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
+					{posts.map((item, idx) => (
+						<BlurFade
+							key={"id" in item ? item.id : item.url}
+							delay={0.25 + idx * 0.05}
+							inView>
+							{" "}
+							<motion.div
+								whileHover={{
+									scale: 1.05,
+									boxShadow: "0 10px 20px rgba(0, 0, 0, 0.15)",
+								}}
+								transition={{ duration: 0.3 }}
+								className='relative group cursor-pointer rounded-xl overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700'
+								onClick={() => setOpenIdx(idx)}>
+								{" "}
+								{/* Show single image for all posts */}
+								<Image
+									className='rounded-xl object-cover w-full h-96 transition-transform duration-500 group-hover:scale-110'
+									src={getImageUrl(item)}
+									alt={item.title}
+									width={item.width || 800}
+									height={item.height || 600}
+									priority={idx < 3}
+									loading={idx < 3 ? "eager" : "lazy"}
+									placeholder='blur'
+									blurDataURL='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxAAPwCdABmX/9k='
+									sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
+								/>
+								{/* Show indicator for multiple images */}
+								{hasMultipleImages(item) && (
+									<div className='absolute top-3 right-3 bg-black/70 text-white text-sm font-bold px-3 py-1 rounded-full backdrop-blur-sm border border-white/20'>
+										{getImages(item).length} photos
+									</div>
+								)}
+								<div className='absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end'>
+									<div className='p-4 w-full'>
+										<h3 className='text-lg font-bold text-white'>
+											{item.title}
+										</h3>
+										<p className='text-sm text-neutral-200 line-clamp-2'>
+											{item.description}
+										</p>
+									</div>
+								</div>
+							</motion.div>
+						</BlurFade>
+					))}
+				</div>
+			) : (
+				<div className='text-center py-8 text-neutral-400'>
+					No posts in this category.
+				</div>
+			)}{" "}
+			{/* Previous Style Modal - Shows when clicking on stacked images */}
+			<AnimatePresence>
+				{openIdx !== null && posts[openIdx] && !showFullScreenGallery && (
+					<motion.div
+						key='modal-bg'
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						transition={{ duration: 0.3 }}
+						className='fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-lg'
+						onClick={handleModalClick}>
+						<motion.button
+							initial={{ x: -40, opacity: 0 }}
+							animate={{ x: 0, opacity: 1 }}
+							exit={{ x: -40, opacity: 0 }}
+							transition={{ duration: 0.2, delay: 0.1 }}
+							className='absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 bg-white/20 dark:bg-neutral-800/50 text-white dark:text-neutral-200 rounded-full p-2 sm:p-3 hover:bg-white/30 dark:hover:bg-neutral-700/50 transition shadow-lg z-20'
+							onClick={(e) => {
+								e.stopPropagation();
+								handlePrev(e);
+							}}
+							aria-label='Previous item'>
+							←
+						</motion.button>
+
+						<motion.div
+							key='modal-content'
+							initial={{ scale: 0.98, opacity: 0, y: 20 }}
+							animate={{ scale: 1, opacity: 1, y: 0 }}
+							exit={{ scale: 0.98, opacity: 0, y: 20 }}
+							transition={{
+								type: "spring",
+								stiffness: 300,
+								damping: 30,
+								duration: 0.35,
+							}}
+							className='relative flex flex-col lg:flex-row items-start bg-gradient-to-br from-neutral-100/50 to-neutral-300/40 dark:from-neutral-900/90 dark:to-black/90 rounded-2xl max-w-lg sm:max-w-2xl md:max-w-4xl lg:max-w-6xl w-full mx-2 sm:mx-4 p-2 sm:p-4 md:p-6 lg:p-8 min-h-[50vh] sm:min-h-[60vh] max-h-[90vh] gap-4 sm:gap-6 lg:gap-8 shadow-2xl'>
+							{/* Close Button (Cross) */}
+							<button
+								className='absolute top-2 right-2 sm:top-4 sm:right-4 text-white dark:text-neutral-200 rounded-full p-2 hover:bg-white/20 dark:hover:bg-neutral-700/50 transition z-20'
+								onClick={(e) => {
+									e.stopPropagation();
+									setOpenIdx(null);
+								}}
+								aria-label='Close modal'>
+								✕
+							</button>
+
+							{/* Image Section - Clickable to open full gallery */}
+							<div
+								className='w-full lg:w-1/2 flex items-center justify-center max-h-60 sm:max-h-80 md:max-h-[400px] lg:max-h-[500px] cursor-pointer'
+								onClick={() => handleImageClick(0)}>
+								{posts[openIdx] && (
+									<Image
+										src={getImageUrl(posts[openIdx])}
+										alt={posts[openIdx].title}
+										width={posts[openIdx].width || 800}
+										height={posts[openIdx].height || 600}
+										className='rounded-xl object-cover w-full h-full max-h-60 sm:max-h-80 md:max-h-[400px] lg:max-h-[500px] hover:scale-105 transition-transform duration-300'
+									/>
+								)}
+								{/* Overlay hint for multiple images */}
+								{hasMultipleImages(posts[openIdx]) && (
+									<div className='absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/20 transition-colors duration-300 rounded-xl'>
+										<div className='bg-white/90 dark:bg-black/90 px-3 py-1 rounded-full text-sm font-medium opacity-0 hover:opacity-100 transition-opacity duration-300'>
+											Click to view all {getImages(posts[openIdx]).length}{" "}
+											images
+										</div>
+									</div>
+								)}
+							</div>
+
+							{/* Text Section */}
+							<div className='w-full lg:w-1/2 flex flex-col justify-center text-black dark:text-neutral-200 p-2 sm:p-4'>
+								<h3 className='text-lg sm:text-xl md:text-2xl font-bold mb-2 break-words'>
+									{posts[openIdx]?.title}
+								</h3>
+								<p className='text-xs sm:text-sm md:text-base text-neutral-700 dark:text-neutral-300 break-words'>
+									{posts[openIdx]?.description}
+								</p>
+								{/* Show thumbnail strip for multiple images */}
+								{hasMultipleImages(posts[openIdx]) && (
+									<div className='mt-4'>
+										<p className='text-xs text-neutral-500 dark:text-neutral-400 mb-2'>
+											{getImages(posts[openIdx]).length} images available -
+											click main image to view gallery
+										</p>
+										<div className='flex space-x-2 overflow-x-auto'>
+											{getImages(posts[openIdx])
+												.slice(0, 4)
+												.map((image, index) => (
+													<button
+														key={image.id}
+														onClick={(e) => {
+															e.stopPropagation();
+															handleImageClick(index);
+														}}
+														className='flex-shrink-0 w-12 h-8 rounded overflow-hidden border hover:border-white transition-colors'>
+														<Image
+															src={image.imageUrl}
+															alt={`Thumbnail ${index + 1}`}
+															width={48}
+															height={32}
+															className='w-full h-full object-cover'
+														/>
+													</button>
+												))}
+											{getImages(posts[openIdx]).length > 4 && (
+												<div className='flex-shrink-0 w-12 h-8 rounded bg-black/50 flex items-center justify-center text-white text-xs'>
+													+{getImages(posts[openIdx]).length - 4}
+												</div>
+											)}
+										</div>
+									</div>
+								)}
+							</div>
+						</motion.div>
+
+						<motion.button
+							initial={{ x: 40, opacity: 0 }}
+							animate={{ x: 0, opacity: 1 }}
+							exit={{ x: 40, opacity: 0 }}
+							transition={{ duration: 0.2, delay: 0.1 }}
+							className='absolute right-2 sm:right-4 md:right-8 top-1/2 -translate-y-1/2 bg-white/20 dark:bg-neutral-800/50 text-white dark:text-neutral-200 rounded-full p-2 sm:p-3 hover:bg-white/30 dark:hover:bg-neutral-700/50 transition shadow-lg z-20'
+							onClick={(e) => {
+								e.stopPropagation();
+								handleNext(e);
+							}}
+							aria-label='Next item'>
+							→
+						</motion.button>
+					</motion.div>
+				)}
+			</AnimatePresence>
+			{/* Full Screen Gallery Modal - Shows when clicking on specific images */}
+			{openIdx !== null && posts[openIdx] && showFullScreenGallery && (
+				<ImageGalleryModal
+					images={getImages(posts[openIdx])}
+					isOpen={showFullScreenGallery}
+					onClose={() => setShowFullScreenGallery(false)}
+					initialIndex={modalImageIndex}
+				/>
+			)}
+			{/* Custom scrollbar styles for modal description */}
+			<style jsx global>{`
+				.custom-scrollbar::-webkit-scrollbar {
+					width: 10px;
+					background: transparent;
+				}
+				.custom-scrollbar::-webkit-scrollbar-thumb {
+					background: #fff;
+					border-radius: 8px;
+					min-height: 40px;
+					border: 2px solid transparent;
+					background-clip: padding-box;
+					box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
+				}
+				.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+					background: #fff;
+					box-shadow: 0 0 0 2px #fff;
+				}
+				.custom-scrollbar::-webkit-scrollbar-track {
+					background: transparent;
+					border-radius: 8px;
+				}
+				.custom-scrollbar {
+					scrollbar-width: thin;
+					scrollbar-color: #fff transparent;
+				}
+			`}</style>
+		</section>
+	);
+}
+
+export { GalleryGridCombined as GalleryGrid };
+
+// Single: always fetches by categoryId, never uses items prop
+export function GalleryGridSingle({ categoryId }: { categoryId: string }) {
+	const [posts, setPosts] = React.useState<ApiPost[]>([]);
+	const [loading, setLoading] = React.useState(false);
+	const [openIdx, setOpenIdx] = React.useState<number | null>(null);
+	const [showFullScreenGallery, setShowFullScreenGallery] =
+		React.useState(false);
+	const [modalImageIndex, setModalImageIndex] = React.useState(0);
+
+	React.useEffect(() => {
+		if (!categoryId) return;
+		setLoading(true);
+		fetch(`/api/posts?category=${categoryId}`, {
+			headers: { "Cache-Control": "public, max-age=300" },
+		})
+			.then((res) => res.json())
+			.then((data: ApiPost[]) => {
+				setPosts(data.filter((item) => item.categoryId === categoryId));
+			})
+			.catch(() => setPosts([]))
+			.finally(() => setLoading(false));
+	}, [categoryId]);
+
+	React.useEffect(() => {
+		if (openIdx !== null) {
+			document.body.style.overflow = "hidden";
+			return () => {
+				document.body.style.overflow = "";
+			};
+		} else {
+			document.body.style.overflow = "";
+		}
+	}, [openIdx]);
+
+	const getImageUrl = (item: ApiPost | GalleryItem): string => {
+		if ("url" in item) return item.url; // GalleryItem
+		if ("images" in item && item.images && item.images.length > 0) {
+			return item.images[0].imageUrl; // ApiPost with new images
+		}
+		return item.imageUrl || ""; // ApiPost with legacy single image
+	};
+
+	const getImages = (item: ApiPost | GalleryItem): PostImage[] => {
+		if ("images" in item && item.images) {
+			return item.images;
+		}
+		// Convert legacy single image to images array format
+		if ("imageUrl" in item && item.imageUrl) {
+			return [
+				{
+					id: "legacy",
+					imageUrl: item.imageUrl,
+					publicId: "",
+					order: 0,
+				},
+			];
+		}
+		return [];
+	};
+	const hasMultipleImages = (item: ApiPost | GalleryItem): boolean => {
+		const images = getImages(item);
+		return images.length > 1;
+	};
+
+	const handleModalClick = (
+		e: React.MouseEvent<HTMLDivElement, MouseEvent>
+	) => {
+		if (e.target === e.currentTarget) {
+			setOpenIdx(null);
+		}
+	};
+
+	const handlePrev = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setOpenIdx((prev) =>
+			prev !== null ? (prev - 1 + posts.length) % posts.length : null
+		);
+	};
+
+	const handleNext = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setOpenIdx((prev) => (prev !== null ? (prev + 1) % posts.length : null));
+	};
+
+	const handleImageClick = (imageIndex: number) => {
+		setModalImageIndex(imageIndex);
+		setShowFullScreenGallery(true);
+	};
+
+	return (
+		<section className='py-8'>
+			{/* categoryLabel and categoryId are not passed to this component, so it will not render a title */}
+			{loading ? (
+				<div className='text-center py-8 text-neutral-400'>Loading...</div>
+			) : posts.length > 0 ? (
+				<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
+					{posts.map((item, idx) => (
+						<BlurFade
+							key={"id" in item ? item.id : idx}
+							delay={0.25 + idx * 0.05}
+							inView>
+							{" "}
+							<motion.div
+								whileHover={{
+									scale: 1.05,
+									boxShadow: "0 10px 20px rgba(0, 0, 0, 0.15)",
+								}}
+								transition={{ duration: 0.3 }}
+								className='relative group cursor-pointer rounded-xl overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700'
+								onClick={() => setOpenIdx(idx)}>
+								{" "}
+								{/* Show single image for all posts */}
+								<Image
+									className='rounded-xl object-cover w-full h-96 transition-transform duration-500 group-hover:scale-110'
+									src={getImageUrl(item)}
+									alt={item.title}
+									width={item.width || 800}
+									height={item.height || 600}
+									priority={idx < 3}
+									loading={idx < 3 ? "eager" : "lazy"}
+									placeholder='blur'
+									blurDataURL='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxAAPwCdABmX/9k='
+									sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
+								/>
+								{/* Show indicator for multiple images */}
+								{hasMultipleImages(item) && (
+									<div className='absolute top-3 right-3 bg-black/70 text-white text-sm font-bold px-3 py-1 rounded-full backdrop-blur-sm border border-white/20'>
+										{getImages(item).length} photos
+									</div>
+								)}
+								<div className='absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end'>
+									<div className='p-4 w-full'>
+										<h3 className='text-lg font-bold text-white'>
+											{item.title}
+										</h3>
+										<p className='text-sm text-neutral-200 line-clamp-2'>
+											{item.description}
+										</p>
+									</div>
+								</div>
+							</motion.div>
+						</BlurFade>
+					))}
+				</div>
+			) : (
+				<div className='text-center py-8 text-neutral-400'>
+					No posts in this category.
+				</div>
+			)}{" "}
+			{/* Previous Style Modal - Shows when clicking on stacked images */}
+			<AnimatePresence>
+				{openIdx !== null && posts[openIdx] && !showFullScreenGallery && (
+					<motion.div
+						key='modal-bg'
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						transition={{ duration: 0.3 }}
+						className='fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-lg'
+						onClick={handleModalClick}>
+						<motion.button
+							initial={{ x: -40, opacity: 0 }}
+							animate={{ x: 0, opacity: 1 }}
+							exit={{ x: -40, opacity: 0 }}
+							transition={{ duration: 0.2, delay: 0.1 }}
+							className='absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 bg-white/20 dark:bg-neutral-800/50 text-white dark:text-neutral-200 rounded-full p-2 sm:p-3 hover:bg-white/30 dark:hover:bg-neutral-700/50 transition shadow-lg z-20'
+							onClick={(e) => {
+								e.stopPropagation();
+								handlePrev(e);
+							}}
+							aria-label='Previous item'>
+							←
+						</motion.button>
+
+						<motion.div
+							key='modal-content'
+							initial={{ scale: 0.98, opacity: 0, y: 20 }}
+							animate={{ scale: 1, opacity: 1, y: 0 }}
+							exit={{ scale: 0.98, opacity: 0, y: 20 }}
+							transition={{
+								type: "spring",
+								stiffness: 300,
+								damping: 30,
+								duration: 0.35,
+							}}
+							className='relative flex flex-col lg:flex-row items-start bg-gradient-to-br from-neutral-100/50 to-neutral-300/40 dark:from-neutral-900/90 dark:to-black/90 rounded-2xl max-w-lg sm:max-w-2xl md:max-w-4xl lg:max-w-6xl w-full mx-2 sm:mx-4 p-2 sm:p-4 md:p-6 lg:p-8 min-h-[50vh] sm:min-h-[60vh] max-h-[90vh] gap-4 sm:gap-6 lg:gap-8 shadow-2xl'>
+							{/* Close Button (Cross) */}
+							<button
+								className='absolute top-2 right-2 sm:top-4 sm:right-4 text-white dark:text-neutral-200 rounded-full p-2 hover:bg-white/20 dark:hover:bg-neutral-700/50 transition z-20'
+								onClick={(e) => {
+									e.stopPropagation();
+									setOpenIdx(null);
+								}}
+								aria-label='Close modal'>
+								✕
+							</button>
+
+							{/* Image Section - Clickable to open full gallery */}
+							<div
+								className='w-full lg:w-1/2 flex items-center justify-center max-h-60 sm:max-h-80 md:max-h-[400px] lg:max-h-[500px] cursor-pointer'
+								onClick={() => handleImageClick(0)}>
+								{posts[openIdx] && (
+									<Image
+										src={getImageUrl(posts[openIdx])}
+										alt={posts[openIdx].title}
+										width={posts[openIdx].width || 800}
+										height={posts[openIdx].height || 600}
+										className='rounded-xl object-cover w-full h-full max-h-60 sm:max-h-80 md:max-h-[400px] lg:max-h-[500px] hover:scale-105 transition-transform duration-300'
+									/>
+								)}
+								{/* Overlay hint for multiple images */}
+								{hasMultipleImages(posts[openIdx]) && (
+									<div className='absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/20 transition-colors duration-300 rounded-xl'>
+										<div className='bg-white/90 dark:bg-black/90 px-3 py-1 rounded-full text-sm font-medium opacity-0 hover:opacity-100 transition-opacity duration-300'>
+											Click to view all {getImages(posts[openIdx]).length}{" "}
+											images
+										</div>
+									</div>
+								)}
+							</div>
+
+							{/* Text Section */}
+							<div className='w-full lg:w-1/2 flex flex-col justify-center text-black dark:text-neutral-200 p-2 sm:p-4'>
+								<h3 className='text-lg sm:text-xl md:text-2xl font-bold mb-2 break-words'>
+									{posts[openIdx]?.title}
+								</h3>
+								<p className='text-xs sm:text-sm md:text-base text-neutral-700 dark:text-neutral-300 break-words'>
+									{posts[openIdx]?.description}
+								</p>
+								{/* Show thumbnail strip for multiple images */}
+								{hasMultipleImages(posts[openIdx]) && (
+									<div className='mt-4'>
+										<p className='text-xs text-neutral-500 dark:text-neutral-400 mb-2'>
+											{getImages(posts[openIdx]).length} images available -
+											click main image to view gallery
+										</p>
+										<div className='flex space-x-2 overflow-x-auto'>
+											{getImages(posts[openIdx])
+												.slice(0, 4)
+												.map((image, index) => (
+													<button
+														key={image.id}
+														onClick={(e) => {
+															e.stopPropagation();
+															handleImageClick(index);
+														}}
+														className='flex-shrink-0 w-12 h-8 rounded overflow-hidden border hover:border-white transition-colors'>
+														<Image
+															src={image.imageUrl}
+															alt={`Thumbnail ${index + 1}`}
+															width={48}
+															height={32}
+															className='w-full h-full object-cover'
+														/>
+													</button>
+												))}
+											{getImages(posts[openIdx]).length > 4 && (
+												<div className='flex-shrink-0 w-12 h-8 rounded bg-black/50 flex items-center justify-center text-white text-xs'>
+													+{getImages(posts[openIdx]).length - 4}
+												</div>
+											)}
+										</div>
+									</div>
+								)}
+							</div>
+						</motion.div>
+
+						<motion.button
+							initial={{ x: 40, opacity: 0 }}
+							animate={{ x: 0, opacity: 1 }}
+							exit={{ x: 40, opacity: 0 }}
+							transition={{ duration: 0.2, delay: 0.1 }}
+							className='absolute right-2 sm:right-4 md:right-8 top-1/2 -translate-y-1/2 bg-white/20 dark:bg-neutral-800/50 text-white dark:text-neutral-200 rounded-full p-2 sm:p-3 hover:bg-white/30 dark:hover:bg-neutral-700/50 transition shadow-lg z-20'
+							onClick={(e) => {
+								e.stopPropagation();
+								handleNext(e);
+							}}
+							aria-label='Next item'>
+							→
+						</motion.button>
+					</motion.div>
+				)}
+			</AnimatePresence>
+			{/* Full Screen Gallery Modal - Shows when clicking on specific images */}
+			{openIdx !== null && posts[openIdx] && showFullScreenGallery && (
+				<ImageGalleryModal
+					images={getImages(posts[openIdx])}
+					isOpen={showFullScreenGallery}
+					onClose={() => setShowFullScreenGallery(false)}
+					initialIndex={modalImageIndex}
+				/>
+			)}
+			{/* Custom scrollbar styles for modal description */}
+			<style jsx global>{`
+				.custom-scrollbar::-webkit-scrollbar {
+					width: 10px;
+					background: transparent;
+				}
+				.custom-scrollbar::-webkit-scrollbar-thumb {
+					background: #fff;
+					border-radius: 8px;
+					min-height: 40px;
+					border: 2px solid transparent;
+					background-clip: padding-box;
+					box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
+				}
+				.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+					background: #fff;
+					box-shadow: 0 0 0 2px #fff;
+				}
+				.custom-scrollbar::-webkit-scrollbar-track {
+					background: transparent;
+					border-radius: 8px;
+				}
+				.custom-scrollbar {
+					scrollbar-width: thin;
+					scrollbar-color: #fff transparent;
+				}
+			`}</style>
+		</section>
+	);
+}

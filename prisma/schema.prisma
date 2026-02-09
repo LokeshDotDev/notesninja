@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id            String       @id @default(cuid())
+  title         String
+  description   String
+  imageUrl      String?      // Make optional for backward compatibility
+  publicId      String?      // Make optional for backward compatibility
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  categoryId    String
+  category      Category     @relation(fields: [categoryId], references: [id])
+  subcategoryId String?
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
+  images        PostImage[]
+}
+
+model PostImage {
+  id       String @id @default(cuid())
+  imageUrl String
+  publicId String
+  order    Int    @default(0)
+  postId   String
+  post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  featured     Featured[]
+  posts        Post[]
+  subcategories Subcategory[]
+}
+
+model Subcategory {
+  id         String  @id @default(cuid())
+  name       String
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+  posts      Post[]
+  featured   Featured[]
+}
+
+model Featured {
+  id            String       @id @default(cuid())
+  title         String
+  descripition  String
+  imageUrl      String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  categoryId    String
+  category      Category     @relation(fields: [categoryId], references: [id])
+  subcategoryId String?
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
+  publicId      String
+}
+
+model Visitor {
+  id        String   @id @default(cuid())
+  ipAddress String   @unique
+  location  String
+  visitedAt DateTime @default(now())
+}
