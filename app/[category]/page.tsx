@@ -1,5 +1,5 @@
 "use client";
-import { DynamicCategoryPage } from "@/components/ui/dynamic-category-page";
+import { ProfessionalCategoryPage } from "@/components/ui/ProfessionalCategoryPage";
 import { use } from "react";
 
 interface CategoryPageProps {
@@ -10,5 +10,5 @@ interface CategoryPageProps {
 
 export default function CategoryPage({ params }: CategoryPageProps) {
   const { category } = use(params);
-  return <DynamicCategoryPage categoryName={category} />;
+  return <ProfessionalCategoryPage categoryName={category} />;
 }

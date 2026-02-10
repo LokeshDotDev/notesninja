@@ -1,5 +1,5 @@
 "use client";
-import { DynamicSubcategoryPage } from "@/components/ui/dynamic-subcategory-page";
+import { ProfessionalSubcategoryPage } from "@/components/ui/ProfessionalSubcategoryPage";
 import { use } from "react";
 
 interface SubcategoryPageProps {
@@ -12,7 +12,7 @@ interface SubcategoryPageProps {
 export default function SubcategoryPage({ params }: SubcategoryPageProps) {
   const { category, subcategory } = use(params);
   return (
-    <DynamicSubcategoryPage 
+    <ProfessionalSubcategoryPage 
       categoryName={category} 
       subcategoryName={subcategory} 
     />

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
-import { NavbarTop } from "@/components/custom/NavbarTop";
+import { DynamicNavbar } from "@/components/custom/DynamicNavbar";
 import JsonLd from "@/components/custom/JsonLd";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import VisitorTracker from "@/components/analytics/GoogleAnalytics";
@@ -107,7 +107,7 @@ export default function RootLayout({
           <JsonLd />
           <PerformanceMonitor />
           <NavigationLoader />
-          <NavbarTop />
+          <DynamicNavbar />
           {children}
 
           {/* Google Tag Manager (noscript) */}

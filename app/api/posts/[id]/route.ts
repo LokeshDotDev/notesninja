@@ -17,6 +17,22 @@ export async function GET(
 
 		const post = await prisma.post.findUnique({
 			where: { id: resolvedParams.id },
+			include: {
+				images: true,
+				digitalFiles: true,
+				category: {
+					select: {
+						id: true,
+						name: true,
+					},
+				},
+				subcategory: {
+					select: {
+						id: true,
+						name: true,
+					},
+				},
+			},
 		});
 
 		if (!post) {

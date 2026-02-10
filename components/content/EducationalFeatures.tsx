@@ -1,0 +1,207 @@
+"use client";
+import { motion } from "motion/react";
+import { 
+  BookOpen, 
+  Download, 
+  Award, 
+  Clock, 
+  Users, 
+  Target,
+  Brain,
+  Sparkles,
+  Shield,
+  Zap,
+  Globe,
+  Headphones
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+
+const features = [
+  {
+    icon: BookOpen,
+    title: "Comprehensive Study Materials",
+    description: "Access thousands of expertly curated notes, guides, and reference materials across all subjects",
+    gradient: "from-blue-500 to-cyan-500"
+  },
+  {
+    icon: Download,
+    title: "Instant Digital Downloads",
+    description: "Get your study materials immediately with secure, high-speed downloads available 24/7",
+    gradient: "from-green-500 to-emerald-500"
+  },
+  {
+    icon: Award,
+    title: "Expert-Verified Content",
+    description: "All materials are reviewed and verified by subject matter experts and top educators",
+    gradient: "from-purple-500 to-pink-500"
+  },
+  {
+    icon: Clock,
+    title: "Save Study Time",
+    description: "Reduce preparation time by 70% with organized, easy-to-understand study materials",
+    gradient: "from-orange-500 to-red-500"
+  },
+  {
+    icon: Users,
+    title: "Collaborative Learning",
+    description: "Join a community of 50,000+ students sharing insights and study strategies",
+    gradient: "from-indigo-500 to-blue-500"
+  },
+  {
+    icon: Target,
+    title: "Exam Focused",
+    description: "Materials specifically designed to help you excel in exams and assessments",
+    gradient: "from-teal-500 to-green-500"
+  }
+];
+
+const benefits = [
+  {
+    icon: Brain,
+    title: "Smart Learning",
+    description: "AI-powered recommendations for personalized study paths"
+  },
+  {
+    icon: Sparkles,
+    title: "Regular Updates",
+    description: "Fresh content added weekly to keep you ahead of the curve"
+  },
+  {
+    icon: Shield,
+    title: "Secure Platform",
+    description: "Bank-level security for all your purchases and downloads"
+  },
+  {
+    icon: Zap,
+    title: "Lightning Fast",
+    description: "Optimized platform for quick access and smooth navigation"
+  },
+  {
+    icon: Globe,
+    title: "Global Access",
+    description: "Study materials available for international curricula"
+  },
+  {
+    icon: Headphones,
+    title: "24/7 Support",
+    description: "Dedicated support team always ready to help you succeed"
+  }
+];
+
+export function EducationalFeatures() {
+  return (
+    <section className="py-20 px-4 bg-gradient-to-b from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800">
+      <div className="max-w-7xl mx-auto">
+        {/* Section Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-white mb-4">
+            Why Students Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">NotesNinja</span>
+          </h2>
+          <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto">
+            Discover the features that make NotesNinja the preferred choice for ambitious students worldwide
+          </p>
+        </motion.div>
+
+        {/* Main Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+          {features.map((feature, index) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              viewport={{ once: true }}
+            >
+              <Card className="h-full group hover:shadow-2xl transition-all duration-300 border-0 bg-white dark:bg-neutral-800/50 backdrop-blur-sm">
+                <CardContent className="p-8">
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                    <feature.icon className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-3">
+                    {feature.title}
+                  </h3>
+                  <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Additional Benefits */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white mb-8">
+            More Reasons to Excel
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {benefits.map((benefit, index) => (
+              <motion.div
+                key={benefit.title}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+                viewport={{ once: true }}
+                className="flex items-center gap-4 p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800/50 hover:bg-neutral-200 dark:hover:bg-neutral-700/50 transition-colors"
+              >
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                  <benefit.icon className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-left">
+                  <h4 className="font-semibold text-neutral-900 dark:text-white mb-1">
+                    {benefit.title}
+                  </h4>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    {benefit.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Success Metrics */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center"
+        >
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 md:p-12 text-white">
+            <h3 className="text-2xl md:text-3xl font-bold mb-8">Trusted by the Best</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              <div>
+                <div className="text-4xl md:text-5xl font-bold mb-2">50K+</div>
+                <div className="text-blue-100">Active Students</div>
+              </div>
+              <div>
+                <div className="text-4xl md:text-5xl font-bold mb-2">1000+</div>
+                <div className="text-blue-100">Study Materials</div>
+              </div>
+              <div>
+                <div className="text-4xl md:text-5xl font-bold mb-2">98%</div>
+                <div className="text-blue-100">Success Rate</div>
+              </div>
+              <div>
+                <div className="text-4xl md:text-5xl font-bold mb-2">4.9★</div>
+                <div className="text-blue-100">User Rating</div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}

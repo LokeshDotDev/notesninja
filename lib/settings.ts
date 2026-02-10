@@ -2,7 +2,7 @@ const settings = {
 	whatsapp: {
 		number: "15128013803",
 		message:
-			"Hello, I am interested in your products from Elevate Motel Supply.",
+			"Hello, I am interested in your educational digital products from NotesNinja.",
 		url: function () {
 			return `https://wa.me/${this.number}?text=${encodeURIComponent(
 				this.message
@@ -10,15 +10,15 @@ const settings = {
 		},
 	},
 	site: {
-		name: "Elevate Motel Supply",
+		name: "NotesNinja",
 		description:
-			"Leading supplier of high-quality motel & hotel furniture, beds, lighting, and essentials. American-focused hospitality solutions with nationwide shipping. Trusted by industry professionals.",
+			"Premium digital academic materials and study resources. Access high-quality notes, study guides, and educational content for students and educators. Instant download, expert-curated content.",
 		keywords:
-			"motel supplies, hotel furniture, hospitality supplies, hotel beds, motel furniture USA, hotel equipment, commercial hospitality supplies, motel renovation supplies, hotel room furnishings",
-		url: "https://www.elevatemotelsupply.com",
-		author: "Elevate Motel Supply",
-		publisher: "Elevate Motel Supply",
-		twitter: "@elevatemotel",
+			"digital notes, study materials, academic resources, educational content, study guides, online learning, student resources, digital textbooks, academic notes, exam preparation",
+		url: "https://www.notesninja.com",
+		author: "NotesNinja",
+		publisher: "NotesNinja",
+		twitter: "@notesninja",
 		ogImage: "/images/og-image.jpg",
 		twitterImage: "/images/twitter-image.jpg",
 		geo: {
