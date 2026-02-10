@@ -12,6 +12,7 @@ import {
 import { Trash2 } from "lucide-react";
 import FormDialog from "@/components/custom/FormDialog";
 import Notification from "@/components/custom/Notification";
+import { NestedCategoryList } from "@/components/custom/NestedCategoryList";
 import { useAuth } from "@clerk/nextjs";
 
 interface Post {
@@ -31,6 +32,11 @@ interface Featured {
 interface Category {
 	id: string;
 	name: string;
+	slug: string;
+	level: number;
+	path: string;
+	parentId: string | null;
+	children: Category[];
 	_count?: {
 		posts: number;
 	};
@@ -157,6 +163,7 @@ export default function Dashboard() {
 		type: "success",
 		show: false,
 	});
+	const [parentForNewCategory, setParentForNewCategory] = useState<string | null>(null);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -324,11 +331,30 @@ export default function Dashboard() {
 						: [...featured, data]
 				);
 			} else if (type === "category") {
-				setCategories(
-					id
-						? categories.map((c) => (c.id === id ? data : c))
-						: [...categories, data]
-				);
+				// For categories, refetch to maintain proper nested structure
+				// This is especially important for child categories
+				if (!id) {
+					// For new categories, refetch the entire list
+					try {
+						const response = await fetch("/api/categories");
+						if (response.ok) {
+							const updatedCategories = await response.json();
+							setCategories(updatedCategories);
+						} else {
+							// Fallback: just append the new category
+							setCategories([...categories, data]);
+						}
+					} catch (error) {
+						console.error("Error refetching categories:", error);
+						// Fallback: just append the new category
+						setCategories([...categories, data]);
+					}
+				} else {
+					// For updates, use the standard approach
+					setCategories(
+						categories.map((c) => (c.id === id ? data : c))
+					);
+				}
 			} else if (type === "subcategory") {
 				setSubcategories(
 					id
@@ -369,6 +395,33 @@ export default function Dashboard() {
 			});
 		}
 	};
+
+	const handleCreateChildCategory = (parentId: string) => {
+		console.log("Creating child category with parent ID:", parentId);
+		setParentForNewCategory(parentId);
+		setEditDialog({
+			open: true,
+			type: "category",
+			data: null,
+		});
+	};
+
+	const handleEditCategory = (category: Category) => {
+		setEditDialog({
+			open: true,
+			type: "category",
+			data: category,
+		});
+	};
+
+	const handleDeleteCategory = (categoryId: string) => {
+		setDeleteDialog({
+			open: true,
+			type: "category",
+			id: categoryId,
+		});
+	};
+
 	const handleDelete = async () => {
 		const { type, id } = deleteDialog;
 		// Set loading state for delete operation
@@ -871,275 +924,26 @@ export default function Dashboard() {
 					</CardContent>
 				</Card>
 				{/* Categories Management Section */}
-				<Card className='mb-10 shadow-xl border-0 bg-white/90 backdrop-blur-md h-[400px] flex flex-col'>
+				<Card className='mb-10 shadow-xl border-0 bg-white/90 backdrop-blur-md h-[500px] flex flex-col'>
 					<CardHeader className='flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-0 px-4 md:px-8 pt-6 pb-2 flex-shrink-0'>
-						<CardTitle className='text-lg font-bold'>Categories</CardTitle>
+						<CardTitle className='text-lg font-bold'>Nested Categories</CardTitle>
 						<div className='flex gap-2'>
 							<FormDialog
 								type='category'
-								triggerLabel='Create Category'
+								triggerLabel='Create Root Category'
 								onSave={(data) => handleSave("category", data)}
-								isLoading={actionLoading.create}
-							/>
-							<FormDialog
-								type='subcategory'
-								triggerLabel='Create Subcategory'
-								onSave={(data) => handleSave("subcategory", data)}
 								isLoading={actionLoading.create}
 							/>
 						</div>
 					</CardHeader>
 					<CardContent className='flex-1 overflow-hidden px-2 md:px-8 pb-6'>
 						<div className='h-full overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100'>
-							<div className='space-y-6'>
-								{/* Categories */}
-								<div>
-									<h3 className='text-md font-semibold mb-3 text-blue-700'>Categories</h3>
-									<table className='w-full text-sm rounded-xl overflow-hidden mb-4'>
-										<thead className='sticky top-0 bg-white z-10'>
-											<tr className='border-b border-gray-200'>
-												<th className='text-left p-3 font-semibold'>Name</th>
-												<th className='text-left p-3 font-semibold'>Posts</th>
-												<th className='text-left p-3 font-semibold'>Actions</th>
-											</tr>
-										</thead>
-										<tbody>
-											{categories.map((category) => (
-												<tr
-													key={category.id}
-													className='border-b border-gray-100 hover:bg-blue-50/40 transition-colors group'>
-													<td className='p-3 font-medium'>
-														{category.name}
-													</td>
-													<td className='p-3 text-gray-600'>
-														{category._count?.posts || 0}
-													</td>
-													<td className='p-3 flex space-x-2'>
-														<button
-															onClick={() =>
-																setEditDialog({
-																	open: true,
-																	type: "category",
-																	data: category,
-																})
-															}
-															className={`p-2 rounded-full ${
-																actionLoading.update && actionLoading.id === category.id
-																	? "bg-blue-50"
-																	: "hover:bg-blue-100"
-															} text-blue-600 transition-colors`}
-															title='Edit'
-															disabled={
-																actionLoading.delete || actionLoading.update
-															}>
-															{actionLoading.update &&
-																actionLoading.id === category.id ? (
-																<svg
-																	className='animate-spin h-5 w-5'
-																	xmlns='http://www.w3.org/2000/svg'
-																	fill='none'
-																	viewBox='0 0 24 24'>
-																	<circle
-																		className='opacity-25'
-																		cx='12'
-																		cy='12'
-																		r='10'
-																		stroke='currentColor'
-																		strokeWidth='4'></circle>
-																	<path
-																		className='opacity-75'
-																		fill='currentColor'
-																		d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
-																</svg>
-															) : (
-																<svg
-																	xmlns='http://www.w3.org/2000/svg'
-																	fill='none'
-																	viewBox='0 0 24 24'
-																	strokeWidth={1.5}
-																	stroke='currentColor'
-																	className='h-5 w-5'>
-																	<path
-																		strokeLinecap='round'
-																		strokeLinejoin='round'
-																		d='M16.862 4.487a2.25 2.25 0 1 1 3.182 3.182L7.5 20.213l-4 1 1-4 13.362-13.362z'
-																	/>
-																</svg>
-															)}
-														</button>
-														<button
-															onClick={() =>
-																setDeleteDialog({
-																	open: true,
-																	type: "category",
-																	id: category.id,
-																})
-															}
-															className={`p-2 rounded-full ${
-																actionLoading.delete && actionLoading.id === category.id
-																	? "bg-red-50"
-																	: "hover:bg-red-100"
-															} text-red-600 transition-colors`}
-															title='Delete'
-															disabled={
-																actionLoading.delete || actionLoading.update
-															}>
-															{actionLoading.delete &&
-																actionLoading.id === category.id ? (
-																<svg
-																	className='animate-spin h-5 w-5'
-																	xmlns='http://www.w3.org/2000/svg'
-																	fill='none'
-																	viewBox='0 0 24 24'>
-																	<circle
-																		className='opacity-25'
-																		cx='12'
-																		cy='12'
-																		r='10'
-																		stroke='currentColor'
-																		strokeWidth='4'></circle>
-																	<path
-																		className='opacity-75'
-																		fill='currentColor'
-																		d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
-																</svg>
-															) : (
-																<Trash2 className='h-5 w-5' />
-															)}
-														</button>
-													</td>
-												</tr>
-											))}
-										</tbody>
-									</table>
-								</div>
-
-								{/* Subcategories */}
-								<div>
-									<h3 className='text-md font-semibold mb-3 text-green-700'>Subcategories</h3>
-									<table className='w-full text-sm rounded-xl overflow-hidden'>
-										<thead className='sticky top-0 bg-white z-10'>
-											<tr className='border-b border-gray-200'>
-												<th className='text-left p-3 font-semibold'>Name</th>
-												<th className='text-left p-3 font-semibold'>Category</th>
-												<th className='text-left p-3 font-semibold'>Posts</th>
-												<th className='text-left p-3 font-semibold'>Actions</th>
-											</tr>
-										</thead>
-										<tbody>
-											{subcategories.map((subcategory) => (
-												<tr
-													key={subcategory.id}
-													className='border-b border-gray-100 hover:bg-green-50/40 transition-colors group'>
-													<td className='p-3 font-medium'>
-														{subcategory.name}
-													</td>
-													<td className='p-3 text-gray-600'>
-														{subcategory.category?.name || 'Unknown'}
-													</td>
-													<td className='p-3 text-gray-600'>
-														{subcategory._count?.posts || 0}
-													</td>
-													<td className='p-3 flex space-x-2'>
-														<button
-															onClick={() =>
-																setEditDialog({
-																	open: true,
-																	type: "subcategory",
-																	data: subcategory,
-																})
-															}
-															className={`p-2 rounded-full ${
-																actionLoading.update && actionLoading.id === subcategory.id
-																	? "bg-blue-50"
-																	: "hover:bg-blue-100"
-															} text-blue-600 transition-colors`}
-															title='Edit'
-															disabled={
-																actionLoading.delete || actionLoading.update
-															}>
-															{actionLoading.update &&
-																actionLoading.id === subcategory.id ? (
-																<svg
-																	className='animate-spin h-5 w-5'
-																	xmlns='http://www.w3.org/2000/svg'
-																	fill='none'
-																	viewBox='0 0 24 24'>
-																	<circle
-																		className='opacity-25'
-																		cx='12'
-																		cy='12'
-																		r='10'
-																		stroke='currentColor'
-																		strokeWidth='4'></circle>
-																	<path
-																		className='opacity-75'
-																		fill='currentColor'
-																		d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
-																</svg>
-															) : (
-																<svg
-																	xmlns='http://www.w3.org/2000/svg'
-																	fill='none'
-																	viewBox='0 0 24 24'
-																	strokeWidth={1.5}
-																	stroke='currentColor'
-																	className='h-5 w-5'>
-																	<path
-																		strokeLinecap='round'
-																		strokeLinejoin='round'
-																		d='M16.862 4.487a2.25 2.25 0 1 1 3.182 3.182L7.5 20.213l-4 1 1-4 13.362-13.362z'
-																	/>
-																</svg>
-															)}
-														</button>
-														<button
-															onClick={() =>
-																setDeleteDialog({
-																	open: true,
-																	type: "subcategory",
-																	id: subcategory.id,
-																})
-															}
-															className={`p-2 rounded-full ${
-																actionLoading.delete && actionLoading.id === subcategory.id
-																	? "bg-red-50"
-																	: "hover:bg-red-100"
-																} text-red-600 transition-colors`}
-															title='Delete'
-															disabled={
-																actionLoading.delete || actionLoading.update
-															}>
-															{actionLoading.delete &&
-																actionLoading.id === subcategory.id ? (
-																<svg
-																	className='animate-spin h-5 w-5'
-																	xmlns='http://www.w3.org/2000/svg'
-																	fill='none'
-																	viewBox='0 0 24 24'>
-																	<circle
-																		className='opacity-25'
-																		cx='12'
-																		cy='12'
-																		r='10'
-																		stroke='currentColor'
-																		strokeWidth='4'></circle>
-																	<path
-																		className='opacity-75'
-																		fill='currentColor'
-																		d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
-																</svg>
-															) : (
-																<Trash2 className='h-5 w-5' />
-															)}
-														</button>
-													</td>
-												</tr>
-											))}
-										</tbody>
-									</table>
-								</div>
-							</div>
+							<NestedCategoryList
+								categories={categories}
+								onEdit={handleEditCategory}
+								onDelete={handleDeleteCategory}
+								onCreateChild={handleCreateChildCategory}
+							/>
 						</div>
 					</CardContent>
 				</Card>
@@ -1377,20 +1181,25 @@ export default function Dashboard() {
 							<DialogHeader>
 								<DialogTitle className='text-lg font-semibold'>
 									{editDialog.type === "post"
-										? "Edit Post"
+										? editDialog.data ? "Edit Post" : "Create Post"
 										: editDialog.type === "featured"
-										? "Edit Featured Item"
+										? editDialog.data ? "Edit Featured Item" : "Create Featured Item"
 										: editDialog.type === "category"
-										? "Edit Category"
-										: "Edit Subcategory"}
+										? editDialog.data ? "Edit Category" : parentForNewCategory ? "Create Child Category" : "Create Category"
+										: editDialog.type === "subcategory"
+										? editDialog.data ? "Edit Subcategory" : "Create Subcategory"
+										: "Edit Product Type"}
 								</DialogTitle>
 							</DialogHeader>
 							<FormDialog
 								type={editDialog.type}
 								initialData={editDialog.data ?? undefined}
+								parentId={parentForNewCategory || undefined}
+								triggerLabel={null}
 								onSave={async (data) => {
 									await handleSave(editDialog.type, data);
 									setEditDialog({ ...editDialog, open: false, data: null });
+									setParentForNewCategory(null); // Reset parent category after saving
 								}}
 								isLoading={actionLoading.update}
 							/>

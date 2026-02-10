@@ -8,6 +8,14 @@ import { Button } from "@/components/ui/button";
 interface Category {
   id: string;
   name: string;
+  slug: string;
+  level: number;
+  path: string;
+  parentId: string | null;
+  children: Category[];
+  _count?: {
+    posts: number;
+  };
 }
 
 export function DynamicNavbar() {
@@ -30,14 +38,14 @@ export function DynamicNavbar() {
 				console.error("Failed to fetch categories:", error);
 				// Fallback categories if API fails
 				setCategories([
-					{ id: "1", name: "Mathematics" },
-					{ id: "2", name: "Science" },
-					{ id: "3", name: "Computer Science" },
-					{ id: "4", name: "Medicine" },
-					{ id: "5", name: "Business" },
-					{ id: "6", name: "Literature" },
-					{ id: "7", name: "Engineering" },
-					{ id: "8", name: "Arts & Design" },
+					{ id: "1", name: "Mathematics", slug: "mathematics", level: 0, path: "mathematics", parentId: null, children: [] },
+					{ id: "2", name: "Science", slug: "science", level: 0, path: "science", parentId: null, children: [] },
+					{ id: "3", name: "Computer Science", slug: "computer-science", level: 0, path: "computer-science", parentId: null, children: [] },
+					{ id: "4", name: "Medicine", slug: "medicine", level: 0, path: "medicine", parentId: null, children: [] },
+					{ id: "5", name: "Business", slug: "business", level: 0, path: "business", parentId: null, children: [] },
+					{ id: "6", name: "Literature", slug: "literature", level: 0, path: "literature", parentId: null, children: [] },
+					{ id: "7", name: "Engineering", slug: "engineering", level: 0, path: "engineering", parentId: null, children: [] },
+					{ id: "8", name: "Arts & Design", slug: "arts-design", level: 0, path: "arts-design", parentId: null, children: [] },
 				]);
 			} finally {
 				setLoading(false);
@@ -60,6 +68,25 @@ export function DynamicNavbar() {
 
 	const formatCategoryName = (name: string) => {
 		return name.toLowerCase().replace(/\s+/g, "-").replace(/&/g, "and");
+	};
+
+	// Render nested categories for dropdown
+	const renderNestedCategories = (categories: Category[], depth = 0) => {
+		return categories.map((category) => (
+			<div key={category.id}>
+				<Link
+					href={`/${category.path || category.slug}`}
+					className="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-primary transition-colors"
+					style={{ paddingLeft: `${12 + depth * 16}px` }}
+					onClick={() => setIsDropdownOpen(false)}
+				>
+					{category.name}
+				</Link>
+				{category.children && category.children.length > 0 && (
+					renderNestedCategories(category.children, depth + 1)
+				)}
+			</div>
+		));
 	};
 
 	return (
@@ -91,23 +118,14 @@ export function DynamicNavbar() {
 							</button>
 							
 							{isDropdownOpen && (
-								<div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+								<div className="absolute top-full left-0 mt-2 w-80 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden">
 									<div className="py-2 max-h-96 overflow-y-auto">
 										{loading ? (
 											<div className="px-4 py-2 text-sm text-neutral-500 dark:text-neutral-400">
 												Loading categories...
 											</div>
 										) : categories.length > 0 ? (
-											categories.map((category) => (
-												<Link
-													key={category.id}
-													href={`/${formatCategoryName(category.name)}`}
-													className="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-primary transition-colors"
-													onClick={() => setIsDropdownOpen(false)}
-												>
-													{category.name}
-												</Link>
-											))
+											renderNestedCategories(categories)
 										) : (
 											<div className="px-4 py-2 text-sm text-neutral-500 dark:text-neutral-400">
 												No categories available
@@ -185,16 +203,7 @@ export function DynamicNavbar() {
 											Loading categories...
 										</div>
 									) : categories.length > 0 ? (
-										categories.map((category) => (
-											<Link
-												key={category.id}
-												href={`/${formatCategoryName(category.name)}`}
-												className="block py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-primary transition-colors"
-												onClick={() => setIsMobileMenuOpen(false)}
-											>
-												{category.name}
-											</Link>
-										))
+										renderNestedCategories(categories)
 									) : (
 										<div className="py-2 text-sm text-neutral-500 dark:text-neutral-400">
 											No categories available

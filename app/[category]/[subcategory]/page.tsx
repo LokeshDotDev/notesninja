@@ -1,5 +1,5 @@
 "use client";
-import { ProfessionalSubcategoryPage } from "@/components/ui/ProfessionalSubcategoryPage";
+import { ProfessionalCategoryPage } from "@/components/ui/ProfessionalCategoryPage";
 import { use } from "react";
 
 interface SubcategoryPageProps {
@@ -11,10 +11,9 @@ interface SubcategoryPageProps {
 
 export default function SubcategoryPage({ params }: SubcategoryPageProps) {
   const { category, subcategory } = use(params);
+  // Combine category and subcategory to create the full nested path
+  const fullPath = `${category}/${subcategory}`;
   return (
-    <ProfessionalSubcategoryPage 
-      categoryName={category} 
-      subcategoryName={subcategory} 
-    />
+    <ProfessionalCategoryPage categoryName={fullPath} />
   );
 }

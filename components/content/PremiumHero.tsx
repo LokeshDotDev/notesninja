@@ -34,29 +34,6 @@ export function PremiumHero() {
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-purple-50/50 dark:from-blue-900/20 dark:via-transparent dark:to-purple-900/20"></div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* Premium trust badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center space-x-6 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg border border-white/20 dark:border-slate-700/20 mb-12"
-        >
-          <div className="flex items-center space-x-1">
-            <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-            <span className="font-semibold text-gray-900 dark:text-white">4.9/5 Rating</span>
-          </div>
-          <div className="w-px h-5 bg-gray-300 dark:bg-gray-600"></div>
-          <div className="flex items-center space-x-1">
-            <Users className="w-5 h-5 text-blue-600" />
-            <span className="font-semibold text-gray-900 dark:text-white">50,000+ Students</span>
-          </div>
-          <div className="w-px h-5 bg-gray-300 dark:bg-gray-600"></div>
-          <div className="flex items-center space-x-1">
-            <Download className="w-5 h-5 text-green-600" />
-            <span className="font-semibold text-gray-900 dark:text-white">Instant Download</span>
-          </div>
-        </motion.div>
-
         {/* Premium headline */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}

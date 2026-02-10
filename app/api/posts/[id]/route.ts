@@ -24,6 +24,16 @@ export async function GET(
 					select: {
 						id: true,
 						name: true,
+						slug: true,
+						path: true,
+						parent: {
+							select: {
+								id: true,
+								name: true,
+								slug: true,
+								path: true,
+							},
+						},
 					},
 				},
 				subcategory: {

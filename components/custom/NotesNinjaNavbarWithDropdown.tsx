@@ -5,21 +5,40 @@ import settings from "@/lib/settings";
 import { ChevronDown, BookOpen, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+interface Category {
+	id: string;
+	name: string;
+	slug: string;
+	level: number;
+	path: string;
+	parentId: string | null;
+	children: Category[];
+}
+
 export function NotesNinjaNavbarWithDropdown() {
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+	const [categories, setCategories] = useState<Category[]>([]);
+	const [loading, setLoading] = useState(true);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
-	const studyCategories = [
-		{ name: "Mathematics", link: "/mathematics" },
-		{ name: "Science", link: "/science" },
-		{ name: "Computer Science", link: "/computer-science" },
-		{ name: "Medicine", link: "/medicine" },
-		{ name: "Business", link: "/business" },
-		{ name: "Literature", link: "/literature" },
-		{ name: "Engineering", link: "/engineering" },
-		{ name: "Arts & Design", link: "/arts-design" },
-	];
+	useEffect(() => {
+		const fetchCategories = async () => {
+			try {
+				const response = await fetch("/api/categories");
+				if (response.ok) {
+					const data = await response.json();
+					setCategories(data);
+				}
+			} catch (error) {
+				console.error("Failed to fetch categories:", error);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchCategories();
+	}, []);
 
 	useEffect(() => {
 		function handleClickOutside(event: MouseEvent) {
@@ -31,6 +50,46 @@ export function NotesNinjaNavbarWithDropdown() {
 		document.addEventListener("mousedown", handleClickOutside);
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
+
+	// Render nested categories for dropdown
+	const renderNestedCategories = (cats: Category[], depth = 0) => {
+		return cats.map((category) => (
+			<div key={category.id}>
+				<Link
+					href={`/${category.path || category.slug}`}
+					className="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-primary transition-colors"
+					style={{ paddingLeft: `${16 + depth * 16}px` }}
+					onClick={() => setIsDropdownOpen(false)}
+				>
+					{depth > 0 && <span className="text-neutral-500 dark:text-neutral-500 mr-1">↳</span>}
+					{category.name}
+				</Link>
+				{category.children && category.children.length > 0 && (
+					renderNestedCategories(category.children, depth + 1)
+				)}
+			</div>
+		));
+	};
+
+	// Render nested categories for mobile menu
+	const renderMobileNestedCategories = (cats: Category[], depth = 1) => {
+		return cats.map((category) => (
+			<div key={category.id}>
+				<Link
+					href={`/${category.path || category.slug}`}
+					className="block py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-primary transition-colors"
+					style={{ paddingLeft: `${12 + depth * 12}px` }}
+					onClick={() => setIsMobileMenuOpen(false)}
+				>
+					{depth > 1 && <span className="text-neutral-500 dark:text-neutral-500 mr-1">↳</span>}
+					{category.name}
+				</Link>
+				{category.children && category.children.length > 0 && (
+					renderMobileNestedCategories(category.children, depth + 1)
+				)}
+			</div>
+		));
+	};
 
 	return (
 		<nav className="sticky top-0 z-50 w-full border-b border-neutral-200/80 bg-white/95 backdrop-blur-sm dark:border-neutral-800/80 dark:bg-neutral-900/95">
@@ -61,18 +120,19 @@ export function NotesNinjaNavbarWithDropdown() {
 							</button>
 							
 							{isDropdownOpen && (
-								<div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-									<div className="py-2">
-										{studyCategories.map((category) => (
-											<Link
-												key={category.name}
-												href={category.link}
-												className="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-primary transition-colors"
-												onClick={() => setIsDropdownOpen(false)}
-											>
-												{category.name}
-											</Link>
-										))}
+								<div className="absolute top-full left-0 mt-2 w-80 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+									<div className="py-2 max-h-96 overflow-y-auto">
+										{loading ? (
+											<div className="px-4 py-2 text-sm text-neutral-500 dark:text-neutral-400">
+												Loading categories...
+											</div>
+										) : categories.length > 0 ? (
+											renderNestedCategories(categories)
+										) : (
+											<div className="px-4 py-2 text-sm text-neutral-500 dark:text-neutral-400">
+												No categories available
+											</div>
+										)}
 									</div>
 								</div>
 							)}
@@ -139,18 +199,32 @@ export function NotesNinjaNavbarWithDropdown() {
 								<div className="px-3 py-2 text-sm font-semibold text-neutral-900 dark:text-white">
 									Study Materials
 								</div>
-								<div className="pl-6 space-y-1">
-									{studyCategories.map((category) => (
-										<Link
-											key={category.name}
-											href={category.link}
-											className="block py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-primary transition-colors"
-											onClick={() => setIsMobileMenuOpen(false)}
-										>
-											{category.name}
-										</Link>
-									))}
-								</div>
+								{loading ? (
+									<div className="px-3 py-2 text-sm text-neutral-500 dark:text-neutral-400">
+										Loading...
+									</div>
+								) : categories.length > 0 ? (
+									<div className="pl-3 space-y-0">
+										{categories.map((category) => (
+											<div key={category.id}>
+												<Link
+													href={`/${category.path || category.slug}`}
+													className="block py-2 pl-3 text-sm text-neutral-600 dark:text-neutral-400 hover:text-primary transition-colors"
+													onClick={() => setIsMobileMenuOpen(false)}
+												>
+													{category.name}
+												</Link>
+												{category.children && category.children.length > 0 && (
+													renderMobileNestedCategories(category.children)
+												)}
+											</div>
+										))}
+									</div>
+								) : (
+									<div className="px-3 py-2 text-sm text-neutral-500 dark:text-neutral-400">
+										No categories available
+									</div>
+								)}
 							</div>
 
 							{/* Other Links */}

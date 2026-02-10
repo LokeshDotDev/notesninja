@@ -61,10 +61,26 @@ interface Post {
   category?: {
     id: string;
     name: string;
+    slug: string;
+    path: string;
+    parent?: {
+      id: string;
+      name: string;
+      slug: string;
+      path: string;
+    };
   };
   subcategory?: {
     id: string;
     name: string;
+    slug: string;
+    path: string;
+    parent?: {
+      id: string;
+      name: string;
+      slug: string;
+      path: string;
+    };
   };
   productType?: {
     id: string;
@@ -220,19 +236,32 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
         >
           <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
           <span>/</span>
+          
+          {/* Use the category path from API if available */}
           {product.category && (
             <>
-              <Link href={`/${product.category.name.toLowerCase().replace(/\s+/g, '-')}`} className="hover:text-blue-600 transition-colors">
-                {product.category.name}
-              </Link>
-              <span>/</span>
-            </>
-          )}
-          {product.subcategory && (
-            <>
-              <Link href={`/${product.category?.name.toLowerCase().replace(/\s+/g, '-')}/${product.subcategory.name.toLowerCase().replace(/\s+/g, '-')}`} className="hover:text-blue-600 transition-colors">
-                {product.subcategory.name}
-              </Link>
+              {product.category.path ? (
+                // Use full path for nested categories
+                product.category.path.split('/').filter(Boolean).map((part, index, parts) => (
+                  <React.Fragment key={part}>
+                    <Link 
+                      href={`/${parts.slice(0, index + 1).join('/')}`}
+                      className="hover:text-blue-600 transition-colors"
+                    >
+                      {part.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                    </Link>
+                    {index < parts.length - 1 && <span>/</span>}
+                  </React.Fragment>
+                ))
+              ) : (
+                // Fallback for old data without path
+                <>
+                  <Link href={`/${product.category.slug}`} className="hover:text-blue-600 transition-colors">
+                    {product.category.name}
+                  </Link>
+                  <span>/</span>
+                </>
+              )}
               <span>/</span>
             </>
           )}

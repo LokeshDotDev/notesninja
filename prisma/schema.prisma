@@ -8,25 +8,25 @@ datasource db {
 }
 
 model Post {
-  id            String       @id @default(cuid())
-  title         String
-  description   String
-  imageUrl      String?      // Make optional for backward compatibility
-  publicId      String?      // Make optional for backward compatibility
-  price         Float?       // Price for digital products
-  compareAtPrice Float?       // Scratch/MRP price for showing discounts
-  isDigital     Boolean      @default(false) // Flag to identify digital products
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  categoryId    String
-  category      Category     @relation(fields: [categoryId], references: [id])
-  subcategoryId String?
-  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
-  productTypeId String?
-  productType  ProductType? @relation(fields: [productTypeId], references: [id])
-  images        PostImage[]
-  digitalFiles  DigitalFile[]
-  purchases     Purchase[]
+  id             String        @id @default(cuid())
+  title          String
+  description    String
+  imageUrl       String?
+  publicId       String?
+  price          Float?
+  compareAtPrice Float?
+  isDigital      Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  categoryId     String
+  subcategoryId  String?
+  productTypeId  String?
+  digitalFiles   DigitalFile[]
+  category       Category      @relation(fields: [categoryId], references: [id])
+  productType    ProductType?  @relation(fields: [productTypeId], references: [id])
+  subcategory    Subcategory?  @relation(fields: [subcategoryId], references: [id])
+  images         PostImage[]
+  purchases      Purchase[]
 }
 
 model PostImage {
@@ -39,20 +39,30 @@ model PostImage {
 }
 
 model Category {
-  id           String        @id @default(cuid())
-  name         String        @unique
-  featured     Featured[]
-  posts        Post[]
+  id            String        @id @default(cuid())
+  name          String
+  slug          String
+  parentId      String?
+  level         Int           @default(0)
+  path          String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  parent        Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children      Category[]    @relation("CategoryHierarchy")
+  featured      Featured[]
+  posts         Post[]
   subcategories Subcategory[]
+
+  @@unique([slug, parentId])
 }
 
 model Subcategory {
-  id         String  @id @default(cuid())
+  id         String     @id @default(cuid())
   name       String
   categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-  posts      Post[]
   featured   Featured[]
+  posts      Post[]
+  category   Category   @relation(fields: [categoryId], references: [id])
 }
 
 model Featured {
@@ -63,47 +73,47 @@ model Featured {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   categoryId    String
-  category      Category     @relation(fields: [categoryId], references: [id])
   subcategoryId String?
-  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
   productTypeId String?
-  productType  ProductType? @relation(fields: [productTypeId], references: [id])
   publicId      String
+  category      Category     @relation(fields: [categoryId], references: [id])
+  productType   ProductType? @relation(fields: [productTypeId], references: [id])
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
 }
 
 model ProductType {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  posts     Post[]
+  id        String     @id @default(cuid())
+  name      String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   featured  Featured[]
+  posts     Post[]
 }
 
 model DigitalFile {
-  id          String   @id @default(cuid())
-  fileName    String
-  fileUrl     String   // Cloudinary URL
-  publicId    String   // Cloudinary public ID
-  fileSize    Int      // File size in bytes
-  fileType    String   // File extension/type (pdf, docx, etc.)
-  postId      String
-  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  fileName  String
+  fileUrl   String
+  publicId  String
+  fileSize  Int
+  fileType  String
+  postId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model Purchase {
   id            String   @id @default(cuid())
   postId        String
-  post          Post     @relation(fields: [postId], references: [id])
   userEmail     String
-  paymentId     String?  // Payment gateway transaction ID
+  paymentId     String?
   amount        Float
   currency      String   @default("USD")
-  status        String   @default("pending") // pending, completed, failed
+  status        String   @default("pending")
   downloadCount Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  post          Post     @relation(fields: [postId], references: [id])
 }
 
 model Visitor {

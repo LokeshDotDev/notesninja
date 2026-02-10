@@ -26,25 +26,30 @@ interface FormDialogProps {
 	onOpenChange?: (open: boolean) => void;
 	triggerLabel?: string | null;
 	initialData?: Record<string, unknown> & { 
-	id?: string | number; 
-	title?: string; 
-	description?: string; 
-	descripition?: string;
-	categoryId?: string;
-	subcategoryId?: string;
-	productTypeId?: string;
-	price?: number | string;
-	compareAtPrice?: number | string;
-	isDigital?: boolean;
-	name?: string;
-};
+		id?: string | number; 
+		title?: string; 
+		description?: string; 
+		descripition?: string;
+		categoryId?: string;
+		subcategoryId?: string;
+		productTypeId?: string;
+		price?: number | string;
+		compareAtPrice?: number | string;
+		isDigital?: boolean;
+		name?: string;
+		parentId?: string;
+	};
 	onSave: (data: { id?: string; formData: FormData }) => void;
 	isLoading?: boolean;
+	parentId?: string; // For creating child categories
 }
 
 interface Category {
 	id: string;
 	name: string;
+	slug?: string;
+	path?: string;
+	children?: Category[];
 }
 
 interface Subcategory {
@@ -66,7 +71,9 @@ export default function FormDialog({
 	initialData,
 	onSave,
 	isLoading = false,
+	parentId,
 }: FormDialogProps) {
+	console.log("FormDialog received parentId:", parentId, "for type:", type);
 	const [open, setOpen] = useState(false);
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
@@ -179,6 +186,9 @@ export default function FormDialog({
 			submitData.append("name", formData.name);
 			if (type === "subcategory") {
 				submitData.append("categoryId", formData.categoryId);
+			} else if (type === "category" && parentId) {
+				console.log("Adding parentId to form data:", parentId);
+				submitData.append("parentId", parentId);
 			}
 		}
 
@@ -245,6 +255,22 @@ export default function FormDialog({
 		sub => sub.categoryId === formData.categoryId
 	);
 
+	// Helper function to flatten nested categories for selection with visual hierarchy
+	const flattenCategories = (cats: Category[], depth = 0): { id: string; name: string; depth: number }[] => {
+		return cats.flatMap((cat) => [
+			{
+				id: cat.id,
+				name: cat.name,
+				depth: depth
+			},
+			...(cat.children && cat.children.length > 0 
+				? flattenCategories(cat.children, depth + 1)
+				: [])
+		]);
+	};
+
+	const flatCategories = flattenCategories(categories);
+
 	const renderForm = () => {
 		switch (type) {
 			case "post":
@@ -274,34 +300,28 @@ export default function FormDialog({
 						</div>
 
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<div>
-								<Label htmlFor="category">Category</Label>
+							<div className="md:col-span-2">
+								<Label htmlFor="category">Category *</Label>
+								<p className="text-xs text-neutral-500 mb-2">Select any category (including nested ones)</p>
 								<Select value={formData.categoryId} onValueChange={(value: string) => setFormData(prev => ({ ...prev, categoryId: value, subcategoryId: "" }))}>
 									<SelectTrigger>
 										<SelectValue placeholder="Select category" />
 									</SelectTrigger>
 									<SelectContent>
-										{categories.map((category) => (
-											<SelectItem key={category.id} value={category.id}>
-												{category.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-
-							<div>
-								<Label htmlFor="subcategory">Subcategory (Optional)</Label>
-								<Select value={formData.subcategoryId} onValueChange={(value: string) => setFormData(prev => ({ ...prev, subcategoryId: value }))}>
-									<SelectTrigger>
-										<SelectValue placeholder="Select subcategory" />
-									</SelectTrigger>
-									<SelectContent>
-										{filteredSubcategories.map((subcategory) => (
-											<SelectItem key={subcategory.id} value={subcategory.id}>
-												{subcategory.name}
-											</SelectItem>
-										))}
+										{flatCategories.length > 0 ? (
+											flatCategories.map((category) => (
+												<SelectItem key={category.id} value={category.id}>
+													<span style={{ paddingLeft: `${category.depth * 16}px` }}>
+														{category.depth > 0 && <span className="text-neutral-400 mr-2">↳</span>}
+														{category.name}
+													</span>
+												</SelectItem>
+											))
+										) : (
+											<div className="px-2 py-1.5 text-sm text-neutral-500">
+												No categories available
+											</div>
+										)}
 									</SelectContent>
 								</Select>
 							</div>
@@ -569,6 +589,16 @@ export default function FormDialog({
 			case "product-type":
 				return (
 					<div className="space-y-4">
+						{type === "category" && parentId && (
+							<div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+								<p className="text-sm text-blue-700 font-medium">
+									✓ Creating as a child category
+								</p>
+								<p className="text-xs text-blue-600 mt-1">
+									This category will be nested under its parent
+								</p>
+							</div>
+						)}
 						<div>
 							<Label htmlFor="name">
 								{type === "category" ? "Category Name" : "Product Type Name"}
@@ -622,12 +652,7 @@ export default function FormDialog({
 	};
 
 	const dialogContent = (
-		<DialogContent className="bg-white dark:bg-gray-800 dark:text-white max-w-2xl max-h-[90vh] overflow-y-auto">
-			<DialogHeader>
-				<DialogTitle className="text-lg font-semibold">
-					{initialData ? `Edit ${type}` : `Create New ${type}`}
-				</DialogTitle>
-			</DialogHeader>
+		<div className="space-y-4">
 			<form onSubmit={handleSubmit}>
 				{renderForm()}
 				<div className="flex justify-end space-x-2 pt-6">
@@ -675,7 +700,7 @@ export default function FormDialog({
 					</Button>
 				</div>
 			</form>
-		</DialogContent>
+		</div>
 	);
 
 	if (triggerLabel === null) {
@@ -719,7 +744,14 @@ export default function FormDialog({
 					)}
 				</Button>
 			)}
-			{dialogContent}
+			<DialogContent className="bg-white dark:bg-gray-800 dark:text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+				<DialogHeader>
+					<DialogTitle className="text-lg font-semibold">
+						{initialData ? `Edit ${type}` : `Create New ${type}`}
+					</DialogTitle>
+				</DialogHeader>
+				{dialogContent}
+			</DialogContent>
 		</Dialog>
 	);
 }

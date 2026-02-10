@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-// GET single category (by ID or name)
+// GET single category (by ID, slug, or path)
 export async function GET(
 	request: Request,
 	{ params }: { params: Promise<{ id: string }> }
@@ -10,17 +10,37 @@ export async function GET(
 		const resolvedParams = await params;
 		const categoryId = resolvedParams.id;
 
-		// Try to find by ID first, then by name
+		// Try to find by ID first, then by slug, then by path
 		let category = await prisma.category.findUnique({
 			where: { id: categoryId },
 			include: {
-				subcategories: {
+				parent: {
 					select: {
 						id: true,
 						name: true,
+					},
+				},
+				children: {
+					include: {
+						parent: {
+							select: {
+								id: true,
+								name: true,
+							},
+						},
 						_count: {
 							select: {
 								posts: true,
+							},
+						},
+						children: {
+							include: {
+								_count: {
+									select: {
+										posts: true,
+									},
+								},
+								children: true,
 							},
 						},
 					},
@@ -36,23 +56,90 @@ export async function GET(
 			},
 		});
 
-		// If not found by ID, try by name
+		// If not found by ID, try by slug
 		if (!category) {
 			category = await prisma.category.findFirst({
 				where: {
-					name: {
-						equals: decodeURIComponent(categoryId),
-						mode: "insensitive",
-					},
+					slug: categoryId,
 				},
 				include: {
-					subcategories: {
+					parent: {
 						select: {
 							id: true,
 							name: true,
+						},
+					},
+					children: {
+						include: {
+							parent: {
+								select: {
+									id: true,
+									name: true,
+								},
+							},
 							_count: {
 								select: {
 									posts: true,
+								},
+							},
+							children: {
+								include: {
+									_count: {
+										select: {
+											posts: true,
+										},
+									},
+									children: true,
+								},
+							},
+						},
+						orderBy: {
+							name: "asc",
+						},
+					},
+					_count: {
+						select: {
+							posts: true,
+						},
+					},
+				},
+			});
+		}
+
+		// If not found by slug, try by path (for nested categories)
+		if (!category) {
+			category = await prisma.category.findFirst({
+				where: {
+					path: decodeURIComponent(categoryId),
+				},
+				include: {
+					parent: {
+						select: {
+							id: true,
+							name: true,
+						},
+					},
+					children: {
+						include: {
+							parent: {
+								select: {
+									id: true,
+									name: true,
+								},
+							},
+							_count: {
+								select: {
+									posts: true,
+								},
+							},
+							children: {
+								include: {
+									_count: {
+										select: {
+											posts: true,
+										},
+									},
+									children: true,
 								},
 							},
 						},

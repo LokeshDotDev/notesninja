@@ -1,20 +1,23 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-// GET all categories
+// GET all categories (with nested structure)
 export async function GET() {
 	try {
-		const categories = await prisma.category.findMany({
+		// Get all root categories (level 0) - simplified query first
+		const rootCategories = await prisma.category.findMany({
+			where: { parentId: null },
 			include: {
-				subcategories: {
-					select: {
-						id: true,
-						name: true,
+				children: {
+					include: {
+						children: {
+							include: {
+								children: true, // Support up to 4 levels deep
+							},
+						},
 					},
-				},
-				_count: {
-					select: {
-						posts: true,
+					orderBy: {
+						name: "asc",
 					},
 				},
 			},
@@ -23,7 +26,7 @@ export async function GET() {
 			},
 		});
 
-		return NextResponse.json(categories);
+		return NextResponse.json(rootCategories);
 	} catch (error) {
 		console.error("Error fetching categories:", error);
 		return NextResponse.json(
@@ -33,11 +36,14 @@ export async function GET() {
 	}
 }
 
-// POST create new category
+// POST create new category (supports nested categories)
 export async function POST(request: Request) {
 	try {
 		const formData = await request.formData();
 		const name = formData.get("name") as string | null;
+		const parentId = formData.get("parentId") as string | null;
+		
+		console.log("API received - name:", name, "parentId:", parentId);
 
 		if (!name || typeof name !== "string" || name.trim() === "") {
 			return NextResponse.json(
@@ -46,25 +52,53 @@ export async function POST(request: Request) {
 			);
 		}
 
+		// Generate slug from name
+		const slug = name.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/(^-|-$)/g, '');
+
+		// Check if slug already exists at the same level
 		const existingCategory = await prisma.category.findFirst({
 			where: {
-				name: {
-					equals: name.trim(),
-					mode: "insensitive",
-				},
+				slug: slug,
+				parentId: parentId || null, // Only check for duplicates at the same level
 			},
 		});
 
 		if (existingCategory) {
 			return NextResponse.json(
-				{ error: "Category with this name already exists" },
+				{ error: "Category with this name already exists at this level" },
 				{ status: 409 }
 			);
+		}
+
+		// If parentId is provided, validate it and calculate level/path
+		let level = 0;
+		let path = slug;
+		
+		if (parentId && typeof parentId === "string") {
+			const parentCategory = await prisma.category.findUnique({
+				where: { id: parentId },
+			});
+
+			if (!parentCategory) {
+				return NextResponse.json(
+					{ error: "Parent category not found" },
+					{ status: 404 }
+				);
+			}
+
+			level = parentCategory.level + 1;
+			path = parentCategory.path ? `${parentCategory.path}/${slug}` : slug;
 		}
 
 		const category = await prisma.category.create({
 			data: {
 				name: name.trim(),
+				slug,
+				parentId: parentId || null,
+				level,
+				path,
 			},
 		});
 

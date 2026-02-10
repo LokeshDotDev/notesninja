@@ -6,13 +6,21 @@ async function main() {
   console.log('🌱 Seeding BBA sample data...');
 
   // Create BBA category
-  const bbaCategory = await prisma.category.upsert({
-    where: { name: 'BBA' },
-    update: {},
-    create: {
-      name: 'BBA',
+  let bbaCategory = await prisma.category.findFirst({
+    where: {
+      slug: 'bba',
+      parentId: null,
     },
   });
+
+  if (!bbaCategory) {
+    bbaCategory = await prisma.category.create({
+      data: {
+        name: 'BBA',
+        slug: 'bba',
+      },
+    });
+  }
 
   console.log('✅ Created BBA category:', bbaCategory.name);
 
