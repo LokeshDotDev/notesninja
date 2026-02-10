@@ -171,110 +171,48 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
     setPaymentStep("processing");
 
     try {
-      // Load Razorpay script
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        throw new Error('Failed to load payment gateway');
-      }
-
-      // Create Razorpay order
-      const orderData = await createRazorpayOrder();
-      setRazorpayOrder(orderData.order);
-
-      const options = {
-        key: orderData.keyId,
-        amount: orderData.order.amount,
-        currency: orderData.order.currency,
-        name: 'NotesNinja',
-        description: product.title,
-        order_id: orderData.order.id,
-        handler: async function (response: any) {
-          // Verify payment on server
-          try {
-            const verifyResponse = await fetch('/api/razorpay/verify-payment', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                productId,
-                customerEmail: formData.email,
-                customerName: `${formData.firstName} ${formData.lastName}`,
-              }),
-            });
-
-            const verifyData = await verifyResponse.json();
-            
-            if (!verifyResponse.ok) {
-              throw new Error(verifyData.error || 'Payment verification failed');
-            }
-
-            // Send confirmation email
-            try {
-              console.log('Product data:', product);
-              console.log('Digital files:', product.digitalFiles);
-              
-              const emailResponse = await fetch('/api/send-email', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  to: formData.email,
-                  customerName: `${formData.firstName} ${formData.lastName}`,
-                  productName: product.title,
-                  downloadLinks: product.digitalFiles || []
-                })
-              });
-
-              const emailResult = await emailResponse.json();
-              
-              if (!emailResponse.ok) {
-                console.error('Failed to send email:', emailResult.error);
-              } else {
-                console.log('Email sent successfully:', emailResult);
-              }
-            } catch (emailError) {
-              console.error('Email error:', emailError);
-            }
-            
-            setOrderComplete(true);
-            setPaymentStep("success");
-            
-          } catch (verificationError) {
-            console.error('Payment verification failed:', verificationError);
-            setPaymentStep("error");
-            setError("Payment verification failed. Please contact support.");
-          }
-        },
-        prefill: {
-          name: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          contact: formData.phone || '',
-        },
-        theme: {
-          color: '#3B82F6',
-        },
-        modal: {
-          ondismiss: function() {
-            setIsProcessing(false);
-            setPaymentStep("payment");
+      // Skip Razorpay payment for testing - go directly to success
+      // Simulate payment processing delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Send confirmation email
+      try {
+        console.log('Product data:', product);
+        console.log('Digital files:', product.digitalFiles);
+        
+        const emailResponse = await fetch('/api/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        },
-      };
+          body: JSON.stringify({
+            to: formData.email,
+            customerName: `${formData.firstName} ${formData.lastName}`,
+            productName: product.title,
+            downloadLinks: product.digitalFiles || []
+          })
+        });
 
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
+        const emailResult = await emailResponse.json();
+        
+        if (!emailResponse.ok) {
+          console.error('Failed to send email:', emailResult.error);
+        } else {
+          console.log('Email sent successfully:', emailResult);
+        }
+      } catch (emailError) {
+        console.error('Email error:', emailError);
+      }
+      
+      setOrderComplete(true);
+      setPaymentStep("success");
       
     } catch (error) {
       console.error('Payment error:', error);
       setPaymentStep("error");
       setError(error instanceof Error ? error.message : "Payment failed. Please try again.");
     } finally {
-      // Don't set isProcessing to false here as it's handled in the handler
+      setIsProcessing(false);
     }
   };
 
@@ -285,38 +223,31 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
     }).format(price);
   };
 
-  const handleDownload = async (fileUrl: string, fileName: string) => {
+  const handleDownload = async (fileId: string, fileName: string, purchaseId?: string) => {
     try {
-      // Call server-side API to generate accessible URL
-      const response = await fetch('/api/generate-accessible-url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileUrl,
-          fileName
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate accessible URL');
-      }
-
-      const { accessibleUrl } = await response.json();
+      console.log('Starting secure download for:', { fileId, fileName, purchaseId });
+      
+      // Construct secure download URL
+      const downloadUrl = purchaseId 
+        ? `/api/download?fileId=${fileId}&fileName=${encodeURIComponent(fileName)}&purchaseId=${purchaseId}&userEmail=${encodeURIComponent(formData.email)}`
+        : `/api/download?fileUrl=${encodeURIComponent(product?.digitalFiles?.find(f => f.id === fileId)?.fileUrl || '')}&fileName=${encodeURIComponent(fileName)}`;
+      
+      console.log('Secure download URL:', downloadUrl);
       
       // Create a temporary anchor element to trigger download
       const link = document.createElement('a');
-      link.href = accessibleUrl;
+      link.href = downloadUrl;
       link.download = fileName;
-      link.target = '_blank';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      console.log('Secure download triggered successfully');
     } catch (error) {
       console.error('Download failed:', error);
-      // Fallback: open in new tab if download fails
-      window.open(fileUrl, '_blank');
+      
+      // Show user-friendly error message
+      alert(`Download failed: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again or contact support.`);
     }
   };
 
@@ -413,7 +344,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                         <Button 
                           size="sm" 
                           className="bg-green-600 hover:bg-green-700 text-white"
-                          onClick={() => handleDownload(file.fileUrl, file.fileName)}
+                          onClick={() => handleDownload(file.id, file.fileName)}
                         >
                           <Download className="w-4 h-4 mr-1" />
                           Download
@@ -729,51 +660,30 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                 {paymentStep === "payment" && (
                   <>
                     <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6 text-center">
-                      Secure Payment with Razorpay
+                      Test Mode - Payment Skipped
                     </h2>
                     
                     <div className="space-y-6">
-                      {/* Razorpay Information */}
-                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+                      {/* Test Mode Information */}
+                      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
                         <div className="flex items-center gap-4 mb-4">
-                          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <CreditCard className="w-6 h-6 text-white" />
+                          <div className="w-12 h-12 bg-yellow-600 rounded-lg flex items-center justify-center">
+                            <AlertCircle className="w-6 h-6 text-white" />
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-                              Razorpay Secure Payment
+                            <h3 className="text-lg font-semibold text-yellow-900 dark:text-yellow-100">
+                              Payment Gateway Disabled
                             </h3>
-                            <p className="text-sm text-blue-700 dark:text-blue-300">
-                              Pay safely with UPI, Credit Card, Debit Card, Net Banking & more
+                            <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                              Razorpay integration is temporarily disabled for testing post-payment flow
                             </p>
                           </div>
                         </div>
                         
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                          <div className="text-center">
-                            <div className="w-8 h-8 mx-auto mb-2 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                              <Smartphone className="w-4 h-4 text-blue-600" />
-                            </div>
-                            <p className="text-xs text-neutral-600 dark:text-neutral-400">UPI</p>
-                          </div>
-                          <div className="text-center">
-                            <div className="w-8 h-8 mx-auto mb-2 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                              <CreditCard className="w-4 h-4 text-blue-600" />
-                            </div>
-                            <p className="text-xs text-neutral-600 dark:text-neutral-400">Cards</p>
-                          </div>
-                          <div className="text-center">
-                            <div className="w-8 h-8 mx-auto mb-2 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                              <Lock className="w-4 h-4 text-blue-600" />
-                            </div>
-                            <p className="text-xs text-neutral-600 dark:text-neutral-400">Net Banking</p>
-                          </div>
-                          <div className="text-center">
-                            <div className="w-8 h-8 mx-auto mb-2 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                              <Shield className="w-4 h-4 text-blue-600" />
-                            </div>
-                            <p className="text-xs text-neutral-600 dark:text-neutral-400">Wallets</p>
-                          </div>
+                        <div className="bg-yellow-100 dark:bg-yellow-900/40 rounded-lg p-4 mt-4">
+                          <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                            <strong>Test Mode:</strong> Clicking "Complete Order" will simulate a successful payment and take you directly to the download page.
+                          </p>
                         </div>
                       </div>
 
@@ -783,54 +693,40 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
                             <span className="text-neutral-600 dark:text-neutral-400">Name:</span>
-                            <span className="font-medium text-neutral-900 dark:text-white">
-                              {formData.firstName} {formData.lastName}
-                            </span>
+                            <span className="text-neutral-900 dark:text-white">{formData.firstName} {formData.lastName}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-neutral-600 dark:text-neutral-400">Email:</span>
-                            <span className="font-medium text-neutral-900 dark:text-white">{formData.email}</span>
+                            <span className="text-neutral-900 dark:text-white">{formData.email}</span>
                           </div>
                           {formData.phone && (
                             <div className="flex justify-between">
                               <span className="text-neutral-600 dark:text-neutral-400">Phone:</span>
-                              <span className="font-medium text-neutral-900 dark:text-white">{formData.phone}</span>
+                              <span className="text-neutral-900 dark:text-white">{formData.phone}</span>
                             </div>
                           )}
                         </div>
                       </div>
 
-                      {/* Payment Button */}
-                      <Button
-                        onClick={handlePayment}
-                        disabled={isProcessing}
-                        size="lg"
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                      >
-                        {isProcessing ? (
-                          <>
-                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            Processing...
-                          </>
-                        ) : (
-                          <>
-                            <Lock className="w-5 h-5 mr-2" />
-                            Pay • {formatPrice(product?.price || 0)}
-                          </>
-                        )}
-                      </Button>
-                      
-                      {/* Security Notice */}
-                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                        <div className="flex items-center gap-3">
-                          <Shield className="w-5 h-5 text-green-600 flex-shrink-0" />
-                          <div>
-                            <h4 className="font-medium text-green-900 dark:text-green-100">100% Secure Payment</h4>
-                            <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                              Your payment information is encrypted and secure. Razorpay is PCI-DSS compliant.
-                            </p>
-                          </div>
-                        </div>
+                      <div className="flex justify-center">
+                        <Button
+                          onClick={handlePayment}
+                          disabled={isProcessing}
+                          size="lg"
+                          className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                        >
+                          {isProcessing ? (
+                            <>
+                              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                              Processing...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-5 h-5 mr-2" />
+                              Complete Order (Test Mode)
+                            </>
+                          )}
+                        </Button>
                       </div>
                     </div>
                   </>

@@ -13,6 +13,7 @@ interface EmailData {
     fileUrl: string;
     fileSize: number;
     fileType: string;
+    publicId?: string;
   }>;
 }
 
@@ -68,27 +69,11 @@ function generatePurchaseEmailTemplate(data: EmailData): string {
   console.log('Download links:', data.downloadLinks);
   
   const downloadItems = data.downloadLinks?.map(file => {
-    // Use the same logic as the API to generate accessible URLs
-    let downloadUrl = file.fileUrl;
+    // Use the new secure download endpoint with absolute URL
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const downloadUrl = `${baseUrl}/api/download?fileUrl=${encodeURIComponent(file.fileUrl)}&fileName=${encodeURIComponent(file.fileName)}`;
     
-    // Check if this is a raw file (ZIP, PDF, etc.) and generate proper URL
-    const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
-    const videoTypes = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'];
-    const fileExtension = file.fileName.split('.').pop()?.toLowerCase() || '';
-    
-    if (!imageTypes.includes(fileExtension) && !videoTypes.includes(fileExtension)) {
-      // This is a raw file, ensure the URL has the correct format
-      if (file.fileUrl.includes('/image/upload/')) {
-        downloadUrl = file.fileUrl.replace('/image/upload/', '/raw/upload/');
-        console.log('Email: Converted image URL to raw URL:', { original: file.fileUrl, converted: downloadUrl });
-      } else if (file.fileUrl.includes('/raw/upload/')) {
-        // Already correct, use as-is
-        downloadUrl = file.fileUrl;
-        console.log('Email: Using existing raw URL:', downloadUrl);
-      }
-    }
-    
-    console.log('Email final download URL:', { fileName: file.fileName, downloadUrl });
+    console.log('Email: Using secure download URL:', { fileName: file.fileName, downloadUrl });
     
     return `
     <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 12px;">

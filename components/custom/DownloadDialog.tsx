@@ -52,9 +52,12 @@ export default function DownloadDialog({
 		}
 	};
 
-	const handleDownload = (fileUrl: string, fileName: string) => {
+	const handleDownload = (fileId: string, fileName: string) => {
+		// Construct secure download URL
+		const downloadUrl = `/api/download?fileId=${fileId}&fileName=${encodeURIComponent(fileName)}&purchaseId=${purchaseId}&userEmail=${encodeURIComponent(userEmail)}`;
+		
 		const link = document.createElement("a");
-		link.href = fileUrl;
+		link.href = downloadUrl;
 		link.download = fileName;
 		document.body.appendChild(link);
 		link.click();
@@ -137,7 +140,7 @@ export default function DownloadDialog({
 											</p>
 										</div>
 										<Button
-											onClick={() => handleDownload(file.fileUrl, file.fileName)}
+											onClick={() => handleDownload(file.id, file.fileName)}
 											size="sm"
 											className="bg-green-600 hover:bg-green-700 text-white"
 										>

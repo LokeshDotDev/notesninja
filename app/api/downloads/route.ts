@@ -46,10 +46,12 @@ export async function GET(req: NextRequest) {
 
 		// Return download links for all digital files
 		const downloadLinks = purchase.post.digitalFiles.map(file => ({
+			id: file.id,
 			fileName: file.fileName,
 			fileUrl: file.fileUrl,
 			fileSize: file.fileSize,
-			fileType: file.fileType
+			fileType: file.fileType,
+			publicId: file.publicId
 		}));
 
 		return NextResponse.json({

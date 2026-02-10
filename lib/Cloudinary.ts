@@ -116,39 +116,30 @@ export function generateSignedUrl(publicId: string, resourceType: string = 'imag
 	return signedUrl;
 }
 
-// Get accessible URL (use public URLs for all files)
+// Get accessible URL (use signed URLs for all files to ensure access)
 export function getAccessibleUrl(secureUrl: string, publicId: string, resourceType: string = 'image'): string {
-	// For raw files (ZIP, PDF, etc.), we need to ensure the URL works for download
-	if (resourceType === 'raw') {
-		// Try to use the original secure_url first, but ensure it has the correct format
-		if (secureUrl && secureUrl.includes('cloudinary.com')) {
-			// If it's already a raw URL, use it
-			if (secureUrl.includes('/raw/upload/')) {
-				console.log('Using existing raw URL:', secureUrl);
-				return secureUrl;
-			}
-			// If it's an image URL, convert it to raw
-			else if (secureUrl.includes('/image/upload/')) {
-				const rawUrl = secureUrl.replace('/image/upload/', '/raw/upload/');
-				console.log('Converted image URL to raw URL:', { original: secureUrl, converted: rawUrl });
-				return rawUrl;
-			}
-		}
-		
-		// Fallback: generate a new URL using Cloudinary utils
-		const cloudinaryUrl = cloudinary.utils.url(publicId, {
-			resource_type: 'raw',
-			type: 'upload',
-			secure: true
-		});
-		
-		console.log('Generated fallback Cloudinary URL:', cloudinaryUrl);
-		return cloudinaryUrl;
+	console.log('Getting accessible URL for:', { secureUrl, publicId, resourceType });
+	
+	// For all files, generate a proper signed URL to ensure access
+	const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+	if (!cloudName) {
+		console.error('Missing Cloudinary cloud name');
+		return secureUrl; // Fallback to original
 	}
 	
-	// For images and videos, the secure_url should work directly
-	return secureUrl;
+	// Generate signed URL using Cloudinary utils
+	const signedUrl = cloudinary.utils.url(publicId, {
+		resource_type: resourceType,
+		type: 'upload',
+		secure: true,
+		sign_url: true, // Ensure we get a signed URL
+		expire_at: Math.floor(Date.now() / 1000) + 3600 // Expire in 1 hour
+	});
+	
+	console.log('Generated signed URL:', signedUrl);
+	return signedUrl;
 }
+
 export async function deleteContent(publicId: string): Promise<unknown> {
 	if (
 		!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ||
