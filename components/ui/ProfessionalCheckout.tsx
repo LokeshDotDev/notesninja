@@ -302,73 +302,225 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
 
   if (paymentStep === "success" && orderComplete) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-green-50 to-white dark:from-green-900/20 dark:to-neutral-800">
-        <div className="flex items-center justify-center min-h-screen px-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            className="text-center max-w-md"
-          >
-            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-              <CheckCircle className="w-12 h-12 text-green-600" />
-            </div>
-            <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-4">
-              Payment Successful!
-            </h1>
-            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-              Your order has been confirmed. Download links have been sent to your email.
-            </p>
-            
-            {/* Download Links */}
-            <Card className="mb-8 border-green-200 dark:border-green-800">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
-                  Your Downloads
-                </h3>
-                {product.digitalFiles && product.digitalFiles.length > 0 && (
-                  <div className="space-y-3">
-                    {product.digitalFiles.map((file) => (
-                      <div key={file.id} className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <FileText className="w-5 h-5 text-blue-600" />
-                          <div>
-                            <p className="font-medium text-neutral-900 dark:text-white">
-                              {file.fileName}
-                            </p>
-                            <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                              {file.fileType.toUpperCase()} • {(file.fileSize / 1024 / 1024).toFixed(2)} MB
-                            </p>
-                          </div>
-                        </div>
-                        <Button 
-                          size="sm" 
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                          onClick={() => handleDownload(file.id, file.fileName)}
-                        >
-                          <Download className="w-4 h-4 mr-1" />
-                          Download
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+      <div className="min-h-screen bg-black relative overflow-hidden">
+        {/* Premium Background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent"></div>
+          {/* Animated grid pattern */}
+          <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]"></div>
+          {/* Floating orbs */}
+          <div className="absolute top-0 left-1/4 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-emerald-600/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+        </div>
 
-            <div className="space-y-4">
-              <Button asChild className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                <Link href={`/product/${productId}`}>
-                  <Eye className="w-4 h-4 mr-2" />
-                  View Product
-                </Link>
-              </Button>
-              <Button variant="outline" asChild className="w-full">
-                <Link href="/">
-                  <ArrowRight className="w-4 h-4 mr-2" />
-                  Continue Shopping
-                </Link>
-              </Button>
+        {/* Success Content */}
+        <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 40 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 1, ease: [0.23, 1, 0.32, 1] }}
+            className="w-full max-w-4xl"
+          >
+            {/* Premium Card */}
+            <div className="relative bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-blue-600/10 to-emerald-600/10 opacity-50"></div>
+              
+              <div className="relative p-8 md:p-16">
+                {/* Success Icon Section */}
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: 0.2, duration: 0.8, type: "spring", damping: 12, stiffness: 200 }}
+                  className="flex justify-center mb-12"
+                >
+                  <div className="relative">
+                    {/* Outer glow ring */}
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1.2, opacity: 0 }}
+                      transition={{ delay: 0.5, duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                      className="absolute inset-0 w-32 h-32 bg-gradient-to-r from-emerald-400 to-blue-500 rounded-full blur-xl"
+                    />
+                    {/* Success icon container */}
+                    <div className="relative w-32 h-32 bg-gradient-to-br from-emerald-400 via-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-2xl">
+                      <CheckCircle className="w-16 h-16 text-white drop-shadow-lg" />
+                      {/* Inner shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent rounded-full"></div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Success Message */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.8 }}
+                  className="text-center mb-12"
+                >
+                  <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight">
+                    <span className="bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                      Payment
+                    </span>
+                    <br />
+                    <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-emerald-400 bg-clip-text text-transparent">
+                      Successful!
+                    </span>
+                  </h1>
+                  <p className="text-xl text-white/80 leading-relaxed max-w-2xl mx-auto font-light">
+                    Congratulations! Your order has been confirmed successfully. 
+                    Download links have been sent to your email address.
+                  </p>
+                </motion.div>
+
+                {/* Order Details Card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6, duration: 0.8 }}
+                  className="mb-12"
+                >
+                  <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-2xl font-bold text-white">Order Details</h3>
+                      <div className="flex items-center gap-2 bg-emerald-500/20 border border-emerald-500/30 px-4 py-2 rounded-full">
+                        <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                        <span className="text-emerald-400 font-medium">Confirmed</span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <p className="text-white/60 text-sm mb-1">Product</p>
+                          <p className="text-white font-semibold text-lg">{product.title}</p>
+                        </div>
+                        <div>
+                          <p className="text-white/60 text-sm mb-1">Email</p>
+                          <p className="text-white font-medium">{formData.email}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <div>
+                          <p className="text-white/60 text-sm mb-1">Amount Paid</p>
+                          <p className="text-emerald-400 font-bold text-2xl">
+                            {formatPrice(product.price || 0)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-white/60 text-sm mb-1">Order ID</p>
+                          <p className="text-white font-mono">#{Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Downloads Section */}
+                {product.digitalFiles && product.digitalFiles.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8, duration: 0.8 }}
+                    className="mb-12"
+                  >
+                    <h3 className="text-2xl font-bold text-white mb-8 text-center">Your Downloads</h3>
+                    <div className="space-y-4">
+                      {product.digitalFiles.map((file, index) => (
+                        <motion.div
+                          key={file.id}
+                          initial={{ opacity: 0, x: -50 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.9 + index * 0.15, duration: 0.6 }}
+                          className="group"
+                        >
+                          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-6">
+                                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                  <FileText className="w-8 h-8 text-white" />
+                                </div>
+                                <div>
+                                  <p className="text-white font-bold text-lg mb-2">{file.fileName}</p>
+                                  <div className="flex items-center gap-4 text-white/60">
+                                    <span className="flex items-center gap-2">
+                                      <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                                      {file.fileType.toUpperCase()}
+                                    </span>
+                                    <span>•</span>
+                                    <span>{(file.fileSize / 1024 / 1024).toFixed(2)} MB</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <Button
+                                size="lg"
+                                className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 px-8 py-4 rounded-xl font-bold text-lg group"
+                                onClick={() => handleDownload(file.id, file.fileName)}
+                              >
+                                <Download className="w-6 h-6 mr-3 group-hover:animate-bounce" />
+                                Download
+                              </Button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Action Buttons */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.0, duration: 0.8 }}
+                  className="grid md:grid-cols-2 gap-6"
+                >
+                  <Button
+                    asChild
+                    className="bg-white/10 backdrop-blur-xl border border-white/20 hover:bg-white/20 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 text-lg py-4 rounded-2xl font-bold"
+                  >
+                    <Link href={`/product/${productId}`}>
+                      <Eye className="w-6 h-6 mr-3" />
+                      View Product Details
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 text-lg py-4 rounded-2xl font-bold"
+                  >
+                    <Link href="/">
+                      <ArrowRight className="w-6 h-6 mr-3" />
+                      Continue Shopping
+                    </Link>
+                  </Button>
+                </motion.div>
+
+                {/* Trust Indicators */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.2, duration: 0.8 }}
+                  className="mt-16 pt-8 border-t border-white/10"
+                >
+                  <div className="flex flex-wrap items-center justify-center gap-8 text-white/60">
+                    <div className="flex items-center gap-3">
+                      <Shield className="w-5 h-5 text-emerald-400" />
+                      <span className="font-medium">Secure Payment</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="w-5 h-5 text-emerald-400" />
+                      <span className="font-medium">Instant Download</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Mail className="w-5 h-5 text-emerald-400" />
+                      <span className="font-medium">Email Confirmation</span>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
             </div>
           </motion.div>
         </div>
