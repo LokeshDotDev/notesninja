@@ -26,6 +26,11 @@ import {
   Heart
 } from "lucide-react";
 import Link from "next/link";
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 interface Post {
   id: string;
@@ -67,13 +72,10 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
     firstName: "",
     lastName: "",
     phone: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    nameOnCard: "",
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  const [razorpayOrder, setRazorpayOrder] = useState<any>(null);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -108,12 +110,50 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
     return (
       formData.email &&
       formData.firstName &&
-      formData.lastName &&
-      formData.cardNumber &&
-      formData.expiryDate &&
-      formData.cvv &&
-      formData.nameOnCard
+      formData.lastName
     );
+  };
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const createRazorpayOrder = async () => {
+    try {
+      const response = await fetch('/api/razorpay/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: product?.price || 0,
+          currency: 'INR',
+          receipt: `rcpt_${productId.slice(-8)}_${Date.now().toString().slice(-6)}`,
+          notes: {
+            productId,
+            customerEmail: formData.email,
+            customerName: `${formData.firstName} ${formData.lastName}`,
+          },
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create order');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error creating Razorpay order:', error);
+      throw error;
+    }
   };
 
   const handlePayment = async () => {
@@ -131,56 +171,117 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
     setPaymentStep("processing");
 
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Send confirmation email
-      try {
-        console.log('Product data:', product);
-        console.log('Digital files:', product.digitalFiles);
-        
-        const emailResponse = await fetch('/api/send-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            to: formData.email,
-            customerName: `${formData.firstName} ${formData.lastName}`,
-            productName: product.title,
-            downloadLinks: product.digitalFiles || []
-          })
-        });
-
-        const emailResult = await emailResponse.json();
-        
-        if (!emailResponse.ok) {
-          console.error('Failed to send email:', emailResult.error);
-          // Continue with success but note email issue
-        } else {
-          console.log('Email sent successfully:', emailResult);
-        }
-      } catch (emailError) {
-        console.error('Email error:', emailError);
-        // Continue with success even if email fails
+      // Load Razorpay script
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        throw new Error('Failed to load payment gateway');
       }
-      
-      // Simulate successful payment
-      setOrderComplete(true);
-      setPaymentStep("success");
+
+      // Create Razorpay order
+      const orderData = await createRazorpayOrder();
+      setRazorpayOrder(orderData.order);
+
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.order.amount,
+        currency: orderData.order.currency,
+        name: 'NotesNinja',
+        description: product.title,
+        order_id: orderData.order.id,
+        handler: async function (response: any) {
+          // Verify payment on server
+          try {
+            const verifyResponse = await fetch('/api/razorpay/verify-payment', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                productId,
+                customerEmail: formData.email,
+                customerName: `${formData.firstName} ${formData.lastName}`,
+              }),
+            });
+
+            const verifyData = await verifyResponse.json();
+            
+            if (!verifyResponse.ok) {
+              throw new Error(verifyData.error || 'Payment verification failed');
+            }
+
+            // Send confirmation email
+            try {
+              console.log('Product data:', product);
+              console.log('Digital files:', product.digitalFiles);
+              
+              const emailResponse = await fetch('/api/send-email', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  to: formData.email,
+                  customerName: `${formData.firstName} ${formData.lastName}`,
+                  productName: product.title,
+                  downloadLinks: product.digitalFiles || []
+                })
+              });
+
+              const emailResult = await emailResponse.json();
+              
+              if (!emailResponse.ok) {
+                console.error('Failed to send email:', emailResult.error);
+              } else {
+                console.log('Email sent successfully:', emailResult);
+              }
+            } catch (emailError) {
+              console.error('Email error:', emailError);
+            }
+            
+            setOrderComplete(true);
+            setPaymentStep("success");
+            
+          } catch (verificationError) {
+            console.error('Payment verification failed:', verificationError);
+            setPaymentStep("error");
+            setError("Payment verification failed. Please contact support.");
+          }
+        },
+        prefill: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          contact: formData.phone || '',
+        },
+        theme: {
+          color: '#3B82F6',
+        },
+        modal: {
+          ondismiss: function() {
+            setIsProcessing(false);
+            setPaymentStep("payment");
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
       
     } catch (error) {
+      console.error('Payment error:', error);
       setPaymentStep("error");
-      setError("Payment failed. Please try again.");
+      setError(error instanceof Error ? error.message : "Payment failed. Please try again.");
     } finally {
-      setIsProcessing(false);
+      // Don't set isProcessing to false here as it's handled in the handler
     }
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
     }).format(price);
   };
 
@@ -628,93 +729,74 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                 {paymentStep === "payment" && (
                   <>
                     <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6 text-center">
-                      Payment Information
+                      Secure Payment with Razorpay
                     </h2>
                     
                     <div className="space-y-6">
-                      {/* Card Information */}
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="cardNumber" className="text-neutral-700 dark:text-neutral-300 font-medium mb-2 block">
-                            Card Number *
-                          </Label>
-                          <div className="relative">
-                            <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 text-neutral-400" />
-                            <Input
-                              id="cardNumber"
-                              type="text"
-                              value={formData.cardNumber}
-                              onChange={(e) => handleInputChange("cardNumber", e.target.value)}
-                              className="w-full pl-12 h-12 border-neutral-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg transition-all duration-200"
-                              placeholder="1234 5678 9012 3456"
-                              maxLength={19}
-                            />
+                      {/* Razorpay Information */}
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+                        <div className="flex items-center gap-4 mb-4">
+                          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <CreditCard className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                              Razorpay Secure Payment
+                            </h3>
+                            <p className="text-sm text-blue-700 dark:text-blue-300">
+                              Pay safely with UPI, Credit Card, Debit Card, Net Banking & more
+                            </p>
                           </div>
                         </div>
                         
-                        <div>
-                          <Label htmlFor="nameOnCard" className="text-neutral-700 dark:text-neutral-300 font-medium mb-2 block">
-                            Name on Card *
-                          </Label>
-                          <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-                            <Input
-                              id="nameOnCard"
-                              type="text"
-                              value={formData.nameOnCard}
-                              onChange={(e) => handleInputChange("nameOnCard", e.target.value)}
-                              className="w-full pl-10 h-12 border-neutral-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg transition-all duration-200"
-                              placeholder="John Doe"
-                            />
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="expiryDate" className="text-neutral-700 dark:text-neutral-300 font-medium mb-2 block">
-                              Expiry Date *
-                            </Label>
-                            <Input
-                              id="expiryDate"
-                              type="text"
-                              value={formData.expiryDate}
-                              onChange={(e) => handleInputChange("expiryDate", e.target.value)}
-                              className="w-full h-12 border-neutral-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg transition-all duration-200"
-                              placeholder="MM/YY"
-                              maxLength={5}
-                            />
-                          </div>
-                          
-                          <div>
-                            <Label htmlFor="cvv" className="text-neutral-700 dark:text-neutral-300 font-medium mb-2 block">
-                              CVV *
-                            </Label>
-                            <div className="relative">
-                              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-                              <Input
-                                id="cvv"
-                                type="text"
-                                value={formData.cvv}
-                                onChange={(e) => handleInputChange("cvv", e.target.value)}
-                                className="w-full pl-10 h-12 border-neutral-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg transition-all duration-200"
-                                placeholder="123"
-                                maxLength={4}
-                              />
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                          <div className="text-center">
+                            <div className="w-8 h-8 mx-auto mb-2 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                              <Smartphone className="w-4 h-4 text-blue-600" />
                             </div>
+                            <p className="text-xs text-neutral-600 dark:text-neutral-400">UPI</p>
+                          </div>
+                          <div className="text-center">
+                            <div className="w-8 h-8 mx-auto mb-2 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                              <CreditCard className="w-4 h-4 text-blue-600" />
+                            </div>
+                            <p className="text-xs text-neutral-600 dark:text-neutral-400">Cards</p>
+                          </div>
+                          <div className="text-center">
+                            <div className="w-8 h-8 mx-auto mb-2 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                              <Lock className="w-4 h-4 text-blue-600" />
+                            </div>
+                            <p className="text-xs text-neutral-600 dark:text-neutral-400">Net Banking</p>
+                          </div>
+                          <div className="text-center">
+                            <div className="w-8 h-8 mx-auto mb-2 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                              <Shield className="w-4 h-4 text-blue-600" />
+                            </div>
+                            <p className="text-xs text-neutral-600 dark:text-neutral-400">Wallets</p>
                           </div>
                         </div>
                       </div>
 
-                      {/* Security Badges */}
-                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                        <div className="flex items-center gap-3">
-                          <Shield className="w-5 h-5 text-blue-600" />
-                          <div>
-                            <h4 className="font-medium text-blue-900 dark:text-blue-100">Secure Payment</h4>
-                            <p className="text-sm text-blue-700 dark:text-blue-300">
-                              Your payment information is encrypted and secure. We never store your card details.
-                            </p>
+                      {/* Customer Information Summary */}
+                      <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-4">
+                        <h4 className="font-medium text-neutral-900 dark:text-white mb-3">Customer Information</h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-neutral-600 dark:text-neutral-400">Name:</span>
+                            <span className="font-medium text-neutral-900 dark:text-white">
+                              {formData.firstName} {formData.lastName}
+                            </span>
                           </div>
+                          <div className="flex justify-between">
+                            <span className="text-neutral-600 dark:text-neutral-400">Email:</span>
+                            <span className="font-medium text-neutral-900 dark:text-white">{formData.email}</span>
+                          </div>
+                          {formData.phone && (
+                            <div className="flex justify-between">
+                              <span className="text-neutral-600 dark:text-neutral-400">Phone:</span>
+                              <span className="font-medium text-neutral-900 dark:text-white">{formData.phone}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -728,15 +810,28 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                         {isProcessing ? (
                           <>
                             <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            Processing Payment...
+                            Processing...
                           </>
                         ) : (
                           <>
                             <Lock className="w-5 h-5 mr-2" />
-                            Complete Payment • {formatPrice(product?.price || 0)}
+                            Pay • {formatPrice(product?.price || 0)}
                           </>
                         )}
                       </Button>
+                      
+                      {/* Security Notice */}
+                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                        <div className="flex items-center gap-3">
+                          <Shield className="w-5 h-5 text-green-600 flex-shrink-0" />
+                          <div>
+                            <h4 className="font-medium text-green-900 dark:text-green-100">100% Secure Payment</h4>
+                            <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                              Your payment information is encrypted and secure. Razorpay is PCI-DSS compliant.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </>
                 )}
