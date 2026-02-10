@@ -49,9 +49,21 @@ export async function uploadContent(
 
 		console.log(`Uploading file: ${file.name}, type: ${fileExtension}, resource_type: ${resourceType}, isDigital: ${isDigital}`);
 
-		const uploadingResult = await new Promise<CloudinaryUploadResult>(
+		interface UploadOptions {
+	folder: string;
+	resource_type: 'raw' | 'video' | 'image' | 'auto';
+	type: string;
+	public_id: string;
+	use_filename: boolean;
+	unique_filename: boolean;
+	access_mode: string;
+	secure: boolean;
+	format?: string;
+}
+
+const uploadingResult = await new Promise<CloudinaryUploadResult>(
 			(resolve, reject) => {
-				const uploadOptions: any = { 
+				const uploadOptions: UploadOptions = { 
 					folder: "Elevate-mortal", 
 					resource_type: resourceType,
 					type: 'upload', // Make file publicly accessible

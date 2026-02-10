@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import settings from "@/lib/settings";
-import { ChevronDown, BookOpen, FileText, Shield, RefreshCw, Menu, X } from "lucide-react";
+import { ChevronDown, BookOpen, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Category {

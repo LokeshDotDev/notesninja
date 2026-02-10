@@ -18,14 +18,26 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Upload, X, FileText, Image } from "lucide-react";
+import { X, FileText, Image } from "lucide-react";
 
 interface FormDialogProps {
 	type: "post" | "featured" | "category" | "subcategory" | "product-type";
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
 	triggerLabel?: string | null;
-	initialData?: any;
+	initialData?: Record<string, unknown> & { 
+	id?: string | number; 
+	title?: string; 
+	description?: string; 
+	descripition?: string;
+	categoryId?: string;
+	subcategoryId?: string;
+	productTypeId?: string;
+	price?: number | string;
+	compareAtPrice?: number | string;
+	isDigital?: boolean;
+	name?: string;
+};
 	onSave: (data: { id?: string; formData: FormData }) => void;
 	isLoading?: boolean;
 }
@@ -171,24 +183,24 @@ export default function FormDialog({
 		}
 
 		// Add files
-		files.forEach((file) => {
+		files.forEach((file: File) => {
 			submitData.append("files", file);
 		});
 
 		// Add digital files for digital products
 		if (formData.isDigital && digitalFiles.length > 0) {
-			digitalFiles.forEach((file) => {
+			digitalFiles.forEach((file: File) => {
 				submitData.append("digitalFiles", file);
 			});
 		}
 
 		// Add ID for updates
 		if (initialData?.id) {
-			submitData.append("id", initialData.id);
+			submitData.append("id", initialData.id.toString());
 		}
 
 		await onSave({ 
-			id: initialData?.id,
+			id: initialData?.id?.toString(),
 			formData: submitData 
 		});
 		
@@ -376,7 +388,7 @@ export default function FormDialog({
 										htmlFor="cover-image-upload"
 										className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
 									>
-										<Image className="w-8 h-8 text-gray-400 mb-2" />
+										<Image className="w-8 h-8 text-gray-400 mb-2" aria-label="Upload cover image" />
 										<span className="text-sm text-gray-600">Click to upload cover image</span>
 										<span className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</span>
 									</label>
@@ -418,7 +430,7 @@ export default function FormDialog({
 										htmlFor="file-upload"
 										className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
 									>
-										<Image className="w-8 h-8 text-gray-400 mb-2" />
+										<Image className="w-8 h-8 text-gray-400 mb-2" aria-label="Upload product images" />
 										<span className="text-sm text-gray-600">Click to upload images</span>
 										<span className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</span>
 									</label>
@@ -527,7 +539,7 @@ export default function FormDialog({
 									htmlFor="featured-file-upload"
 									className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
 								>
-									<Image className="w-8 h-8 text-gray-400 mb-2" />
+									<Image className="w-8 h-8 text-gray-400 mb-2" aria-label="Upload featured image" />
 									<span className="text-sm text-gray-600">Click to upload image</span>
 									<span className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</span>
 								</label>

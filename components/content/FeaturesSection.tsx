@@ -118,7 +118,7 @@ export function FeaturesSection() {
             Everything You Need to Excel
           </h2>
           <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto">
-            Our comprehensive platform provides all the tools and resources you need to achieve academic success. From study notes to exam preparation, we've got you covered.
+            Our comprehensive platform provides all the tools and resources you need to achieve academic success. From study notes to exam preparation, we&apos;ve got you covered.
           </p>
         </div>
 

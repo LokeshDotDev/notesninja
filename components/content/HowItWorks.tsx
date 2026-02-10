@@ -1,7 +1,6 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Search, Download, CreditCard, BookOpen, CheckCircle } from "lucide-react";
+import { Search, Download, CreditCard, CheckCircle } from "lucide-react";
 
 const steps = [
   {

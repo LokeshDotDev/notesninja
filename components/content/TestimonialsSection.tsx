@@ -57,7 +57,7 @@ export function TestimonialsSection() {
             What Students Are Saying
           </h2>
           <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto">
-            Join thousands of successful students who have transformed their academic journey with NotesNinja's premium study materials.
+            Join thousands of successful students who have transformed their academic journey with NotesNinja&apos;s premium study materials.
           </p>
         </div>
 

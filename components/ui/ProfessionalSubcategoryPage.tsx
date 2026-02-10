@@ -1,7 +1,6 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { motion } from "motion/react";
-import { Card, CardContent } from "@/components/ui/card";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,25 +8,17 @@ import {
   BookOpen, 
   Download, 
   Star, 
-  Users, 
   ArrowRight, 
-  Search, 
   Filter,
   Grid3X3,
   List,
-  Clock,
-  TrendingUp,
   FileText,
-  DollarSign,
   Eye,
   Heart,
-  Share2,
-  ShoppingCart,
-  CheckCircle,
-  AlertCircle,
-  Loader2
+  AlertCircle
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Post {
   id: string;
@@ -148,8 +139,8 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
   }, [selectedProductType, allPosts]);
 
   // Sort posts
-  useEffect(() => {
-    const sorted = [...posts].sort((a, b) => {
+  const sortedPosts = useMemo(() => {
+    return [...posts].sort((a, b) => {
       switch (sortBy) {
         case "newest":
           return new Date(b.updatedAt || b.createdAt || 0).getTime() - new Date(a.updatedAt || a.createdAt || 0).getTime();
@@ -165,8 +156,7 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
           return 0;
       }
     });
-    setPosts(sorted);
-  }, [sortBy]);
+  }, [posts, sortBy]);
 
   if (loading) {
     return (
@@ -204,7 +194,7 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
               {error || "Subcategory Not Found"}
             </h1>
             <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-              The topic you're looking for doesn't exist or has been moved.
+              The topic you&apos;re looking for doesn&apos;t exist or has been moved.
             </p>
             <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
               <Link href={`/${encodeURIComponent(categoryName)}`}>
@@ -352,7 +342,7 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
                 <ArrowRight className="w-4 h-4 text-neutral-500 rotate-90" />
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
+                  onChange={(e) => setSortBy(e.target.value as "newest" | "oldest" | "price-low" | "price-high" | "name")}
                   className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="newest">Newest First</option>
@@ -389,9 +379,9 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
 
       {/* Products Grid/List */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {posts.length > 0 ? (
+        {sortedPosts.length > 0 ? (
           <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "space-y-4"}>
-            {posts.map((post, index) => (
+            {sortedPosts.map((post, index) => (
               <BlurFade key={post.id} delay={0.25 + index * 0.05} inView>
                 {viewMode === "grid" ? (
                   /* Grid View Card */
@@ -404,10 +394,11 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
                     {/* Image */}
                     <div className="relative h-48 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 overflow-hidden">
                       {post.imageUrl ? (
-                        <img
+                        <Image
                           src={post.imageUrl}
                           alt={post.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
@@ -489,12 +480,13 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
                   >
                     <div className="flex gap-6">
                       {/* Image */}
-                      <div className="w-24 h-24 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg overflow-hidden flex-shrink-0">
+                      <div className="w-24 h-24 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg overflow-hidden flex-shrink-0 relative">
                         {post.imageUrl ? (
-                          <img
+                          <Image
                             src={post.imageUrl}
                             alt={post.title}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
@@ -571,7 +563,7 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
               No Materials Available Yet
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto mb-8">
-              We're working on adding {subcategory.name.toLowerCase()} materials. Check back soon for new study resources!
+              We&apos;re working on adding {subcategory.name.toLowerCase()} materials. Check back soon for new study resources!
             </p>
             <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
               <Link href={`/${encodeURIComponent(categoryName)}`}>

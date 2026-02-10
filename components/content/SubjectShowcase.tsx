@@ -217,10 +217,10 @@ export function SubjectShowcase() {
             <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
             <div className="relative z-10">
               <h3 className="text-2xl md:text-4xl font-bold mb-4">
-                Can't find your subject?
+                Can&apos;t find your subject?
               </h3>
               <p className="text-lg mb-8 text-blue-100 max-w-2xl mx-auto">
-                We're constantly adding new subjects and materials. Request your subject and we'll prioritize it for our next update!
+                We&apos;re constantly adding new subjects and materials. Request your subject and we&apos;ll prioritize it for our next update!
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" className="bg-white text-primary hover:bg-gray-100">

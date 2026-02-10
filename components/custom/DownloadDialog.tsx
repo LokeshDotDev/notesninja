@@ -24,7 +24,7 @@ export default function DownloadDialog({
 	userEmail,
 }: DownloadDialogProps) {
 	const [isLoading, setIsLoading] = useState(false);
-	const [downloadLinks, setDownloadLinks] = useState<any[]>([]);
+	const [downloadLinks, setDownloadLinks] = useState<Array<{id: string; fileName: string; fileUrl: string; fileSize: number; fileType: string}>>([]);
 	const [error, setError] = useState("");
 	const [productTitle, setProductTitle] = useState("");
 

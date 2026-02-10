@@ -32,7 +32,7 @@ export function FinalCTA() {
 
           {/* Subheadline */}
           <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
-            Join 50,000+ students who are already excelling with NotesNinja's premium digital materials
+            Join 50,000+ students who are already excelling with NotesNinja&apos;s premium digital materials
           </p>
 
           {/* Trust Badges */}
@@ -95,7 +95,7 @@ export function FinalCTA() {
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto border border-white/20">
             <h3 className="text-xl font-bold mb-4">Your Success Story Starts Here</h3>
             <p className="text-blue-100 mb-6">
-              Don't let poor study materials hold you back. Get access to premium, expert-curated content that has helped thousands of students achieve their academic goals.
+              Don&apos;t let poor study materials hold you back. Get access to premium, expert-curated content that has helped thousands of students achieve their academic goals.
             </p>
             <div className="flex items-center justify-center gap-2 text-sm text-blue-200">
               <CheckCircle className="w-4 h-4" />

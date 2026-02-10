@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { Card, CardContent } from "@/components/ui/card";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +9,6 @@ import {
   BookOpen, 
   Download, 
   Star, 
-  Users, 
   ArrowRight, 
   Search, 
   Filter,
@@ -111,7 +109,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
               {error || "Category Not Found"}
             </h1>
             <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-              The category you're looking for doesn't exist or has been moved.
+              The category you&apos;re looking for doesn&apos;t exist or has been moved.
             </p>
             <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
               <Link href="/">
@@ -356,7 +354,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
               No Topics Available Yet
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto mb-8">
-              We're working on adding {category.name.toLowerCase()} topics. Check back soon for new study materials!
+              We&apos;re working on adding {category.name.toLowerCase()} topics. Check back soon for new study materials!
             </p>
             <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
               <Link href="/">

@@ -20,7 +20,7 @@ interface PurchaseDialogProps {
 		price: number;
 		isDigital: boolean;
 	};
-	onPurchaseComplete: (purchase: any) => void;
+	onPurchaseComplete: (purchase: { id: string; amount: number; status: string }) => void;
 }
 
 export default function PurchaseDialog({

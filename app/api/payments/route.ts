@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// This would be your Stripe secret key
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-
 export async function POST(req: NextRequest) {
 	try {
 		const { postId, userEmail, amount } = await req.json();

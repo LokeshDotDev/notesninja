@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
@@ -15,20 +14,20 @@ import {
   AlertCircle, 
   Loader2,
   ArrowRight,
-  Clock,
   FileText,
   Lock,
   Mail,
   User,
   ChevronRight,
-  Truck,
-  Eye,
-  Heart
+  Eye
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 declare global {
   interface Window {
-    Razorpay: any;
+    Razorpay: {
+      (options: unknown): void;
+    };
   }
 }
 
@@ -75,7 +74,6 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
-  const [razorpayOrder, setRazorpayOrder] = useState<any>(null);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -114,47 +112,6 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
     );
   };
 
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
-  const createRazorpayOrder = async () => {
-    try {
-      const response = await fetch('/api/razorpay/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: product?.price || 0,
-          currency: 'INR',
-          receipt: `rcpt_${productId.slice(-8)}_${Date.now().toString().slice(-6)}`,
-          notes: {
-            productId,
-            customerEmail: formData.email,
-            customerName: `${formData.firstName} ${formData.lastName}`,
-          },
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create order');
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Error creating Razorpay order:', error);
-      throw error;
-    }
-  };
 
   const handlePayment = async () => {
     if (!validateForm()) {
@@ -572,9 +529,11 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                 {/* Product Info */}
                 <div className="flex gap-4 mb-6">
                   {product.imageUrl ? (
-                    <img
+                    <Image
                       src={product.imageUrl}
                       alt={product.title}
+                      width={80}
+                      height={80}
                       className="w-20 h-20 object-cover rounded-lg"
                     />
                   ) : (
@@ -834,7 +793,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                         
                         <div className="bg-yellow-100 dark:bg-yellow-900/40 rounded-lg p-4 mt-4">
                           <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                            <strong>Test Mode:</strong> Clicking "Complete Order" will simulate a successful payment and take you directly to the download page.
+                            <strong>Test Mode:</strong> Clicking &quot;Complete Order&quot; will simulate a successful payment and take you directly to the download page.
                           </p>
                         </div>
                       </div>

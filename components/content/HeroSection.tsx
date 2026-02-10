@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 import * as gtm from "@/lib/gtm";
 import { BookOpen, Download, Star, Users, Trophy, ArrowRight, GraduationCap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "../ui/button";
 
 export function HeroSection() {
 	const pathname = usePathname();

@@ -62,6 +62,14 @@ const [posts, setPosts] = React.useState<typeof items>(items);
 const [openIdx, setOpenIdx] = React.useState<number | null>(null);
 const [showFullScreenGallery, setShowFullScreenGallery] = React.useState(false);
 const [modalImageIndex, setModalImageIndex] = React.useState(0);
+const [purchaseDialog, setPurchaseDialog] = React.useState<PurchaseDialogState>({
+  open: false,
+  product: null
+});
+const [downloadDialog, setDownloadDialog] = React.useState<DownloadDialogState>({
+  open: false,
+  purchase: { id: '', userEmail: '' }
+});
 
 React.useEffect(() => {
 setPosts(items);
@@ -78,21 +86,12 @@ document.body.style.overflow = "";
 }
 }, [openIdx]);
 
-
-
-
-// Remove the useEffect that references categoryId and fetches
 const getImageUrl = (item: ApiPost | GalleryItem): string => {
-let url = "";
-if ("url" in item) {
-url = item.url; // GalleryItem
-} else if ("images" in item && item.images && item.images.length > 0) {
-url = item.images[0].imageUrl; // ApiPost with new images
-} else {
-url = item.imageUrl || ""; // ApiPost with legacy single image
+if ("url" in item) return item.url; // GalleryItem
+if ("images" in item && item.images && item.images.length > 0) {
+return item.images[0].imageUrl; // ApiPost with new images
 }
-console.log("getImageUrl for item", item.title, ":", url);
-return url;
+return item.imageUrl || ""; // ApiPost with legacy single image
 };
 
 const getImages = (item: ApiPost | GalleryItem): PostImage[] => {
@@ -112,6 +111,7 @@ order: 0,
 }
 return [];
 };
+
 const hasMultipleImages = (item: ApiPost | GalleryItem): boolean => {
 const images = getImages(item);
 return images.length > 1;
@@ -140,6 +140,23 @@ setOpenIdx((prev) => (prev !== null ? (prev + 1) % posts.length : null));
 const handleImageClick = (imageIndex: number) => {
 setModalImageIndex(imageIndex);
 setShowFullScreenGallery(true);
+};
+
+const handlePurchase = (post: ApiPost | GalleryItem) => {
+  if ('id' in post) {
+    setPurchaseDialog({
+      open: true,
+      product: post
+    });
+  }
+};
+
+const handlePurchaseComplete = (purchase: { id: string; amount: number; status: string }) => {
+  setPurchaseDialog({ open: false, product: null });
+  setDownloadDialog({
+    open: true,
+    purchase: { id: purchase.id, userEmail: '' }
+  });
 };
 
 return (
@@ -411,6 +428,33 @@ onClose={() => setShowFullScreenGallery(false)}
 initialIndex={modalImageIndex}
 />
 )}
+{/* Purchase Dialog */}
+{purchaseDialog.open && purchaseDialog.product && (
+<>
+<PurchaseDialog
+open={purchaseDialog.open}
+onOpenChange={(open) => setPurchaseDialog(prev => ({ ...prev, open }))}
+product={{
+id: purchaseDialog.product.id,
+title: purchaseDialog.product.title,
+price: purchaseDialog.product.price || 0,
+isDigital: purchaseDialog.product.isDigital || false
+}}
+onPurchaseComplete={handlePurchaseComplete}
+/>
+</>
+)}
+{/* Download Dialog */}
+{downloadDialog.open && (
+<>
+<DownloadDialog
+open={downloadDialog.open}
+onOpenChange={(open) => setDownloadDialog(prev => ({ ...prev, open }))}
+purchaseId={downloadDialog.purchase.id}
+userEmail={downloadDialog.purchase.userEmail}
+/>
+</>
+)}
 {/* Custom scrollbar styles for modal description */}
 <style jsx global>{`
 .custom-scrollbar::-webkit-scrollbar {
@@ -458,7 +502,7 @@ const [purchaseDialog, setPurchaseDialog] = React.useState<PurchaseDialogState>(
 });
 const [downloadDialog, setDownloadDialog] = React.useState<DownloadDialogState>({
   open: false,
-  purchase: null
+  purchase: { id: '', userEmail: '' }
 });
 
 React.useEffect(() => {
@@ -541,7 +585,20 @@ setModalImageIndex(imageIndex);
 setShowFullScreenGallery(true);
 };
 
+const handlePurchase = (post: ApiPost) => {
+  setPurchaseDialog({
+    open: true,
+    product: post
+  });
+};
 
+const handlePurchaseComplete = (purchase: { id: string; amount: number; status: string }) => {
+  setPurchaseDialog({ open: false, product: null });
+  setDownloadDialog({
+    open: true,
+    purchase: { id: purchase.id, userEmail: '' }
+  });
+};
 
 return (
 <section className='py-8'>

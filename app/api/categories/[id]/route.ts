@@ -89,9 +89,10 @@ export async function GET(
 // PUT update category
 export async function PUT(
 	request: Request,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
+		const resolvedParams = await params;
 		const formData = await request.formData();
 		const name = formData.get("name") as string | null;
 
@@ -109,7 +110,7 @@ export async function PUT(
 					mode: "insensitive",
 				},
 				NOT: {
-					id: params.id,
+					id: resolvedParams.id,
 				},
 			},
 		});
@@ -122,7 +123,7 @@ export async function PUT(
 		}
 
 		const category = await prisma.category.update({
-			where: { id: params.id },
+			where: { id: resolvedParams.id },
 			data: {
 				name: name.trim(),
 			},
@@ -154,12 +155,13 @@ export async function PUT(
 // DELETE category
 export async function DELETE(
 	request: Request,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
+		const resolvedParams = await params;
 		// Check if category has posts
 		const postCount = await prisma.post.count({
-			where: { categoryId: params.id },
+			where: { categoryId: resolvedParams.id },
 		});
 
 		if (postCount > 0) {
@@ -173,12 +175,12 @@ export async function DELETE(
 
 		// Delete subcategories first
 		await prisma.subcategory.deleteMany({
-			where: { categoryId: params.id },
+			where: { categoryId: resolvedParams.id },
 		});
 
 		// Delete the category
 		await prisma.category.delete({
-			where: { id: params.id },
+			where: { id: resolvedParams.id },
 		});
 
 		return NextResponse.json(

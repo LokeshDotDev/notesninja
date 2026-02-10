@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://www.elevatemotelsupply.com
+Host: https://notesninja.in
 
 # Sitemaps
-Sitemap: https://www.elevatemotelsupply.com/sitemap.xml
+Sitemap: https://notesninja.in/sitemap.xml

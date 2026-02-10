@@ -86,7 +86,7 @@ export function PricingSection() {
             Choose Your Learning Path
           </h2>
           <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto mb-8">
-            Flexible pricing plans designed to meet every student's needs. Start with our free trial and upgrade as you grow.
+            Flexible pricing plans designed to meet every student&apos;s needs. Start with our free trial and upgrade as you grow.
           </p>
           
           <div className="flex flex-wrap justify-center gap-2 mb-8">

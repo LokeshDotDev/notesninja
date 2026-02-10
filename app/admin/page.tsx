@@ -604,9 +604,6 @@ export default function Dashboard() {
 							type='post'
 							triggerLabel='Create'
 							onSave={(data) => handleSave("post", data)}
-							categories={categories}
-							subcategories={subcategories}
-							productTypes={productTypes}
 							isLoading={actionLoading.create}
 						/>
 					</CardHeader>
@@ -744,9 +741,6 @@ export default function Dashboard() {
 							type='featured'
 							triggerLabel='Create'
 							onSave={(data) => handleSave("featured", data)}
-							categories={categories}
-							subcategories={subcategories}
-							productTypes={productTypes}
 							isLoading={actionLoading.create}
 						/>
 					</CardHeader>
@@ -891,7 +885,6 @@ export default function Dashboard() {
 								type='subcategory'
 								triggerLabel='Create Subcategory'
 								onSave={(data) => handleSave("subcategory", data)}
-								categories={categories}
 								isLoading={actionLoading.create}
 							/>
 						</div>
@@ -1199,14 +1192,14 @@ export default function Dashboard() {
 																})
 															}
 															className={`p-2 rounded-full ${
-																editDialog.loading && editDialog.id === productType.id
+																actionLoading.update && editDialog.data?.id === productType.id
 																	? "bg-gray-100 text-gray-400"
 																	: "bg-blue-100 text-blue-600 hover:bg-blue-200"
-															} transition-colors`}
+																} transition-colors`}
 															disabled={
-																editDialog.loading && editDialog.id === productType.id
+																actionLoading.update && editDialog.data?.id === productType.id
 															}>
-															{editDialog.loading && editDialog.id === productType.id ? (
+															{actionLoading.update && editDialog.data?.id === productType.id ? (
 																<svg
 																	xmlns='http://www.w3.org/2000/svg'
 																	fill='none'
@@ -1395,15 +1388,10 @@ export default function Dashboard() {
 							<FormDialog
 								type={editDialog.type}
 								initialData={editDialog.data ?? undefined}
-								triggerLabel={null}
 								onSave={async (data) => {
 									await handleSave(editDialog.type, data);
 									setEditDialog({ ...editDialog, open: false, data: null });
 								}}
-								categories={categories}
-								subcategories={subcategories}
-								productTypes={productTypes}
-								onClose={() => setEditDialog({ ...editDialog, open: false })}
 								isLoading={actionLoading.update}
 							/>
 						</DialogContent>

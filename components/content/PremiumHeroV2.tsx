@@ -6,7 +6,6 @@ import settings from "@/lib/settings";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import * as gtm from "@/lib/gtm";
-import { cn } from "@/lib/utils";
 
 export function PremiumHeroV2() {
   const pathname = usePathname();

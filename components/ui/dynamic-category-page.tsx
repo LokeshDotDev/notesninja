@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Card } from "@/components/ui/card";
 import { PageHero } from "@/components/ui/page-hero";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import Link from "next/link";
@@ -171,7 +170,7 @@ export function DynamicCategoryPage({ categoryName }: DynamicCategoryPageProps) 
               No Topics Available
             </h3>
             <p className="text-neutral-600 dark:text-neutral-300">
-              This category doesn't have any subcategories yet. Check back later!
+              This category doesn&apos;t have any subcategories yet. Check back later!
             </p>
           </div>
         )}

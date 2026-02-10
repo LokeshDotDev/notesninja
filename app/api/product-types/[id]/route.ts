@@ -4,11 +4,12 @@ import prisma from "@/lib/prisma";
 // GET single product type
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await params;
     const productType = await prisma.productType.findUnique({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       include: {
         _count: {
           select: {
@@ -39,9 +40,10 @@ export async function GET(
 // PUT update product type
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await params;
     const { name } = await request.json();
 
     if (!name || typeof name !== "string" || name.trim() === "") {
@@ -58,7 +60,7 @@ export async function PUT(
           mode: "insensitive",
         },
         NOT: {
-          id: params.id,
+          id: resolvedParams.id,
         },
       },
     });
@@ -71,7 +73,7 @@ export async function PUT(
     }
 
     const productType = await prisma.productType.update({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       data: {
         name: name.trim(),
       },
@@ -90,16 +92,17 @@ export async function PUT(
 // DELETE product type
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await params;
     // Check if product type is being used
     const postsCount = await prisma.post.count({
-      where: { productTypeId: params.id },
+      where: { productTypeId: resolvedParams.id },
     });
 
     const featuredCount = await prisma.featured.count({
-      where: { productTypeId: params.id },
+      where: { productTypeId: resolvedParams.id },
     });
 
     if (postsCount > 0 || featuredCount > 0) {
@@ -112,7 +115,7 @@ export async function DELETE(
     }
 
     await prisma.productType.delete({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
     });
 
     return NextResponse.json(

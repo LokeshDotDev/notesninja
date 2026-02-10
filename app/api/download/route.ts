@@ -254,7 +254,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Return the file as a streaming response
-    return new NextResponse(fileBuffer as any, {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       status: 200,
       headers
     });

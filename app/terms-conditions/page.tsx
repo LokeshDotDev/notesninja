@@ -132,7 +132,7 @@ export default function TermsConditions() {
                 Disclaimer of Warranties
               </h2>
               <p className="text-neutral-600 dark:text-neutral-400">
-                Our educational materials are provided "as is" without warranties of any kind. 
+                Our educational materials are provided &quot;as is&quot; without warranties of any kind. 
                 While we strive for accuracy, we cannot guarantee that all content is error-free 
                 or suitable for your specific educational needs.
               </p>

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import Link from "next/link";
 import { PageHero } from "@/components/ui/page-hero";
 import { GalleryGridCombined } from "@/components/ui/gallery-grid";
-import { BlurFade } from "@/components/magicui/blur-fade";
 import ProductTypeFilter from "@/components/custom/ProductTypeFilter";
 
 interface Post {
@@ -82,7 +81,7 @@ export function DynamicSubcategoryPage({ categoryName, subcategoryName }: Dynami
         
         if (postsResponse.ok) {
           const postsData = await postsResponse.json();
-          console.log("Fetched posts:", postsData.length, postsData.map(p => ({ id: p.id, title: p.title, productTypeId: p.productTypeId })));
+          console.log("Fetched posts:", postsData.length, postsData.map((p: Post) => ({ id: p.id, title: p.title, productTypeId: p.productTypeId })));
           setAllPosts(postsData); // Store all posts
           setPosts(postsData); // Initially show all posts
         } else {
@@ -163,9 +162,9 @@ export function DynamicSubcategoryPage({ categoryName, subcategoryName }: Dynami
       {/* Breadcrumb */}
       <div className="w-full max-w-6xl px-4 mt-8">
         <nav className="flex items-center space-x-2 text-sm text-neutral-600 dark:text-neutral-300">
-          <a href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+          <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
             Home
-          </a>
+          </Link>
           <span className="text-neutral-400">/</span>
           <a 
             href={`/${encodeURIComponent(categoryName)}`} 

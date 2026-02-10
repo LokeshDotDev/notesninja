@@ -7,22 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Download, 
   Star, 
-  Users, 
   ArrowRight, 
   ShoppingCart,
   Heart,
   Share2,
-  Eye,
-  Clock,
   CheckCircle,
   AlertCircle,
   FileText,
   BookOpen,
-  Award,
   TrendingUp,
   Shield,
   Zap,
-  Globe,
   Headphones,
   Loader2,
   ChevronLeft,
@@ -31,7 +26,7 @@ import {
   Minus
 } from "lucide-react";
 import Link from "next/link";
-import settings from "@/lib/settings";
+import Image from "next/image";
 
 interface PostImage {
   id: string;
@@ -192,7 +187,7 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
               {error || "Product Not Found"}
             </h1>
             <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-              The study material you're looking for doesn't exist or has been moved.
+              The study material you&apos;re looking for doesn&apos;t exist or has been moved.
             </p>
             <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
               <Link href="/">
@@ -260,10 +255,11 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
             {/* Main Image */}
             <div className="relative aspect-square bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl overflow-hidden">
               {currentImage ? (
-                <img
+                <Image
                   src={currentImage.imageUrl}
                   alt={product.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
@@ -319,10 +315,11 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
                         : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
                     }`}
                   >
-                    <img
+                    <Image
                       src={image.imageUrl}
                       alt={`${product.title} - ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   </button>
                 ))}

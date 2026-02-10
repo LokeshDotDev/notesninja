@@ -36,14 +36,14 @@ export async function POST(request: Request) {
       const body = await request.json();
       console.log("Request body (JSON):", body);
       name = body.name;
-    } catch (jsonError) {
+    } catch {
       // If JSON parsing fails, try form data
       console.log("JSON parsing failed, trying form data");
       try {
         const formData = await request.formData();
         name = formData.get('name') as string;
         console.log("Request body (FormData):", name);
-      } catch (formDataError) {
+      } catch {
         console.error("Both JSON and FormData parsing failed");
         return NextResponse.json(
           { error: "Invalid request format" },

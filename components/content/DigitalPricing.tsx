@@ -263,7 +263,7 @@ export function DigitalPricing() {
               30-Day Money Back Guarantee
             </h3>
             <p className="text-lg mb-8 text-green-50 max-w-2xl mx-auto">
-              Try NotesNinja risk-free. If you're not completely satisfied with your purchase, we'll refund your payment in full, no questions asked.
+              Try NotesNinja risk-free. If you&apos;re not completely satisfied with your purchase, we&apos;ll refund your payment in full, no questions asked.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="bg-white text-green-600 hover:bg-gray-100">

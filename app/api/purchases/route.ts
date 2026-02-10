@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { sendPurchaseConfirmationEmail } from "@/app/api/email/route";
+import { sendPurchaseConfirmationEmail } from "@/lib/email";
 
 // GET all purchases (admin only)
 export async function GET(req: NextRequest) {

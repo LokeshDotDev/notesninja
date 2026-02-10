@@ -1,8 +1,8 @@
 "use client";
-import { Carousel, Card, BlurImage } from "@/components/ui/apple-cards-carousel";
+import { Carousel, Card } from "@/components/ui/apple-cards-carousel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Download, Star, Users, Trophy, ArrowRight } from "lucide-react";
+import { BookOpen, Download, Star, Users, Trophy } from "lucide-react";
 
 const educationalCards = [
   {

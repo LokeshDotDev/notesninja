@@ -102,7 +102,7 @@ export function UniversitiesShowcase() {
             Trusted by Students from Top Universities
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Our premium study materials are trusted by thousands of students from the world's leading universities.
+            Our premium study materials are trusted by thousands of students from the world&apos;s leading universities.
           </p>
         </div>
 
