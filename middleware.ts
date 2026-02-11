@@ -4,10 +4,9 @@ const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
 	if (isAdminRoute(req)) {
-		const session = await auth();
-		if (!session.userId) {
-			const signInUrl = new URL("/sign-in", req.url);
-			return Response.redirect(signInUrl);
+		const { userId } = await auth();
+		if (!userId) {
+			throw new Error("Unauthorized");
 		}
 	}
 });
