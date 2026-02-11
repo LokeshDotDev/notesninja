@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import {
-	MinioUploadResult,
+	CloudinaryUploadResult,
 	deleteContent,
 	uploadContent,
-} from "@/lib/minio";
+} from "@/lib/Cloudinary";
 
 // GET Single Post
 export async function GET(
@@ -106,7 +106,7 @@ export async function PATCH(
 
 			const uploadResult = (await uploadContent(
 				file
-			)) as MinioUploadResult;
+			)) as CloudinaryUploadResult;
 
 			if (
 				!uploadResult ||

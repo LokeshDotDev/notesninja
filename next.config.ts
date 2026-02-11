@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
+const nextConfig: NextConfig & { api?: { bodyParser?: { sizeLimit?: string } } } = {
   env: {
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
     RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
     // This allows streaming large files through the API
     serverActions: {
       bodySizeLimit: '500mb',
+    },
+  },
+  // Allow large file uploads in API routes (middleware body size)
+  api: {
+    bodyParser: {
+      sizeLimit: '500mb',
     },
   },
   images: {
@@ -32,6 +38,11 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "picsum.photos",
+        pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: "72.62.241.128",
         pathname: "/**",
       },
     ],

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { uploadContent, getAccessibleUrl, deleteContent, MinioUploadResult } from "@/lib/minio";
+import { uploadContent, CloudinaryUploadResult, getAccessibleUrl } from "@/lib/Cloudinary";
 
 // Configure route to handle large file uploads
 export const maxDuration = 300; // Increased to 5 minutes for large files
@@ -94,10 +94,10 @@ export async function POST(req: NextRequest) {
 			},
 		});
 
-		// Upload images to MinIO and create PostImage records (for all products)
+		// Upload images to Cloudinary and create PostImage records (for all products)
 		if (allFiles.length > 0) {
 			const imagePromises = allFiles.map(async (file, index) => {
-				const uploadResult: MinioUploadResult = await uploadContent(file);
+				const uploadResult: CloudinaryUploadResult = await uploadContent(file);
 
 				return prisma.postImage.create({
 					data: {
@@ -112,13 +112,24 @@ export async function POST(req: NextRequest) {
 			await Promise.all(imagePromises);
 		}
 
-		// Upload digital files to MinIO and create DigitalFile records (for digital products)
+		// Upload digital files to Cloudinary and create DigitalFile records (for digital products)
 		if (digitalFiles.length > 0) {
 			const filePromises = digitalFiles.map(async (file) => {
-				const uploadResult: MinioUploadResult = await uploadContent(file, true);
+				const uploadResult: CloudinaryUploadResult = await uploadContent(file, true);
 				
-				// Generate accessible URL (MinIO URLs are direct, no need for special handling)
-				const accessibleUrl = getAccessibleUrl(uploadResult.secure_url, uploadResult.public_id);
+				// Determine resource type for URL generation
+				const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
+				const videoTypes = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'];
+				const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
+				let resourceType = 'raw';
+				if (imageTypes.includes(fileExtension)) {
+					resourceType = 'image';
+				} else if (videoTypes.includes(fileExtension)) {
+					resourceType = 'video';
+				}
+				
+				// Generate accessible URL
+				const accessibleUrl = getAccessibleUrl(uploadResult.secure_url, uploadResult.public_id, resourceType);
 
 				return prisma.digitalFile.create({
 					data: {

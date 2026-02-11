@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import {
-	MinioUploadResult,
+	CloudinaryUploadResult,
 	deleteContent,
 	uploadContent,
-} from "@/lib/minio";
+} from "@/lib/Cloudinary";
 import { auth } from "@clerk/nextjs/server";
 
 // GET single featured
@@ -79,7 +79,7 @@ export async function PATCH(req: NextRequest) {
 			await deleteContent(existing.publicId);
 			const uploadResult = (await uploadContent(
 				file
-			)) as MinioUploadResult;
+			)) as CloudinaryUploadResult;
 
 			dataToUpdate.imageUrl = uploadResult.secure_url;
 			dataToUpdate.publicId = uploadResult.public_id;
