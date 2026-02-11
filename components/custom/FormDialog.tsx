@@ -52,12 +52,6 @@ interface Category {
 	children?: Category[];
 }
 
-interface Subcategory {
-	id: string;
-	name: string;
-	categoryId: string;
-}
-
 interface ProductType {
 	id: string;
 	name: string;
@@ -76,7 +70,6 @@ export default function FormDialog({
 	console.log("FormDialog received parentId:", parentId, "for type:", type);
 	const [open, setOpen] = useState(false);
 	const [categories, setCategories] = useState<Category[]>([]);
-	const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
 	const [productTypes, setProductTypes] = useState<ProductType[]>([]);
 	const [formData, setFormData] = useState({
 		title: "",
@@ -96,19 +89,14 @@ export default function FormDialog({
 	useEffect(() => {
 		async function fetchData() {
 			try {
-				const [categoriesRes, subcategoriesRes, productTypesRes] = await Promise.all([
+				const [categoriesRes, productTypesRes] = await Promise.all([
 					fetch("/api/categories"),
-					fetch("/api/subcategories"),
 					fetch("/api/product-types"),
 				]);
 
 				if (categoriesRes.ok) {
 					const categoriesData = await categoriesRes.json();
 					setCategories(categoriesData);
-				}
-				if (subcategoriesRes.ok) {
-					const subcategoriesData = await subcategoriesRes.json();
-					setSubcategories(subcategoriesData);
 				}
 				if (productTypesRes.ok) {
 					const productTypesData = await productTypesRes.json();
@@ -269,10 +257,6 @@ export default function FormDialog({
 	const removeDigitalFile = (index: number) => {
 		setDigitalFiles(prev => prev.filter((_, i) => i !== index));
 	};
-
-	const filteredSubcategories = subcategories.filter(
-		sub => sub.categoryId === formData.categoryId
-	);
 
 	// Helper function to flatten nested categories for selection with visual hierarchy
 	const flattenCategories = (cats: Category[], depth = 0): { id: string; name: string; depth: number }[] => {

@@ -66,10 +66,6 @@ export function DynamicNavbar() {
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
 
-	const formatCategoryName = (name: string) => {
-		return name.toLowerCase().replace(/\s+/g, "-").replace(/&/g, "and");
-	};
-
 	// Render nested categories for dropdown
 	const renderNestedCategories = (categories: Category[], depth = 0) => {
 		return categories.map((category) => (
