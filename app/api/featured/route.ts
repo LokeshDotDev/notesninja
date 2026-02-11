@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { uploadContent } from "@/lib/Cloudinary";
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/get-session";
 
 interface CloudinaryUploadResult {
 	secure_url: string;
@@ -49,9 +49,9 @@ export async function GET(req: NextRequest) {
 
 // CREATE a new featured item
 export async function POST(req: NextRequest) {
-	const { userId } = await auth();
+	const session = await getSession();
 
-	if (!userId) {
+	if (!session?.user) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 

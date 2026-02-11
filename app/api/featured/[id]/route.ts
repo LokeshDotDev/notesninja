@@ -5,7 +5,7 @@ import {
 	deleteContent,
 	uploadContent,
 } from "@/lib/Cloudinary";
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/get-session";
 
 // GET single featured
 export async function GET(req: NextRequest) {
@@ -36,8 +36,8 @@ export async function GET(req: NextRequest) {
 
 // UPDATE featured (Partial Update)
 export async function PATCH(req: NextRequest) {
-	const { userId } = await auth();
-	if (!userId) {
+	const session = await getSession();
+	if (!session?.user) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
@@ -106,9 +106,9 @@ export async function PATCH(req: NextRequest) {
 
 // DELETE featured
 export async function DELETE(req: NextRequest) {
-	const { userId } = await auth();
+	const session = await getSession();
 
-	if (!userId) {
+	if (!session?.user) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 

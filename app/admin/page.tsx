@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -13,7 +14,6 @@ import { Trash2 } from "lucide-react";
 import FormDialog from "@/components/custom/FormDialog";
 import Notification from "@/components/custom/Notification";
 import { NestedCategoryList } from "@/components/custom/NestedCategoryList";
-import { useAuth } from "@clerk/nextjs";
 
 interface Post {
 	id: string;
@@ -113,7 +113,7 @@ function extractCountry(location: string = ""): string {
 }
 
 export default function Dashboard() {
-	const { userId, isLoaded: authLoaded } = useAuth();
+	const { data: session, status } = useSession();
 	const [posts, setPosts] = useState<Post[]>([]);
 	const [featured, setFeatured] = useState<Featured[]>([]);
 	const [categories, setCategories] = useState<Category[]>([]);
@@ -536,12 +536,12 @@ export default function Dashboard() {
 					<div className='flex items-center gap-2'>
 						<span
 							className={`h-2 w-2 rounded-full ${
-								userId ? "bg-green-500" : "bg-red-500"
+								session ? "bg-green-500" : "bg-red-500"
 							}`}></span>
 						<span className='text-sm font-medium'>
-							{!authLoaded
+							{status === "loading"
 								? "Loading auth..."
-								: userId
+								: session
 								? "Authenticated"
 								: "Not authenticated"}
 						</span>

@@ -15,8 +15,8 @@ export interface CloudinaryUploadResult {
 }
 
 // Constants for file size limits
-const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB for images (Vercel free tier limit)
-const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB for digital files (Vercel free tier limit)
+const MAX_IMAGE_SIZE = 100 * 1024 * 1024 * 1024; // 100GB for images
+const MAX_FILE_SIZE = 100 * 1024 * 1024 * 1024; // 100GB for digital files
 
 // Upload content to Cloudinary
 export async function uploadContent(

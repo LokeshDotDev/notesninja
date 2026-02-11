@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
+import Providers from "@/components/providers/SessionProvider";
 import { DynamicNavbar } from "@/components/custom/DynamicNavbar";
 import JsonLd from "@/components/custom/JsonLd";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
@@ -79,7 +79,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <Providers>
       <html lang="en">
         <head>
           <link rel="canonical" href={settings.site.url} />
@@ -121,6 +121,6 @@ export default function RootLayout({
           </noscript>
         </body>
       </html>
-    </ClerkProvider>
+    </Providers>
   );
 }

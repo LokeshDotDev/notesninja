@@ -1,16 +1,34 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
+import type { NextRequest } from "next/server";
 
-const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+export async function middleware(req: NextRequest) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const { pathname } = req.nextUrl;
 
-export default clerkMiddleware(async (auth, req) => {
-	if (isAdminRoute(req)) {
-		const { userId } = await auth();
-		if (!userId) {
-			throw new Error("Unauthorized");
-		}
-	}
-});
+  // Protect admin routes
+  if (pathname.startsWith("/admin")) {
+    if (!token) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // Protect dashboard routes
+  if (pathname.startsWith("/dashboard")) {
+    if (!token) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(url);
+    }
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
-	matcher: ["/((?!api|_next/static|_next/image|favicon.ico|sitemap).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|sitemap).*)"],
 };
