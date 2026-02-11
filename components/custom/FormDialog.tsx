@@ -222,7 +222,7 @@ export default function FormDialog({
 	};
 
 	const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB (Vercel free tier limit)
-	const MAX_DIGITAL_FILE_SIZE = 4 * 1024 * 1024; // 4MB (Vercel free tier limit)
+	const MAX_DIGITAL_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const selectedFiles = Array.from(e.target.files || []);
@@ -243,7 +243,7 @@ export default function FormDialog({
 		// Validate file sizes
 		const oversizedFiles = selectedFiles.filter(file => file.size > MAX_DIGITAL_FILE_SIZE);
 		if (oversizedFiles.length > 0) {
-			alert(`The following digital files exceed 4MB limit (Vercel free tier):\n${oversizedFiles.map(f => `${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB)`).join('\n')}\n\nNote: Upgrade to Vercel Pro for larger files.`);
+			alert(`The following digital files exceed 100MB limit:\n${oversizedFiles.map(f => `${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB)`).join('\n')}`);
 			return;
 		}
 		
@@ -497,7 +497,7 @@ export default function FormDialog({
 									>
 										<FileText className="w-8 h-8 text-gray-400 mb-2" />
 										<span className="text-sm text-gray-600">Click to upload digital files</span>
-										<span className="text-xs text-gray-500">PDF, DOCX, TXT, ZIP - Max 4MB each (Vercel free tier)</span>
+										<span className="text-xs text-gray-500">PDF, DOCX, TXT, ZIP - Max 100MB each</span>
 									</label>
 								</div>
 								{digitalFiles.length > 0 && (
