@@ -14,6 +14,10 @@ export interface CloudinaryUploadResult {
 	[key: string]: unknown;
 }
 
+// Constants for file size limits
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB for images
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB for digital files (Cloudinary limit)
+
 // Upload content to Cloudinary
 export async function uploadContent(
 	file: File,
@@ -30,6 +34,15 @@ export async function uploadContent(
 	}
 
 	try {
+		// Validate file size before upload
+		const maxSize = isDigital ? MAX_FILE_SIZE : MAX_IMAGE_SIZE;
+		if (file.size > maxSize) {
+			const maxSizeMB = maxSize / (1024 * 1024);
+			throw new Error(
+				`File "${file.name}" (${(file.size / 1024 / 1024).toFixed(2)}MB) exceeds the maximum allowed size of ${maxSizeMB}MB`
+			);
+		}
+
 		const bytes = await file.arrayBuffer();
 		const buffer = Buffer.from(bytes);
 
@@ -47,7 +60,7 @@ export async function uploadContent(
 			resourceType = 'image'; // For image files
 		}
 
-		console.log(`Uploading file: ${file.name}, type: ${fileExtension}, resource_type: ${resourceType}, isDigital: ${isDigital}`);
+		console.log(`Uploading file: ${file.name}, size: ${(file.size / 1024 / 1024).toFixed(2)}MB, type: ${fileExtension}, resource_type: ${resourceType}, isDigital: ${isDigital}`);
 
 		interface UploadOptions {
 	folder: string;

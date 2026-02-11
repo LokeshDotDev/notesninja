@@ -233,13 +233,32 @@ export default function FormDialog({
 		setIsOpen(false);
 	};
 
+	const MAX_IMAGE_SIZE = 1024 * 1024 * 1024; // 1GB (MinIO supports large files)
+	const MAX_DIGITAL_FILE_SIZE = 5 * 1024 * 1024 * 1024; // 5GB (MinIO supports large files)
+
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const selectedFiles = Array.from(e.target.files || []);
+		
+		// Validate file sizes (MinIO can handle much larger files than Cloudinary)
+		const oversizedFiles = selectedFiles.filter(file => file.size > MAX_IMAGE_SIZE);
+		if (oversizedFiles.length > 0) {
+			alert(`The following image files exceed 1GB limit:\n${oversizedFiles.map(f => `${f.name} (${(f.size / 1024 / 1024 / 1024).toFixed(2)}GB)`).join('\n')}`);
+			return;
+		}
+		
 		setFiles(prev => [...prev, ...selectedFiles]);
 	};
 
 	const handleDigitalFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const selectedFiles = Array.from(e.target.files || []);
+		
+		// Validate file sizes (MinIO supports large files)
+		const oversizedFiles = selectedFiles.filter(file => file.size > MAX_DIGITAL_FILE_SIZE);
+		if (oversizedFiles.length > 0) {
+			alert(`The following digital files exceed 5GB limit:\n${oversizedFiles.map(f => `${f.name} (${(f.size / 1024 / 1024 / 1024).toFixed(2)}GB)`).join('\n')}`);
+			return;
+		}
+		
 		setDigitalFiles(prev => [...prev, ...selectedFiles]);
 	};
 
@@ -452,7 +471,7 @@ export default function FormDialog({
 									>
 										<Image className="w-8 h-8 text-gray-400 mb-2" aria-label="Upload product images" />
 										<span className="text-sm text-gray-600">Click to upload images</span>
-										<span className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</span>
+										<span className="text-xs text-gray-500">PNG, JPG, GIF - Max 1GB each</span>
 									</label>
 								</div>
 								{files.length > 0 && (
@@ -494,7 +513,7 @@ export default function FormDialog({
 									>
 										<FileText className="w-8 h-8 text-gray-400 mb-2" />
 										<span className="text-sm text-gray-600">Click to upload digital files</span>
-										<span className="text-xs text-gray-500">PDF, DOCX, TXT, ZIP up to 50MB</span>
+										<span className="text-xs text-gray-500">PDF, DOCX, TXT, ZIP - Max 5GB each</span>
 									</label>
 								</div>
 								{digitalFiles.length > 0 && (

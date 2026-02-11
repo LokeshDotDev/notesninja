@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { uploadContent, CloudinaryUploadResult, getAccessibleUrl } from "@/lib/Cloudinary";
+import { uploadContent, getAccessibleUrl, deleteContent, MinioUploadResult } from "@/lib/minio";
+
+// Configure route to handle large file uploads
+export const maxDuration = 300; // Increased to 5 minutes for large files
+export const dynamic = 'force-dynamic'; // Disable static optimization
 
 // GET all posts
 export async function GET(req: NextRequest) {
@@ -68,24 +72,13 @@ export async function POST(req: NextRequest) {
 
 		if (!title || !description || !categoryId) {
 			return NextResponse.json(
-				{ error: "Missing required fields" },
+				{ error: "Missing required fields: title, description, and category are required" },
 				{ status: 400 }
 			);
 		}
 
-		if (isDigital && !digitalFiles.length) {
-			return NextResponse.json(
-				{ error: "Digital products require at least one file" },
-				{ status: 400 }
-			);
-		}
-
-		if (!isDigital && !allFiles.length) {
-			return NextResponse.json(
-				{ error: "Physical products require at least one image" },
-				{ status: 400 }
-			);
-		}
+		// Note: Files are optional - they can be added later via edit
+		// Digital products should have files, but we'll allow creation without them for now
 
 		// Create the post first
 		const newPost = await prisma.post.create({
@@ -101,10 +94,10 @@ export async function POST(req: NextRequest) {
 			},
 		});
 
-		// Upload images to Cloudinary and create PostImage records (for all products)
+		// Upload images to MinIO and create PostImage records (for all products)
 		if (allFiles.length > 0) {
 			const imagePromises = allFiles.map(async (file, index) => {
-				const uploadResult: CloudinaryUploadResult = await uploadContent(file);
+				const uploadResult: MinioUploadResult = await uploadContent(file);
 
 				return prisma.postImage.create({
 					data: {
@@ -119,24 +112,13 @@ export async function POST(req: NextRequest) {
 			await Promise.all(imagePromises);
 		}
 
-		// Upload digital files to Cloudinary and create DigitalFile records (for digital products)
+		// Upload digital files to MinIO and create DigitalFile records (for digital products)
 		if (digitalFiles.length > 0) {
 			const filePromises = digitalFiles.map(async (file) => {
-				const uploadResult: CloudinaryUploadResult = await uploadContent(file, true);
+				const uploadResult: MinioUploadResult = await uploadContent(file, true);
 				
-				// Determine resource type for URL generation
-				const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
-				const videoTypes = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'];
-				const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
-				let resourceType = 'raw';
-				if (imageTypes.includes(fileExtension)) {
-					resourceType = 'image';
-				} else if (videoTypes.includes(fileExtension)) {
-					resourceType = 'video';
-				}
-				
-				// Generate accessible URL
-				const accessibleUrl = getAccessibleUrl(uploadResult.secure_url, uploadResult.public_id, resourceType);
+				// Generate accessible URL (MinIO URLs are direct, no need for special handling)
+				const accessibleUrl = getAccessibleUrl(uploadResult.secure_url, uploadResult.public_id);
 
 				return prisma.digitalFile.create({
 					data: {

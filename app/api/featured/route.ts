@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { uploadContent } from "@/lib/Cloudinary";
+import { uploadContent, MinioUploadResult } from "@/lib/minio";
 import { auth } from "@clerk/nextjs/server";
-
-interface CloudinaryUploadResult {
-	secure_url: string;
-	public_id: string;
-	[key: string]: string | number | boolean;
-}
 
 // GET all featured items
 export async function GET(req: NextRequest) {
@@ -71,7 +65,7 @@ export async function POST(req: NextRequest) {
 			);
 		}
 
-		const result = (await uploadContent(file)) as CloudinaryUploadResult;
+		const result = (await uploadContent(file)) as MinioUploadResult;
 
 		const newFeatured = await prisma.featured.create({
 			data: {

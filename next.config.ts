@@ -5,6 +5,13 @@ const nextConfig: NextConfig = {
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
     RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
   },
+  experimental: {
+    // Increase body size limit for file uploads to 500MB
+    // This allows streaming large files through the API
+    serverActions: {
+      bodySizeLimit: '500mb',
+    },
+  },
   images: {
     remotePatterns: [
       {
