@@ -4,10 +4,9 @@ const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
 	if (isAdminRoute(req)) {
-		await auth.protect();
+		const session = await auth();
+		if (!session.userId) {
+			return Response.redirect(new URL("/sign-in", req.url));
+		}
 	}
 });
-
-export const config = {
-	matcher: ["/admin(.*)", "/api/featured(.*)", "/api/posts(.*)"],
-};

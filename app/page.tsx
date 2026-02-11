@@ -5,9 +5,10 @@ import { StudentTestimonials } from "@/components/content/StudentTestimonials";
 import { HowItWorks } from "@/components/content/HowItWorks";
 import { CallToAction } from "@/components/content/CallToAction";
 import { UniversitiesShowcase } from "@/components/content/UniversitiesShowcase";
+import { Metadata } from "next";
 import settings from "@/lib/settings";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: `${settings.site.name} | Premium Digital Academic Materials & Study Resources`,
   description: settings.site.description,
   keywords: settings.site.keywords,

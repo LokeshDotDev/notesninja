@@ -233,8 +233,8 @@ export default function FormDialog({
 		setIsOpen(false);
 	};
 
-	const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
-	const MAX_DIGITAL_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+	const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB (Vercel free tier limit)
+	const MAX_DIGITAL_FILE_SIZE = 4 * 1024 * 1024; // 4MB (Vercel free tier limit)
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const selectedFiles = Array.from(e.target.files || []);
@@ -242,7 +242,7 @@ export default function FormDialog({
 		// Validate file sizes
 		const oversizedFiles = selectedFiles.filter(file => file.size > MAX_IMAGE_SIZE);
 		if (oversizedFiles.length > 0) {
-			alert(`The following image files exceed 10MB limit:\n${oversizedFiles.map(f => f.name).join('\n')}`);
+			alert(`The following image files exceed 4MB limit (Vercel free tier):\n${oversizedFiles.map(f => `${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB)`).join('\n')}`);
 			return;
 		}
 		
@@ -255,7 +255,7 @@ export default function FormDialog({
 		// Validate file sizes
 		const oversizedFiles = selectedFiles.filter(file => file.size > MAX_DIGITAL_FILE_SIZE);
 		if (oversizedFiles.length > 0) {
-			alert(`The following digital files exceed 100MB limit:\n${oversizedFiles.map(f => `${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB)`).join('\n')}\n\nNote: Cloudinary's free tier supports up to 100MB per file.`);
+			alert(`The following digital files exceed 4MB limit (Vercel free tier):\n${oversizedFiles.map(f => `${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB)`).join('\n')}\n\nNote: Upgrade to Vercel Pro for larger files.`);
 			return;
 		}
 		
@@ -429,7 +429,7 @@ export default function FormDialog({
 									>
 										<Image className="w-8 h-8 text-gray-400 mb-2" aria-label="Upload cover image" />
 										<span className="text-sm text-gray-600">Click to upload cover image</span>
-										<span className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</span>
+										<span className="text-xs text-gray-500">PNG, JPG, GIF up to 4MB (Vercel free tier)</span>
 									</label>
 								</div>
 								{files.length > 0 && (
@@ -471,7 +471,7 @@ export default function FormDialog({
 									>
 										<Image className="w-8 h-8 text-gray-400 mb-2" aria-label="Upload product images" />
 										<span className="text-sm text-gray-600">Click to upload images</span>
-										<span className="text-xs text-gray-500">PNG, JPG, GIF - Max 10MB each</span>
+										<span className="text-xs text-gray-500">PNG, JPG, GIF - Max 4MB each (Vercel free tier)</span>
 									</label>
 								</div>
 								{files.length > 0 && (
@@ -513,7 +513,7 @@ export default function FormDialog({
 									>
 										<FileText className="w-8 h-8 text-gray-400 mb-2" />
 										<span className="text-sm text-gray-600">Click to upload digital files</span>
-										<span className="text-xs text-gray-500">PDF, DOCX, TXT, ZIP - Max 100MB each</span>
+										<span className="text-xs text-gray-500">PDF, DOCX, TXT, ZIP - Max 4MB each (Vercel free tier)</span>
 									</label>
 								</div>
 								{digitalFiles.length > 0 && (
@@ -580,7 +580,7 @@ export default function FormDialog({
 								>
 									<Image className="w-8 h-8 text-gray-400 mb-2" aria-label="Upload featured image" />
 									<span className="text-sm text-gray-600">Click to upload image</span>
-									<span className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</span>
+									<span className="text-xs text-gray-500">PNG, JPG, GIF up to 4MB (Vercel free tier)</span>
 								</label>
 							</div>
 							{files.length > 0 && (

@@ -1,21 +1,15 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig & { api?: { bodyParser?: { sizeLimit?: string } } } = {
+const nextConfig: NextConfig = {
   env: {
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
     RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
   },
   experimental: {
-    // Increase body size limit for file uploads to 500MB
-    // This allows streaming large files through the API
+    // Increase body size limit for file uploads to 4MB (Vercel free tier limit)
+    // This allows streaming files through API
     serverActions: {
-      bodySizeLimit: '500mb',
-    },
-  },
-  // Allow large file uploads in API routes (middleware body size)
-  api: {
-    bodyParser: {
-      sizeLimit: '500mb',
+      bodySizeLimit: '4mb',
     },
   },
   images: {

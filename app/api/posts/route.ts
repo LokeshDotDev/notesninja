@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { uploadContent, CloudinaryUploadResult, getAccessibleUrl } from "@/lib/Cloudinary";
 
 // Configure route to handle large file uploads
-export const maxDuration = 300; // Increased to 5 minutes for large files
+// Note: 300 seconds only works on Vercel Pro+. Free tier is limited to 10 seconds.
 export const dynamic = 'force-dynamic'; // Disable static optimization
 
 // GET all posts
@@ -51,7 +51,18 @@ export async function GET(req: NextRequest) {
 
 // POST create new post (with multiple images upload)
 export async function POST(req: NextRequest) {
+	console.log("=== POST /api/posts - Start ===");
+	
 	try {
+		// Log environment configuration
+		console.log("Environment check:", {
+			cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? "✓ Set" : "✗ Missing",
+			apiKey: process.env.CLOUDINARY_API_KEY ? "✓ Set" : "✗ Missing",
+			apiSecret: process.env.CLOUDINARY_API_SECRET ? "✓ Set" : "✗ Missing",
+			database: process.env.DATABASE_URL ? "✓ Set" : "✗ Missing"
+		});
+
+		console.log("1. Parsing form data...");
 		const formData = await req.formData();
 
 		// Handle both multiple files and single file for backward compatibility
@@ -70,7 +81,17 @@ export async function POST(req: NextRequest) {
 		const compareAtPrice = formData.get("compareAtPrice") as string | null;
 		const isDigital = formData.get("isDigital") === "true";
 
+		console.log("2. Extracted fields:", {
+			title: title?.substring(0, 50),
+			categoryId,
+			subcategoryId,
+			isDigital,
+			imageCount: allFiles.length,
+			digitalFileCount: digitalFiles.length
+		});
+
 		if (!title || !description || !categoryId) {
+			console.log("✗ Validation failed: Missing required fields");
 			return NextResponse.json(
 				{ error: "Missing required fields: title, description, and category are required" },
 				{ status: 400 }
@@ -80,6 +101,7 @@ export async function POST(req: NextRequest) {
 		// Note: Files are optional - they can be added later via edit
 		// Digital products should have files, but we'll allow creation without them for now
 
+		console.log("3. Creating post in database...");
 		// Create the post first
 		const newPost = await prisma.post.create({
 			data: {
@@ -93,11 +115,15 @@ export async function POST(req: NextRequest) {
 				isDigital,
 			},
 		});
+		console.log("✓ Post created in database:", newPost.id);
 
 		// Upload images to Cloudinary and create PostImage records (for all products)
 		if (allFiles.length > 0) {
+			console.log(`4. Uploading ${allFiles.length} images to Cloudinary...`);
 			const imagePromises = allFiles.map(async (file, index) => {
+				console.log(`   - Uploading image ${index + 1}: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
 				const uploadResult: CloudinaryUploadResult = await uploadContent(file);
+				console.log(`   ✓ Image ${index + 1} uploaded:`, uploadResult.public_id);
 
 				return prisma.postImage.create({
 					data: {
@@ -110,11 +136,16 @@ export async function POST(req: NextRequest) {
 			});
 
 			await Promise.all(imagePromises);
+			console.log(`✓ All ${allFiles.length} images uploaded successfully`);
+		} else {
+			console.log("4. No images to upload");
 		}
 
 		// Upload digital files to Cloudinary and create DigitalFile records (for digital products)
 		if (digitalFiles.length > 0) {
+			console.log(`5. Uploading ${digitalFiles.length} digital files to Cloudinary...`);
 			const filePromises = digitalFiles.map(async (file) => {
+				console.log(`   - Uploading file: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
 				const uploadResult: CloudinaryUploadResult = await uploadContent(file, true);
 				
 				// Determine resource type for URL generation
@@ -130,6 +161,7 @@ export async function POST(req: NextRequest) {
 				
 				// Generate accessible URL
 				const accessibleUrl = getAccessibleUrl(uploadResult.secure_url, uploadResult.public_id, resourceType);
+				console.log(`   ✓ File uploaded:`, uploadResult.public_id);
 
 				return prisma.digitalFile.create({
 					data: {
@@ -144,8 +176,12 @@ export async function POST(req: NextRequest) {
 			});
 
 			await Promise.all(filePromises);
+			console.log(`✓ All ${digitalFiles.length} digital files uploaded successfully`);
+		} else {
+			console.log("5. No digital files to upload");
 		}
 
+		console.log("6. Fetching complete post data...");
 		// Return post with its images and digital files
 		const postWithFiles = await prisma.post.findUnique({
 			where: { id: newPost.id },
@@ -169,12 +205,36 @@ export async function POST(req: NextRequest) {
 			},
 		});
 
+		console.log("=== POST /api/posts - Success ===");
 		return NextResponse.json(postWithFiles, { status: 201 });
 	} catch (error) {
-		console.error("Error creating post:", error);
+		console.error("=== POST /api/posts - ERROR ===");
+		console.error("Error details:", error);
+		console.error("Error type:", typeof error);
+		console.error("Error message:", error instanceof Error ? error.message : "No message");
+		console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace");
+		
+		// Log additional debugging info
+		console.error("Environment check at error time:", {
+			cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? "✓ Set" : "✗ Missing",
+			apiKey: process.env.CLOUDINARY_API_KEY ? "✓ Set" : "✗ Missing", 
+			apiSecret: process.env.CLOUDINARY_API_SECRET ? "✓ Set" : "✗ Missing",
+			database: process.env.DATABASE_URL ? "✓ Set" : "✗ Missing"
+		});
+		
 		return NextResponse.json(
 			{
 				error: error instanceof Error ? error.message : "Failed to create post",
+				details: process.env.NODE_ENV === 'development' ? {
+					stack: error instanceof Error ? error.stack : String(error),
+					type: typeof error,
+					envCheck: {
+						cloudName: !!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+						apiKey: !!process.env.CLOUDINARY_API_KEY,
+						apiSecret: !!process.env.CLOUDINARY_API_SECRET,
+						database: !!process.env.DATABASE_URL
+					}
+				} : undefined
 			},
 			{ status: 500 }
 		);

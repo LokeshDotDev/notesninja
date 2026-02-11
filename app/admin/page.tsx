@@ -294,6 +294,16 @@ export default function Dashboard() {
 						errorMessage = `Unauthorized. Please sign in to save this ${type}.`;
 					} else if (response.status === 400) {
 						errorMessage = errorData.error || `Invalid data for ${type}.`;
+						// Show more detailed error in development
+						if (process.env.NODE_ENV === 'development' && errorData.details) {
+							console.error('Detailed error:', errorData.details);
+						}
+					} else if (response.status === 500) {
+						errorMessage = `Server error: ${errorData.error || 'Internal server error'}`;
+						// Log server details for debugging
+						if (errorData.details) {
+							console.error('Server error details:', errorData.details);
+						}
 					} else {
 						errorMessage = errorData.error || errorMessage;
 					}

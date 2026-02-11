@@ -64,7 +64,7 @@ export function PremiumHero() {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-12 leading-relaxed font-light"
         >
-          Access expert-curated notes, study guides, and exam preparation materials from top educators. 
+          {/* Access expert-curated notes, study guides, and exam preparation materials from top educators.  */}
           <span className="block mt-2 font-semibold text-gray-900 dark:text-white">
             Pay once, download instantly, study forever.
           </span>
