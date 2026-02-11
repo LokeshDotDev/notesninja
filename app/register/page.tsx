@@ -10,22 +10,18 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
       setIsLoading(false);
       return;
     }
@@ -43,15 +39,13 @@ export default function RegisterPage() {
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        setError(data.error || "Registration failed");
+        router.push("/login?message=Registration failed");
       } else {
         router.push("/login?message=Registration successful. Please sign in.");
       }
     } catch (error) {
-      setError("An error occurred. Please try again.");
+      console.error("Registration error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -79,11 +73,6 @@ export default function RegisterPage() {
         </div>
 
         <div className="w-full bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8">
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -157,7 +146,7 @@ export default function RegisterPage() {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Already have an account?{" "}
+              <span>Don&apos;t have an account? </span>{" "}
               <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
                 Sign in
               </Link>
