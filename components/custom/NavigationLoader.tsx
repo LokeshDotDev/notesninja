@@ -2,13 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "motion/react";
+import { PremiumProgressBar } from "@/components/ui/premium-loader";
 
 export default function NavigationLoader() {
 	const [isLoading, setIsLoading] = useState(false);
+	const [progress, setProgress] = useState(0);
 	const pathname = usePathname();
 
 	useEffect(() => {
 		setIsLoading(false);
+		setProgress(0);
 	}, [pathname]);
 
 	useEffect(() => {
@@ -17,9 +21,31 @@ export default function NavigationLoader() {
 			// For client-side navigation, listen to link clicks
 			const handleLinkClick = (e: Event) => {
 				const target = e.target as HTMLElement;
-				if (target.tagName === "A" || target.closest("a")) {
+				const link = target.tagName === "A" ? target as HTMLAnchorElement : target.closest("a");
+				
+				if (link && link.href && link.href !== window.location.href) {
 					setIsLoading(true);
-					setTimeout(() => setIsLoading(false), 1500); // Auto-clear after 1.5s
+					setProgress(0);
+					
+					// Simulate progress animation
+					const progressInterval = setInterval(() => {
+						setProgress((prev) => {
+							if (prev >= 90) {
+								clearInterval(progressInterval);
+								return 90;
+							}
+							return prev + Math.random() * 30;
+						});
+					}, 100);
+
+					// Complete the progress after navigation
+					setTimeout(() => {
+						setProgress(100);
+						setTimeout(() => {
+							setIsLoading(false);
+							setProgress(0);
+						}, 200);
+					}, 800);
 				}
 			};
 
@@ -31,11 +57,19 @@ export default function NavigationLoader() {
 		}
 	}, []);
 
-	if (!isLoading) return null;
-
 	return (
-		<div className='fixed top-0 left-0 w-full h-1 z-[9999]'>
-			<div className='h-full bg-gradient-to-r from-blue-500 to-green-500 animate-pulse'></div>
-		</div>
+		<AnimatePresence mode="wait">
+			{isLoading && (
+				<motion.div
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					exit={{ opacity: 0 }}
+					transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
+					className="fixed top-0 left-0 right-0 z-[9999]"
+				>
+					<PremiumProgressBar progress={progress} />
+				</motion.div>
+			)}
+		</AnimatePresence>
 	);
 }

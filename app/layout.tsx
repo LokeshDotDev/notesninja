@@ -83,6 +83,7 @@ export default function RootLayout({
       <html lang="en">
         <head>
           <link rel="canonical" href={settings.site.url} />
+          <link rel="icon" type="image/png" href="/assets/Notes ninja Logo.png" />
           <meta name="geo.region" content={settings.site.geo.region} />
           <meta name="geo.position" content={settings.site.geo.position} />
           <meta name="ICBM" content={settings.site.geo.icbm} />

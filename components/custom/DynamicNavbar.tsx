@@ -4,6 +4,7 @@ import Link from "next/link";
 import settings from "@/lib/settings";
 import { ChevronDown, BookOpen, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface Category {
   id: string;
@@ -92,16 +93,17 @@ export function DynamicNavbar() {
 					{/* Logo */}
 					<div className="flex items-center">
 						<Link href="/" className="flex items-center space-x-2">
-							<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
-								<BookOpen className="w-5 h-5 text-white" />
-							</div>
-							<span className="text-xl font-bold text-neutral-900 dark:text-white">
-								NotesNinja
-							</span>
-						</Link>
-					</div>
+							<Image 
+								src="/assets/Notes ninja Logo copy.png" 
+								alt="NotesNinja" 
+							width={180}
+							height={48}
+							className="h-12 w-auto"
+						/>
+					</Link>
+				</div>
 
-					{/* Desktop Navigation */}
+				{/* Desktop Navigation */}
 					<div className="hidden md:flex items-center space-x-8">
 						{/* Study Materials Dropdown */}
 						<div className="relative" ref={dropdownRef}>

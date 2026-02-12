@@ -1,130 +1,150 @@
 "use client";
 import { motion } from "motion/react";
-import { 
-  Calculator, 
-  FlaskConical, 
-  BookOpen, 
-  Globe, 
-  Palette, 
-  Music,
-  Dna,
-  Code,
-  Brain,
-  History,
-  Stethoscope,
-  Briefcase,
-  ChevronRight,
-  Star
-} from "lucide-react";
+import { ChevronRight, BookOpen } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import Image from "next/image";
 
-const subjects = [
+const productCategories = [
   {
-    icon: Calculator,
-    title: "Mathematics",
-    description: "Algebra, Calculus, Statistics & More",
+    icon: BookOpen,
+    title: "MBA Study Materials",
+    description: "Master of Business Administration notes, case studies, and exam resources",
     materials: 245,
-    rating: 4.8,
     gradient: "from-blue-500 to-cyan-500",
-    popular: true
-  },
-  {
-    icon: FlaskConical,
-    title: "Science",
-    description: "Physics, Chemistry, Biology Comprehensive",
-    materials: 189,
-    rating: 4.9,
-    gradient: "from-green-500 to-emerald-500",
-    popular: true
+    price: "₹299-999",
+    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg"
   },
   {
     icon: BookOpen,
-    title: "Literature",
-    description: "Classic & Contemporary Works Analysis",
+    title: "BBA Study Materials",
+    description: "Bachelor of Business Administration notes, assignments, and study guides",
+    materials: 189,
+    gradient: "from-purple-500 to-pink-500",
+    price: "₹199-699",
+    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.47.15.jpeg"
+  },
+  {
+    icon: BookOpen,
+    title: "MCA Study Materials",
+    description: "Master of Computer Applications programming notes, algorithms, and projects",
     materials: 156,
-    rating: 4.7,
-    gradient: "from-purple-500 to-pink-500"
+    gradient: "from-green-500 to-emerald-500",
+    price: "₹249-899",
+    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg"
   },
   {
-    icon: Globe,
-    title: "Geography",
-    description: "Physical, Human & Environmental Geography",
-    materials: 98,
-    rating: 4.6,
-    gradient: "from-orange-500 to-red-500"
-  },
-  {
-    icon: Palette,
-    title: "Arts & Design",
-    description: "Visual Arts, Design Theory & History",
-    materials: 67,
-    rating: 4.8,
-    gradient: "from-pink-500 to-rose-500"
-  },
-  {
-    icon: Music,
-    title: "Music",
-    description: "Theory, History & Performance Studies",
-    materials: 45,
-    rating: 4.7,
-    gradient: "from-indigo-500 to-purple-500"
-  },
-  {
-    icon: Dna,
-    title: "Biology",
-    description: "Molecular, Cellular & Organismal Biology",
+    icon: BookOpen,
+    title: "BCA Study Materials",
+    description: "Bachelor of Computer Applications notes, practical files, and resources",
     materials: 134,
-    rating: 4.9,
-    gradient: "from-green-500 to-teal-500"
+    gradient: "from-orange-500 to-red-500",
+    price: "₹149-599",
+    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.47.15.jpeg"
   },
   {
-    icon: Code,
-    title: "Computer Science",
-    description: "Programming, Algorithms & Data Structures",
-    materials: 178,
-    rating: 4.8,
-    gradient: "from-blue-500 to-indigo-500",
-    popular: true
+    icon: BookOpen,
+    title: "MAECO Study Materials",
+    description: "Master of Arts in Economics notes, economic theories, and research papers",
+    materials: 98,
+    gradient: "from-indigo-500 to-purple-500",
+    price: "₹199-799",
+    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg"
   },
   {
-    icon: Brain,
-    title: "Psychology",
-    description: "Cognitive, Social & Clinical Psychology",
-    materials: 89,
-    rating: 4.7,
-    gradient: "from-purple-500 to-blue-500"
+    icon: BookOpen,
+    title: "MAJMC Study Materials",
+    description: "Master of Arts in Journalism & Mass Communication media studies and resources",
+    materials: 67,
+    gradient: "from-pink-500 to-rose-500",
+    price: "₹179-699",
+    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.47.15.jpeg"
+  }
+];
+
+const testimonials = [
+  {
+    id: 1,
+    name: "Sarah Johnson",
+    role: "Medical Student",
+    university: "Harvard Medical School • Medicine",
+    content: "NotesNinja completely transformed my study routine. The medical materials are comprehensive and perfectly structured for exam preparation. I scored in the top 5% of my class!",
+    initials: "SJ",
+    gradient: "from-blue-600 to-purple-600",
+    badge: { text: "Top 5% Class Rank", color: "bg-green-100 text-green-800" },
+    rating: 5
   },
   {
-    icon: History,
-    title: "History",
-    description: "World History, Civilizations & Events",
-    materials: 112,
-    rating: 4.6,
-    gradient: "from-amber-500 to-orange-500"
+    id: 2,
+    name: "Michael Chen",
+    role: "Computer Science Major",
+    university: "MIT • Computer Science",
+    content: "The programming notes and algorithm explanations are crystal clear. I went from struggling with data structures to acing my technical interviews. Worth every penny!",
+    initials: "MC",
+    gradient: "from-purple-600 to-pink-600",
+    badge: { text: "FAANG Offer", color: "bg-green-100 text-green-800" },
+    rating: 5
   },
   {
-    icon: Stethoscope,
-    title: "Medicine",
-    description: "Anatomy, Physiology & Medical Sciences",
-    materials: 203,
-    rating: 4.9,
-    gradient: "from-red-500 to-pink-500",
-    popular: true
+    id: 3,
+    name: "Emily Rodriguez",
+    role: "Biology Student",
+    university: "Stanford University • Biology",
+    content: "The biology materials are exceptional - from molecular biology to ecology. The diagrams and explanations made complex topics so much easier to understand.",
+    initials: "ER",
+    gradient: "from-green-600 to-emerald-600",
+    badge: { text: "4.0 GPA", color: "bg-green-100 text-green-800" },
+    rating: 5
   },
   {
-    icon: Briefcase,
-    title: "Business",
-    description: "Management, Economics & Finance",
-    materials: 145,
-    rating: 4.7,
-    gradient: "from-gray-500 to-slate-500"
+    id: 4,
+    name: "David Kim",
+    role: "MBA Student",
+    university: "Wharton Business School • MBA",
+    content: "Outstanding business case studies and management theories. The practical examples helped me secure a summer internship at a top consulting firm.",
+    initials: "DK",
+    gradient: "from-indigo-600 to-blue-600",
+    badge: { text: "Dean's List", color: "bg-green-100 text-green-800" },
+    rating: 5
+  },
+  {
+    id: 5,
+    name: "Jessica Martinez",
+    role: "Journalism Student",
+    university: "Columbia Journalism School • Media",
+    content: "The journalism resources are top-notch. From media ethics to investigative reporting techniques - everything is covered in depth.",
+    initials: "JM",
+    gradient: "from-pink-600 to-rose-600",
+    badge: { text: "Award Winner", color: "bg-green-100 text-green-800" },
+    rating: 5
+  },
+  {
+    id: 6,
+    name: "Alex Thompson",
+    role: "Economics Student",
+    university: "London School of Economics • Economics",
+    content: "The economics notes are phenomenal. Complex theories explained with real-world examples made all the difference in my understanding.",
+    initials: "AT",
+    gradient: "from-orange-600 to-red-600",
+    badge: { text: "First Class Honors", color: "bg-green-100 text-green-800" },
+    rating: 5
   }
 ];
 
 export function SubjectShowcase() {
+  const [, setCurrentTestimonial] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 12000); // Change every 12 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <section className="py-20 px-4 bg-white dark:bg-neutral-900">
+    <section className="py-20 px-4 bg-gradient-to-b from-white via-neutral-50 to-white dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <motion.div 
@@ -133,71 +153,77 @@ export function SubjectShowcase() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-white mb-4">
-            Explore Every Subject
+          <h2 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-neutral-900 via-neutral-700 to-neutral-900 dark:from-white dark:via-neutral-200 dark:to-white bg-clip-text text-transparent mb-6">
+            Professional Study Materials
           </h2>
-          <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto mb-4">
-            Comprehensive study materials covering all major academic disciplines
+          <p className="text-xl text-neutral-600 dark:text-neutral-400 max-w-4xl mx-auto mb-8 leading-relaxed">
+            Access high-quality study materials for MBA, BBA, MCA, BCA, MAECO, and MAJMC courses
           </p>
-          <div className="flex justify-center gap-2">
-            <span className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">
-              12+ Categories
+          <div className="flex flex-wrap justify-center gap-3">
+            <span className="text-sm font-semibold text-primary bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
+              6 Courses
             </span>
-            <span className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">
-              1000+ Materials
+            <span className="text-sm font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-full border border-emerald-200 dark:border-emerald-700">
+              Instant Downloads
             </span>
-            <span className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">
-              Expert Curated
+            <span className="text-sm font-semibold text-purple-600 bg-purple-50 dark:bg-purple-900/20 px-4 py-2 rounded-full border border-purple-200 dark:border-purple-700">
+              Expert Verified
             </span>
           </div>
         </motion.div>
 
-        {/* Subject Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-          {subjects.map((subject, index) => (
+        {/* Product Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
+          {productCategories.map((category, index) => (
             <motion.div
-              key={subject.title}
-              initial={{ opacity: 0, y: 20 }}
+              key={category.title}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.05 }}
+              transition={{ duration: 0.6, delay: index * 0.08 }}
               viewport={{ once: true }}
             >
-              <Card className="h-full group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-800 dark:to-neutral-900 relative overflow-hidden">
-                {subject.popular && (
-                  <div className="absolute top-3 right-3 z-10">
-                    <span className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                      <Star className="w-3 h-3 fill-white" />
-                      Popular
+              <Card className="h-full group hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] transition-all duration-500 border border-neutral-200/50 dark:border-neutral-700/50 bg-white dark:bg-neutral-800/80 backdrop-blur-xl relative overflow-hidden rounded-3xl p-0">
+                
+                {/* Image Section */}
+                <div className="relative h-56 overflow-hidden rounded-t-3xl bg-neutral-100 dark:bg-neutral-900">
+                  <Image 
+                    src={category.image} 
+                    alt={category.title}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                  
+                  {/* Price Tag */}
+                  <div className="absolute bottom-4 left-4">
+                    <span className="bg-white/95 backdrop-blur-md text-neutral-900 font-semibold px-4 py-2 rounded-2xl text-sm shadow-lg border border-white/20">
+                      {category.price}
                     </span>
                   </div>
-                )}
-                <CardContent className="p-6">
-                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${subject.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                    <subject.icon className="w-7 h-7 text-white" />
-                  </div>
-                  <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
-                    {subject.title}
+                </div>
+                
+                <CardContent className="p-8 space-y-4">
+                  
+                  <h3 className="text-2xl font-semibold text-neutral-900 dark:text-white mb-2 group-hover:text-primary transition-colors duration-300">
+                    {category.title}
                   </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 line-clamp-2">
-                    {subject.description}
+                  
+                  <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-6">
+                    {category.description}
                   </p>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                        {subject.rating}
-                      </span>
-                    </div>
-                    <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                      {subject.materials} materials
+                  
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-black rounded-full"></div>
+                      {category.materials} materials available
                     </span>
                   </div>
+                  
                   <Button 
-                    variant="outline" 
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                    className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium shadow-sm hover:shadow-md transition-all duration-300 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700"
                   >
-                    Explore
-                    <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                    Browse Collection
+                    <ChevronRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
                   </Button>
                 </CardContent>
               </Card>
@@ -207,32 +233,16 @@ export function SubjectShowcase() {
 
         {/* CTA Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
           viewport={{ once: true }}
           className="text-center"
         >
-          <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-8 md:p-12 text-white relative overflow-hidden">
-            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
-            <div className="relative z-10">
-              <h3 className="text-2xl md:text-4xl font-bold mb-4">
-                Can&apos;t find your subject?
-              </h3>
-              <p className="text-lg mb-8 text-blue-100 max-w-2xl mx-auto">
-                We&apos;re constantly adding new subjects and materials. Request your subject and we&apos;ll prioritize it for our next update!
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-white text-primary hover:bg-gray-100">
-                  Request a Subject
-                </Button>
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
-                  View All Materials
-                </Button>
-              </div>
-            </div>
-          </div>
+         
         </motion.div>
+
+       
       </div>
     </section>
   );

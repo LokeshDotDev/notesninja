@@ -3,10 +3,10 @@ import { EducationalFeatures } from "@/components/content/EducationalFeatures";
 import { SubjectShowcase } from "@/components/content/SubjectShowcase";
 import { StudentTestimonials } from "@/components/content/StudentTestimonials";
 import { HowItWorks } from "@/components/content/HowItWorks";
-import { CallToAction } from "@/components/content/CallToAction";
 import { UniversitiesShowcase } from "@/components/content/UniversitiesShowcase";
 import { Metadata } from "next";
 import settings from "@/lib/settings";
+import Footer from "@/components/content/Footer";
 
 export const metadata: Metadata = {
   title: `${settings.site.name} | Premium Digital Academic Materials & Study Resources`,
@@ -19,11 +19,12 @@ export default function Home() {
     <>
       <PremiumHero />
       <UniversitiesShowcase />
-      <EducationalFeatures />
       <SubjectShowcase />
+      <EducationalFeatures />
       <StudentTestimonials />
       <HowItWorks />
-      <CallToAction />
+      {/* <CallToAction /> */}
+      <Footer />
     </>
   );
 }

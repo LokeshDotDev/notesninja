@@ -5,7 +5,6 @@ import { BlurFade } from "@/components/magicui/blur-fade";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  BookOpen, 
   Download, 
   Star, 
   ArrowRight, 
@@ -17,6 +16,7 @@ import {
   Heart,
   AlertCircle
 } from "lucide-react";
+import { PremiumLoader } from "@/components/ui/premium-loader";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -164,12 +164,7 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
         {/* Professional Loading State */}
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <div className="relative">
-              <div className="w-16 h-16 border-4 border-blue-200 dark:border-blue-800 rounded-full animate-spin border-t-blue-600"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-blue-600 animate-pulse" />
-              </div>
-            </div>
+            <PremiumLoader variant="apple" size="large" />
             <p className="mt-6 text-lg font-medium text-neutral-700 dark:text-neutral-300">
               Loading {subcategoryName} materials...
             </p>

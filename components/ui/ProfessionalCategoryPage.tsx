@@ -17,6 +17,7 @@ import {
   Clock,
   TrendingUp
 } from "lucide-react";
+import { PremiumLoader } from "@/components/ui/premium-loader";
 
 interface Post {
   id: string;
@@ -126,12 +127,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
         {/* Professional Loading State */}
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <div className="relative">
-              <div className="w-16 h-16 border-4 border-blue-200 dark:border-blue-800 rounded-full animate-spin border-t-blue-600"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-blue-600 animate-pulse" />
-              </div>
-            </div>
+            <PremiumLoader variant="apple" size="large" />
             <p className="mt-6 text-lg font-medium text-neutral-700 dark:text-neutral-300">
               Loading {categoryName} materials...
             </p>

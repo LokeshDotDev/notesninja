@@ -14,17 +14,16 @@ import {
   CheckCircle,
   AlertCircle,
   FileText,
-  BookOpen,
   TrendingUp,
   Shield,
   Zap,
   Headphones,
-  Loader2,
   ChevronLeft,
   ChevronRight,
   Plus,
   Minus
 } from "lucide-react";
+import { PremiumLoader, PremiumPageLoader } from "@/components/ui/premium-loader";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -170,24 +169,11 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-neutral-900 dark:to-neutral-800">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="relative">
-              <div className="w-16 h-16 border-4 border-blue-200 dark:border-blue-800 rounded-full animate-spin border-t-blue-600"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-blue-600 animate-pulse" />
-              </div>
-            </div>
-            <p className="mt-6 text-lg font-medium text-neutral-700 dark:text-neutral-300">
-              Loading product details...
-            </p>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
-              Preparing your study material
-            </p>
-          </div>
-        </div>
-      </div>
+      <PremiumPageLoader 
+        isLoading={true}
+        text="Loading product details..."
+        subtext="Preparing your study material"
+      />
     );
   }
 
@@ -531,7 +517,7 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
                     className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                   >
                     {isAddingToCart ? (
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      <PremiumLoader variant="apple" size="small" className="text-white" />
                     ) : (
                       <ShoppingCart className="w-5 h-5 mr-2" />
                     )}

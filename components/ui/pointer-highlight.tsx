@@ -18,15 +18,10 @@ export function PointerHighlight({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    // Define the event handlers (even if empty, to avoid errors)
-    const onpointermove = () => {};
-    const onpointerleave = () => {};
-
-    const { width, height } = container.getBoundingClientRect();
-    setDimensions({ width, height });
+    if (containerRef.current) {
+      const { width, height } = containerRef.current.getBoundingClientRect();
+      setDimensions({ width, height });
+    }
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -35,13 +30,14 @@ export function PointerHighlight({
       }
     });
 
-    resizeObserver.observe(container);
+    const element = containerRef.current;
+    if (element) {
+      resizeObserver.observe(element);
+    }
 
     return () => {
-      // Use the captured container variable
-      if (container) {
-        container.removeEventListener("mousemove", onpointermove);
-        container.removeEventListener("mouseleave", onpointerleave);
+      if (element) {
+        resizeObserver.unobserve(element);
       }
     };
   }, []);
@@ -55,9 +51,8 @@ export function PointerHighlight({
       {dimensions.width > 0 && dimensions.height > 0 && (
         <motion.div
           className="pointer-events-none absolute inset-0 z-0"
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.95, originX: 0, originY: 0 }}
           animate={{ opacity: 1, scale: 1 }}
-          style={{ originX: 0, originY: 0 ,transformOrigin: "0 0"}}
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
           <motion.div
