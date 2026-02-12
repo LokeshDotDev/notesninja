@@ -6,6 +6,17 @@ export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = req.nextUrl;
 
+  // CRITICAL: Allow ACME challenges to pass through without any interference
+  // This prevents SSL certificate verification failures
+  if (pathname.startsWith("/.well-known/acme-challenge/")) {
+    return NextResponse.next();
+  }
+
+  // Also allow any other .well-known requests for security and verification
+  if (pathname.startsWith("/.well-known/")) {
+    return NextResponse.next();
+  }
+
   // Protect admin routes
   if (pathname.startsWith("/admin")) {
     if (!token) {
@@ -30,5 +41,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|sitemap|\\.well-known/acme-challenge).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|sitemap|\\.well-known|robots.txt).*)"],
 };
