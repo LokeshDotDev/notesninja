@@ -113,18 +113,31 @@ export async function GET(request: NextRequest) {
     } 
     // Option 2: Download by fileUrl + fileName (for email links, no purchase verification needed)
     else if (fileUrl) {
+      console.log('Processing fileUrl download:', { fileUrl, fileName });
+      
       // Extract publicId from fileUrl
       let publicId = '';
+      
+      // Try different patterns to extract publicId
       if (fileUrl.includes('/Elevate-mortal/')) {
         const urlParts = fileUrl.split('/Elevate-mortal/');
         if (urlParts.length > 1) {
           publicId = 'Elevate-mortal/' + urlParts[1].split('?')[0];
         }
+      } else if (fileUrl.includes('/upload/')) {
+        // Extract from standard Cloudinary URL pattern
+        const uploadIndex = fileUrl.indexOf('/upload/') + 8;
+        const afterUpload = fileUrl.substring(uploadIndex);
+        // Remove version if present (v1234567890/)
+        const withoutVersion = afterUpload.replace(/^v\d+\//, '');
+        publicId = withoutVersion.split('?')[0];
       } else {
         // Fallback: extract last two parts
-        const urlParts = fileUrl.split('/');
+        const urlParts = fileUrl.split('/').filter(part => part.length > 0);
         publicId = urlParts.slice(-2).join('/');
       }
+      
+      console.log('Extracted publicId:', { publicId, originalUrl: fileUrl });
 
       fileData = {
         fileUrl,
@@ -161,7 +174,6 @@ export async function GET(request: NextRequest) {
     });
 
     // Fetch file from Cloudinary using Admin SDK for raw files
-    let fileBuffer: Buffer;
     try {
       console.log('Using Cloudinary Admin SDK to fetch raw file:', { 
         publicId: fileData.publicId, 
@@ -185,24 +197,17 @@ export async function GET(request: NextRequest) {
         console.log('Generated private download URL for raw file:', {
           publicId: fileData.publicId,
           urlLength: privateDownloadUrl.length,
-          hasSignature: privateDownloadUrl.includes('signature')
+          hasSignature: privateDownloadUrl.includes('signature'),
+          urlPreview: privateDownloadUrl.substring(0, 100) + '...'
         });
 
         if (!privateDownloadUrl) {
-          throw new Error('Failed to generate private download URL for raw file');
+          throw new Error(`Failed to generate private download URL for raw file: ${fileData.publicId}`);
         }
 
-        // Fetch file using authenticated private download URL
-        const response = await fetch(privateDownloadUrl);
-        if (!response.ok) {
-          throw new Error(`Cloudinary private download failed: ${response.status} ${response.statusText}`);
-        }
-
-        fileBuffer = Buffer.from(await response.arrayBuffer());
-        console.log('Successfully fetched raw file via private download URL:', {
-          size: fileBuffer.length,
-          fileName: fileData.fileName
-        });
+        // Redirect to the private download URL instead of fetching and streaming
+        // This is much faster as Cloudinary handles the streaming
+        return NextResponse.redirect(privateDownloadUrl, 301);
 
       } else {
         // For images/videos, use signed URL approach
@@ -211,21 +216,18 @@ export async function GET(request: NextRequest) {
           type: 'upload',
           secure: true,
           sign_url: true,
-          expire_at: Math.floor(Date.now() / 1000) + 300 // 5 minutes
+          expire_at: Math.floor(Date.now() / 1000) + 300, // 5 minutes
+          format: fileData.fileName.split('.').pop() // Preserve original format
         });
 
-        console.log('Fetching non-raw file from signed URL:', signedUrl.substring(0, 100) + '...');
+        console.log('Redirecting to signed URL for non-raw file:', signedUrl.substring(0, 100) + '...');
 
-        const response = await fetch(signedUrl);
-        if (!response.ok) {
-          throw new Error(`Cloudinary signed fetch failed: ${response.status} ${response.statusText}`);
-        }
-
-        fileBuffer = Buffer.from(await response.arrayBuffer());
+        // Redirect to the signed URL for faster streaming
+        return NextResponse.redirect(signedUrl, 301);
       }
 
     } catch (fetchError) {
-      console.error('Failed to fetch from Cloudinary:', fetchError);
+      console.error('Failed to generate Cloudinary URL:', fetchError);
       
       // Final fallback: try direct URL fetch (will likely fail for raw files but worth trying)
       try {
@@ -235,29 +237,29 @@ export async function GET(request: NextRequest) {
           throw new Error(`Fallback fetch failed: ${response.status} ${response.statusText}`);
         }
 
-        fileBuffer = Buffer.from(await response.arrayBuffer());
-        console.log('Fallback fetch succeeded');
+        const fileBuffer = Buffer.from(await response.arrayBuffer());
+        console.log('Fallback fetch succeeded, streaming file');
+        
+        // Set appropriate headers for download
+        const headers = new Headers({
+          'Content-Type': 'application/octet-stream',
+          'Content-Disposition': `attachment; filename="${encodeURIComponent(fileData.fileName)}"`,
+          'Content-Length': fileBuffer.length.toString(),
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        });
+
+        // Return the file as a streaming response
+        return new NextResponse(new Uint8Array(fileBuffer), {
+          status: 200,
+          headers
+        });
       } catch (fallbackError) {
         console.error('Fallback also failed:', fallbackError);
         throw new Error(`Unable to fetch file from Cloudinary: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`);
       }
     }
-
-    // Set appropriate headers for download
-    const headers = new Headers({
-      'Content-Type': 'application/octet-stream',
-      'Content-Disposition': `attachment; filename="${encodeURIComponent(fileData.fileName)}"`,
-      'Content-Length': fileBuffer.length.toString(),
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
-    });
-
-    // Return the file as a streaming response
-    return new NextResponse(new Uint8Array(fileBuffer), {
-      status: 200,
-      headers
-    });
 
   } catch (error) {
     console.error('Download error:', error);

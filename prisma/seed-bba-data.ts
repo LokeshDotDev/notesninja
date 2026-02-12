@@ -94,6 +94,9 @@ async function main() {
           description: `${postData.description} This material is specifically designed for ${subcategory.name.toLowerCase()} students.`,
           categoryId: bbaCategory.id,
           subcategoryId: subcategory.id,
+          price: 3999,
+          compareAtPrice: 5999,
+          isDigital: true,
         },
       });
     }

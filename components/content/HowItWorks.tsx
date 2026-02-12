@@ -345,11 +345,24 @@ export function HowItWorks() {
               {/* Clean button layout */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
                 <Button size="lg" className="bg-slate-900 hover:bg-slate-800 text-white font-medium px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
-                  Request Resources
-                  <ChevronRight className="w-4 h-4 ml-2" />
+                  <a
+                    href="https://wa.me/6378990158"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center"
+                  >
+                    Request Resources
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </a>
                 </Button>
                 <Button size="lg" variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium px-8 py-4 rounded-2xl transition-all duration-300">
-                  View All Products
+                  <a
+                    href="http://localhost:3001/online-manipal-university/notes-and-mockpaper"
+                    className="flex items-center"
+                  >
+                    View All Products
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </a>
                 </Button>
               </div>
               

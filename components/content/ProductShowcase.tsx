@@ -155,8 +155,13 @@ export function ProductShowcase() {
 
         <div className="text-center mt-12">
           <Button variant="outline" size="lg" className="border-gray-300 dark:border-gray-600">
-            View All Products
-            <ArrowRight className="w-4 h-4 ml-2" />
+            <a
+              href="http://localhost:3001/online-manipal-university/notes-and-mockpaper"
+              className="flex items-center"
+            >
+              View All Products
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </a>
           </Button>
         </div>
       </div>

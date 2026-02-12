@@ -99,6 +99,12 @@ export default function RootLayout({
               })(window,document,'script','dataLayer','${GTM_ID}');
             `}
           </Script>
+
+          {/* Razorpay Script */}
+          <Script 
+            src="https://checkout.razorpay.com/v1/checkout.js" 
+            strategy="afterInteractive"
+          />
         </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}

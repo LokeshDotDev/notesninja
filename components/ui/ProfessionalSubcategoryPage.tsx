@@ -3,7 +3,6 @@ import React, { useEffect, useState, useMemo } from "react";
 import { motion } from "motion/react";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { 
   Download, 
   Star, 
@@ -397,40 +396,46 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <FileText className="w-16 h-16 text-neutral-300 dark:text-neutral-600" />
+                          <FileText className="w-8 h-8 text-neutral-300 dark:text-neutral-600" />
                         </div>
                       )}
-                      
-                      {/* Badges */}
-                      <div className="absolute top-3 left-3 flex flex-col gap-2">
-                        {post.isDigital && (
-                          <Badge className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300">
-                            <Download className="w-3 h-3 mr-1" />
-                            Digital
-                          </Badge>
-                        )}
-                        {post.compareAtPrice && post.price && post.compareAtPrice > post.price && (
-                          <Badge className="bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300">
-                            Sale
-                          </Badge>
-                        )}
-                      </div>
+                    </div>
 
-                      {/* Price */}
-                      {post.price && (
-                        <div className="absolute top-3 right-3 bg-white dark:bg-neutral-800 px-3 py-1 rounded-full shadow-lg">
-                          <div className="flex items-center gap-1">
+                    {/* Content */}
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-bold text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {post.title}
+                        </h3>
+                        
+                        {post.price && (
+                          <div className="flex flex-col gap-2">
                             {post.compareAtPrice && post.compareAtPrice > post.price && (
-                              <span className="text-sm text-neutral-500 line-through">
-                                ${post.compareAtPrice}
+                              <div className="flex flex-col items-start">
+                                <span className="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold">
+                                  Limited Time Deal
+                                </span>
+                                <div className="flex items-baseline gap-2">
+                                  <span className="text-lg font-bold text-red-600">
+                                    -{Math.round(((post.compareAtPrice - post.price) / post.compareAtPrice) * 100)}%
+                                  </span>
+                                  <span className="text-base font-normal text-black dark:text-white">
+                                    ₹{post.price.toFixed(2)}
+                                  </span>
+                                </div>
+                                <span className="text-base text-neutral-500 dark:text-neutral-400">
+                                  M.R.P.: <span className="line-through">₹{post.compareAtPrice.toFixed(2)}</span>
+                                </span>
+                              </div>
+                            )}
+                            {!post.compareAtPrice && (
+                              <span className="text-xl font-normal text-black dark:text-white">
+                                ₹{post.price.toFixed(2)}
                               </span>
                             )}
-                            <span className="font-bold text-blue-600 dark:text-blue-400">
-                              ${post.price}
-                            </span>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
 
                     {/* Content */}
@@ -501,11 +506,11 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
                             <div className="flex items-center gap-1">
                               {post.compareAtPrice && post.compareAtPrice > post.price && (
                                 <span className="text-sm text-neutral-500 line-through">
-                                  ${post.compareAtPrice}
+                                  ₹{post.compareAtPrice.toFixed(2)}
                                 </span>
                               )}
-                              <span className="font-bold text-blue-600 dark:text-blue-400">
-                                ${post.price}
+                              <span className="font-bold text-green-600 dark:text-green-400">
+                                ₹{post.price.toFixed(2)}
                               </span>
                             </div>
                           )}

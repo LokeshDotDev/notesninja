@@ -327,20 +327,30 @@ images
 <div className='flex items-center justify-between mb-4'>
 <div className='flex-1'>
 {/* Price Display with Scratch Pricing */}
-<div className='flex items-center space-x-3'>
+<div className='flex flex-col space-y-2'>
 {posts[openIdx].compareAtPrice && posts[openIdx].compareAtPrice > (posts[openIdx].price || 0) && (
 <div className='flex flex-col items-start'>
-<span className='text-sm text-neutral-500 line-through'>
-M.R.P.: ${posts[openIdx].compareAtPrice.toFixed(2)}
+<span className='bg-red-600 text-white px-3 py-2 rounded text-sm font-bold'>
+Limited Time Deal
 </span>
-<span className='text-xs text-red-600 font-semibold'>
-{`${Math.round(((posts[openIdx].compareAtPrice - (posts[openIdx].price || 0)) / posts[openIdx].compareAtPrice * 100))}% OFF`}
+<div className='flex items-baseline gap-2'>
+<span className='text-xl font-bold text-red-600'>
+-{Math.round(((posts[openIdx].compareAtPrice - (posts[openIdx].price || 0)) / posts[openIdx].compareAtPrice) * 100)}%
+</span>
+<span className='text-lg font-normal text-black dark:text-white'>
+₹{(posts[openIdx].price || 0).toFixed(2)}
+</span>
+</div>
+<span className='text-base text-neutral-500 dark:text-neutral-400'>
+M.R.P.: <span className='line-through'>₹{posts[openIdx].compareAtPrice.toFixed(2)}</span>
 </span>
 </div>
 )}
-<span className='text-2xl font-bold text-green-600'>
-${(posts[openIdx].price || '0.00')}
+{!posts[openIdx].compareAtPrice && (
+<span className='text-xl font-normal text-black dark:text-white'>
+₹{(posts[openIdx].price || 0).toFixed(2)}
 </span>
+)}
 </div>
 <div className='text-sm text-neutral-500 dark:text-neutral-400'>
 Digital Product - Instant Download
@@ -754,20 +764,30 @@ images
 <div className='flex items-center justify-between mb-4'>
 <div className='flex-1'>
 {/* Price Display with Scratch Pricing */}
-<div className='flex items-center space-x-3'>
+<div className='flex flex-col space-y-2'>
 {posts[openIdx].compareAtPrice && posts[openIdx].compareAtPrice > (posts[openIdx].price || 0) && (
 <div className='flex flex-col items-start'>
-<span className='text-sm text-neutral-500 line-through'>
-M.R.P.: ${posts[openIdx].compareAtPrice.toFixed(2)}
+<span className='bg-red-600 text-white px-3 py-2 rounded text-sm font-bold'>
+Limited Time Deal
 </span>
-<span className='text-xs text-red-600 font-semibold'>
-{`${Math.round(((posts[openIdx].compareAtPrice - (posts[openIdx].price || 0)) / posts[openIdx].compareAtPrice * 100))}% OFF`}
+<div className='flex items-baseline gap-2'>
+<span className='text-xl font-bold text-red-600'>
+-{Math.round(((posts[openIdx].compareAtPrice - (posts[openIdx].price || 0)) / posts[openIdx].compareAtPrice) * 100)}%
+</span>
+<span className='text-lg font-normal text-black dark:text-white'>
+₹{(posts[openIdx].price || 0).toFixed(2)}
+</span>
+</div>
+<span className='text-base text-neutral-500 dark:text-neutral-400'>
+M.R.P.: <span className='line-through'>₹{posts[openIdx].compareAtPrice.toFixed(2)}</span>
 </span>
 </div>
 )}
-<span className='text-2xl font-bold text-green-600'>
-${(posts[openIdx].price || '0.00')}
+{!posts[openIdx].compareAtPrice && (
+<span className='text-xl font-normal text-black dark:text-white'>
+₹{(posts[openIdx].price || 0).toFixed(2)}
 </span>
+)}
 </div>
 <div className='text-sm text-neutral-500 dark:text-neutral-400'>
 Digital Product - Instant Download

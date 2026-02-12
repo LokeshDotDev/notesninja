@@ -1,29 +1,23 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { 
   Download, 
-  Star, 
   ArrowRight, 
   ShoppingCart,
-  Heart,
-  Share2,
   CheckCircle,
   AlertCircle,
   FileText,
-  TrendingUp,
   Shield,
-  Zap,
   Headphones,
   ChevronLeft,
   ChevronRight,
   Plus,
-  Minus
+  Minus,
+  Search
 } from "lucide-react";
-import { PremiumLoader, PremiumPageLoader } from "@/components/ui/premium-loader";
+import { PremiumPageLoader } from "@/components/ui/premium-loader";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -99,8 +93,9 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
   const [error, setError] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [isLiked, setIsLiked] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [selectedTab, setSelectedTab] = useState('highlights');
 
   useEffect(() => {
     async function fetchProduct() {
@@ -148,22 +143,24 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
   const handlePurchase = async () => {
     if (!product) return;
     
-    // Redirect to checkout page
-    window.location.href = `/checkout/${product.id}`;
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    setIsPurchasing(true);
+    try {
+      // Simulate processing time before redirect
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Redirect to checkout page
+      window.location.href = `/checkout/${product.id}`;
+    } catch (error) {
+      console.error("Failed to process purchase:", error);
+      setIsPurchasing(false);
+    }
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(price);
   };
 
@@ -212,15 +209,15 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
   const currentImage = images[currentImageIndex] || null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-neutral-900 dark:to-neutral-800">
+    <div className="min-h-screen bg-white dark:bg-neutral-950">
       {/* Breadcrumb */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-8">
         <motion.nav
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center space-x-2 text-sm text-neutral-600 dark:text-neutral-400"
+          className="flex items-center space-x-2 text-sm text-neutral-500 dark:text-neutral-400"
         >
-          <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
+          <Link href="/" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Home</Link>
           <span>/</span>
           
           {/* Use the category path from API if available */}
@@ -232,7 +229,7 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
                   <React.Fragment key={part}>
                     <Link 
                       href={`/${parts.slice(0, index + 1).join('/')}`}
-                      className="hover:text-blue-600 transition-colors"
+                      className="hover:text-neutral-900 dark:hover:text-white transition-colors"
                     >
                       {part.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                     </Link>
@@ -242,7 +239,7 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
               ) : (
                 // Fallback for old data without path
                 <>
-                  <Link href={`/${product.category.slug}`} className="hover:text-blue-600 transition-colors">
+                  <Link href={`/${product.category.slug}`} className="hover:text-neutral-900 dark:hover:text-white transition-colors">
                     {product.category.name}
                   </Link>
                   <span>/</span>
@@ -251,15 +248,15 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
               <span>/</span>
             </>
           )}
-          <span className="text-blue-600 font-medium truncate max-w-xs">
+          <span className="text-neutral-900 dark:text-white font-medium truncate max-w-xs">
             {product.title}
           </span>
         </motion.nav>
       </div>
 
       {/* Product Detail */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 xl:gap-24">
           {/* Product Images */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -267,74 +264,74 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
             transition={{ duration: 0.6 }}
             className="space-y-4"
           >
-            {/* Main Image */}
-            <div className="relative aspect-square bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl overflow-hidden">
+            {/* Main Image with Zoom */}
+            <div className="relative bg-neutral-50 dark:bg-neutral-900 rounded-3xl overflow-hidden shadow-2xl group cursor-zoom-in">
               {currentImage ? (
-                <Image
-                  src={currentImage.imageUrl}
-                  alt={product.title}
-                  fill
-                  className="object-cover"
-                />
+                <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                  <Image
+                    src={currentImage.imageUrl}
+                    alt={product.title}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    quality={100}
+                    priority
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all duration-300" />
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-xl rounded-full p-2 shadow-lg">
+                      <Search className="w-5 h-5 text-neutral-900 dark:text-white" />
+                    </div>
+                  </div>
+                </div>
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <FileText className="w-24 h-24 text-neutral-300 dark:text-neutral-600" />
+                <div className="aspect-square flex items-center justify-center">
+                  <FileText className="w-32 h-32 text-neutral-300 dark:text-neutral-600" />
                 </div>
               )}
               
-              {/* Badges */}
-              <div className="absolute top-4 left-4 flex flex-col gap-2">
-                {product.isDigital && (
-                  <Badge className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300">
-                    <Download className="w-3 h-3 mr-1" />
-                    Digital Product
-                  </Badge>
-                )}
-                {product.compareAtPrice && product.price && product.compareAtPrice > product.price && (
-                  <Badge className="bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    Sale
-                  </Badge>
-                )}
-              </div>
+              {/* Stock & Delivery Info - REMOVED */}
 
-              {/* Image Navigation */}
+              {/* Premium Image Navigation */}
               {images.length > 1 && (
                 <>
                   <button
                     onClick={() => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800 transition-colors"
+                    className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-xl rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800 transition-all duration-300 shadow-lg hover:shadow-xl"
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <ChevronLeft className="w-6 h-6 text-neutral-900 dark:text-white" />
                   </button>
                   <button
                     onClick={() => setCurrentImageIndex((prev) => (prev + 1) % images.length)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800 transition-colors"
+                    className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-xl rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800 transition-all duration-300 shadow-lg hover:shadow-xl"
                   >
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-6 h-6 text-neutral-900 dark:text-white" />
                   </button>
                 </>
               )}
             </div>
 
-            {/* Thumbnail Gallery */}
+            {/* Premium Thumbnail Gallery */}
             {images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
+              <div className="flex gap-3 overflow-x-auto pb-2 px-1">
                 {images.map((image, index) => (
                   <button
                     key={image.id}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                    className={`flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all duration-300 bg-neutral-50 dark:bg-neutral-900 ${
                       index === currentImageIndex
-                        ? 'border-blue-500 scale-105'
-                        : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
+                        ? 'border-neutral-900 dark:border-white scale-105 shadow-lg'
+                        : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500'
                     }`}
                   >
                     <Image
                       src={image.imageUrl}
                       alt={`${product.title} - ${index + 1}`}
                       fill
-                      className="object-cover"
+                      className="object-contain p-1"
+                      quality={95}
+                      sizes="96px"
+                      style={{ objectFit: 'contain' }}
                     />
                   </button>
                 ))}
@@ -349,329 +346,356 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
             transition={{ duration: 0.6, delay: 0.1 }}
             className="space-y-6"
           >
-            {/* Title and Category */}
-            <div>
-              {product.category && (
-                <Link
-                  href={`/${product.category.name.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 transition-colors mb-2"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-1" />
-                  {product.category.name}
-                </Link>
-              )}
-              <h1 className="text-3xl md:text-4xl font-bold text-neutral-900 dark:text-white mb-2">
-                {product.title}
-              </h1>
-              {product.subcategory && (
-                <p className="text-neutral-600 dark:text-neutral-400">
-                  {product.subcategory.name}
-                </p>
-              )}
-            </div>
-
-            {/* Rating and Reviews */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className={`w-5 h-5 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-neutral-300 dark:text-neutral-600'}`} />
-                ))}
+            {/* Premium Title Section */}
+            <div className="space-y-8">
+              <div>
+                {product.category && (
+                  <Link
+                    href={`/${product.category.name.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="inline-flex items-center text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors mb-4"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-1" />
+                    {product.category.name}
+                  </Link>
+                )}
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-neutral-900 dark:text-white mb-4 leading-tight">
+                  {product.title}
+                </h1>
+                {product.subcategory && (
+                  <p className="text-xl text-neutral-600 dark:text-neutral-400">
+                    {product.subcategory.name}
+                  </p>
+                )}
               </div>
-              <span className="font-semibold text-neutral-900 dark:text-white">4.8</span>
-              <span className="text-neutral-600 dark:text-neutral-400">(127 reviews)</span>
-            </div>
 
-            {/* Price */}
-            <div className="flex items-center gap-4">
+            {/* Amazon-style Price Section */}
+            <div className="space-y-4">
               {product.price && (
-                <>
-                  <div className="flex items-center gap-2">
-                    {product.compareAtPrice && product.compareAtPrice > product.price && (
-                      <span className="text-2xl text-neutral-500 line-through">
-                        {formatPrice(product.compareAtPrice)}
+                <div className="flex flex-col items-start gap-3">
+                  {product.compareAtPrice && (
+                    <div className="flex items-baseline gap-3 mb-2">
+                      <span className="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold">
+                        Limited Time Deal
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-baseline gap-2">
+                    {product.compareAtPrice && (
+                      <span className="text-3xl sm:text-4xl font-bold text-red-600">
+                        -{Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}%
                       </span>
                     )}
-                    <span className="text-4xl font-bold text-blue-600 dark:text-blue-400">
-                      {formatPrice(product.price)}
+                    <span className="text-xl sm:text-2xl font-normal text-black dark:text-white">
+                      {formatPrice(product.price || 0)}
                     </span>
                   </div>
-                  {product.compareAtPrice && product.price && product.compareAtPrice > product.price && (
-                    <Badge className="bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300">
-                      {Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}% OFF
-                    </Badge>
+                  {product.compareAtPrice && (
+                    <div className="flex items-baseline">
+                      <span className="text-xl text-neutral-500 dark:text-neutral-400">
+                        M.R.P.: <span className="line-through">{formatPrice(product.compareAtPrice)}</span>
+                      </span>
+                    </div>
                   )}
-                </>
+                </div>
               )}
               {product.isDigital && (
-                <Badge className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300">
-                  <Download className="w-3 h-3 mr-1" />
-                  Instant Download
-                </Badge>
+                <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                  <Download className="w-5 h-5" />
+                  <span className="font-medium">Instant Download</span>
+                </div>
               )}
             </div>
 
-            {/* Description */}
-            <div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
+            {/* Premium Description
+            <div className="space-y-4">
+              <h3 className="text-2xl font-semibold text-neutral-900 dark:text-white">
                 Description
               </h3>
-              <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                {product.description}
-              </p>
-            </div>
+              <div className="prose prose-lg dark:prose-invert max-w-none">
+                <p className="text-lg text-neutral-700 dark:text-neutral-300 leading-relaxed text-justify">
+                  {product.description}
+                </p>
+              </div>
+            </div> */}
 
-            {/* Digital File Info */}
-            {product.isDigital && product.digitalFiles && product.digitalFiles.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-3">
-                  Digital Files
-                </h3>
-                <div className="space-y-2">
-                  {product.digitalFiles.map((file) => (
-                    <div key={file.id} className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <FileText className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <p className="font-medium text-neutral-900 dark:text-white">
-                            {file.fileName}
-                          </p>
-                          <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                            {file.fileType.toUpperCase()} • {formatFileSize(file.fileSize)}
-                          </p>
-                        </div>
-                      </div>
-                      <Download className="w-5 h-5 text-neutral-400" />
+           
+
+            {/* Amazon-style Product Highlights */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-4 border-b border-neutral-200 dark:border-neutral-800 overflow-x-auto">
+                <button
+                  onClick={() => setSelectedTab('highlights')}
+                  className={`pb-3 px-1 font-semibold text-lg transition-all duration-200 border-b-2 ${
+                    selectedTab === 'highlights'
+                      ? 'text-green-500 border-green-500'
+                      : 'text-neutral-500 dark:text-neutral-400 border-transparent hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  Highlights
+                </button>
+                <button
+                  onClick={() => setSelectedTab('description')}
+                  className={`pb-3 px-1 font-semibold text-lg transition-all duration-200 border-b-2 ${
+                    selectedTab === 'description'
+                      ? 'text-green-500 border-green-500'
+                      : 'text-neutral-500 dark:text-neutral-400 border-transparent hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  Description
+                </button>
+              </div>
+
+              {selectedTab === 'highlights' && (
+                <div className="space-y-4 py-4">
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                        Comprehensive study material covering all essential topics
+                      </span>
                     </div>
-                  ))}
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                        Expert verified content with latest curriculum updates
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                        Practice questions and exam-focused preparation
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                        Instant download access for digital products
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                        24/7 customer support and quality guarantee
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Features */}
-            <div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-3">
-                Why Choose This Material?
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="text-neutral-700 dark:text-neutral-300">Expert Verified Content</span>
+              {selectedTab === 'description' && (
+                <div className="py-4">
+                  <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
+                    {product.description}
+                  </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="text-neutral-700 dark:text-neutral-300">Latest Curriculum</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="text-neutral-700 dark:text-neutral-300">Exam Focused</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="text-neutral-700 dark:text-neutral-300">24/7 Access</span>
-                </div>
-              </div>
+              )}
+
             </div>
 
-            {/* Action Buttons */}
-            <div className="space-y-4">
+            {/* Premium Action Buttons */}
+            <div className="space-y-8 pt-8 border-t border-neutral-200 dark:border-neutral-800">
               {/* Quantity Selector (for non-digital products) */}
               {!product.isDigital && (
-                <div className="flex items-center gap-4">
-                  <span className="font-medium text-neutral-900 dark:text-white">Quantity:</span>
-                  <div className="flex items-center border border-neutral-300 dark:border-neutral-600 rounded-lg">
+                <div className="flex items-center gap-6">
+                  <span className="font-semibold text-neutral-900 dark:text-white text-lg">Quantity:</span>
+                  <div className="flex items-center border border-neutral-300 dark:border-neutral-600 rounded-2xl overflow-hidden">
                     <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                      className="p-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                     >
-                      <Minus className="w-4 h-4" />
+                      <Minus className="w-5 h-5" />
                     </button>
-                    <span className="w-12 text-center font-medium text-neutral-900 dark:text-white">
+                    <span className="w-16 text-center font-semibold text-neutral-900 dark:text-white text-lg">
                       {quantity}
                     </span>
                     <button
                       onClick={() => setQuantity(quantity + 1)}
-                      className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                      className="p-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
               )}
 
-              {/* Main CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
+              {/* Green CTA Button */}
+              <div className="space-y-4">
                 {product.isDigital ? (
                   <Button
                     onClick={handlePurchase}
+                    disabled={isPurchasing}
                     size="lg"
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-lg font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-0"
                   >
-                    <Download className="w-5 h-5 mr-2" />
-                    Get Instant Access
+                    {isPurchasing ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Download className="w-5 h-5 mr-2" />
+                    )}
+                    {isPurchasing ? 'Processing...' : 'Buy Now'}
                   </Button>
                 ) : (
                   <Button
                     onClick={handleAddToCart}
                     disabled={isAddingToCart}
                     size="lg"
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-lg font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-0"
                   >
                     {isAddingToCart ? (
-                      <PremiumLoader variant="apple" size="small" className="text-white" />
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                       <ShoppingCart className="w-5 h-5 mr-2" />
                     )}
-                    {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+                    {isAddingToCart ? 'Adding...' : `Add to Cart - ${formatPrice(product.price || 0)}`}
                   </Button>
                 )}
-                
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={() => setIsLiked(!isLiked)}
-                    className="p-4 rounded-full border-2 border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                  >
-                    <Heart className={`w-5 h-5 ${isLiked ? 'fill-red-500 text-red-500' : 'text-neutral-600 dark:text-neutral-400'}`} />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="p-4 rounded-full border-2 border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                  >
-                    <Share2 className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
-                  </Button>
-                </div>
               </div>
 
-              {/* Trust Badges */}
-              <div className="flex items-center justify-center gap-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
-                  <Shield className="w-4 h-4" />
-                  <span>Secure Payment</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
-                  <Zap className="w-4 h-4" />
-                  <span>Instant Delivery</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
-                  <Headphones className="w-4 h-4" />
-                  <span>24/7 Support</span>
+              {/* Trust Indicators - Simplified */}
+              <div className="space-y-4 pt-6 border-t border-neutral-200 dark:border-neutral-800">
+                <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                  <Shield className="w-5 h-5" />
+                  <span className="font-medium">Secure Transaction</span>
                 </div>
               </div>
             </div>
+          </div>
           </motion.div>
         </div>
 
-        {/* Additional Information Tabs */}
+        {/* Premium Additional Information */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-16"
+          className="mt-12"
         >
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Product Details */}
-                <div>
-                  <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">
-                    Product Details
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600 dark:text-neutral-400">Format</span>
-                      <span className="font-medium text-neutral-900 dark:text-white">
-                        {product.isDigital ? 'Digital Download' : 'Physical Product'}
+          {/* <div className="bg-neutral-50 dark:bg-neutral-900 rounded-3xl p-8 lg:p-12">
+            <h3 className="text-3xl font-bold text-neutral-900 dark:text-white mb-6">
+              Description
+            </h3>
+            <div className="prose prose-xl dark:prose-invert max-w-none">
+              <p className="text-xl text-neutral-700 dark:text-neutral-300 leading-relaxed text-justify">
+                {product.description}
+              </p>
+            </div>
+          </div> */}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mt-24"
+        >
+          <div className="bg-neutral-50 dark:bg-neutral-900 rounded-3xl p-8 lg:p-12">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+              {/* Product Details */}
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                  Product Details
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between py-3 border-b border-neutral-200 dark:border-neutral-700">
+                    <span className="text-neutral-600 dark:text-neutral-400">Format</span>
+                    <span className="font-semibold text-neutral-900 dark:text-white">
+                      {product.isDigital ? 'Digital Download' : 'Physical Product'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-3 border-b border-neutral-200 dark:border-neutral-700">
+                    <span className="text-neutral-600 dark:text-neutral-400">Language</span>
+                    <span className="font-semibold text-neutral-900 dark:text-white">English</span>
+                  </div>
+                  {product.productType && (
+                    <div className="flex justify-between py-3 border-b border-neutral-200 dark:border-neutral-700">
+                      <span className="text-neutral-600 dark:text-neutral-400">Type</span>
+                      <span className="font-semibold text-neutral-900 dark:text-white">
+                        {product.productType.name}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600 dark:text-neutral-400">Language</span>
-                      <span className="font-medium text-neutral-900 dark:text-white">English</span>
-                    </div>
-                    {product.productType && (
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600 dark:text-neutral-400">Type</span>
-                        <span className="font-medium text-neutral-900 dark:text-white">
-                          {product.productType.name}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600 dark:text-neutral-400">Last Updated</span>
-                      <span className="font-medium text-neutral-900 dark:text-white">
-                        {product.updatedAt ? new Date(product.updatedAt).toLocaleDateString() : 'Recently'}
-                      </span>
-                    </div>
+                  )}
+                  <div className="flex justify-between py-3">
+                    <span className="text-neutral-600 dark:text-neutral-400">Last Updated</span>
+                    <span className="font-semibold text-neutral-900 dark:text-white">
+                      {product.updatedAt ? new Date(product.updatedAt).toLocaleDateString() : 'Recently'}
+                    </span>
                   </div>
                 </div>
+              </div>
 
-                {/* Features */}
-                <div>
-                  <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">
-                    Key Features
-                  </h3>
-                  <ul className="space-y-2">
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-neutral-700 dark:text-neutral-300">
-                        Comprehensive coverage of the topic
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-neutral-700 dark:text-neutral-300">
-                        Easy to understand explanations
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-neutral-700 dark:text-neutral-300">
-                        Practice problems included
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-neutral-700 dark:text-neutral-300">
-                        Exam preparation focused
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Support */}
-                <div>
-                  <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">
-                    Support & Guarantee
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
-                        <Headphones className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-neutral-900 dark:text-white">24/7 Support</p>
-                        <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                          Get help whenever you need it
-                        </p>
-                      </div>
+              {/* Premium Features */}
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                  Key Features
+                </h3>
+                <ul className="space-y-4">
+                  <li className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-                        <Shield className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-neutral-900 dark:text-white">Quality Guarantee</p>
-                        <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                          Expert verified content
-                        </p>
-                      </div>
+                    <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                      Comprehensive coverage of the topic
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                    </div>
+                    <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                      Easy to understand explanations
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                    </div>
+                    <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                      Practice problems included
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                    </div>
+                    <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                      Exam preparation focused
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Premium Support */}
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                  Support & Guarantee
+                </h3>
+                <div className="space-y-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                      <Headphones className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-neutral-900 dark:text-white text-lg">24/7 Support</p>
+                      <p className="text-neutral-600 dark:text-neutral-400 mt-1">
+                        Get help whenever you need it
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                      <Shield className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-neutral-900 dark:text-white text-lg">Quality Guarantee</p>
+                      <p className="text-neutral-600 dark:text-neutral-400 mt-1">
+                        Expert verified content
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </motion.div>
       </div>
     </div>

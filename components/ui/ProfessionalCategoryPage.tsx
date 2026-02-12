@@ -104,6 +104,8 @@ interface Post {
   cloudinaryUrl?: string;
   secure_url?: string;
   url?: string;
+  price?: number | null;
+  compareAtPrice?: number | null;
   images?: Array<{
     id: string;
     imageUrl: string;
@@ -360,7 +362,8 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
                           <Image
                             src={post.images[0].imageUrl}
                             alt={post.title}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
                             loading="lazy"
                           />
                         ) : (
@@ -380,9 +383,38 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
                         </h3>
                         
                         {post.description && (
-                          <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-6 line-clamp-3">
+                          <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4 line-clamp-3">
                             {post.description}
                           </p>
+                        )}
+                        
+                        {/* Price Section - Amazon Style */}
+                        {(post.price !== null && post.price !== undefined) && (
+                          <div className="flex flex-col gap-3 mb-6">
+                            {post.compareAtPrice && post.compareAtPrice > post.price && (
+                              <div className="flex flex-col items-start">
+                                <span className="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold">
+                                  Limited Time Deal
+                                </span>
+                                <div className="flex items-baseline gap-2">
+                                  <span className="text-lg font-bold text-red-600">
+                                    -{Math.round(((post.compareAtPrice - post.price) / post.compareAtPrice) * 100)}%
+                                  </span>
+                                  <span className="text-base font-normal text-black dark:text-white">
+                                    ₹{post.price.toFixed(2)}
+                                  </span>
+                                </div>
+                                <span className="text-base text-neutral-500 dark:text-neutral-400">
+                                  M.R.P.: <span className="line-through">₹{post.compareAtPrice.toFixed(2)}</span>
+                                </span>
+                              </div>
+                            )}
+                            {!post.compareAtPrice && (
+                              <span className="text-xl font-normal text-black dark:text-white">
+                                ₹{post.price.toFixed(2)}
+                              </span>
+                            )}
+                          </div>
                         )}
                         
                         <div className="flex items-center justify-between mb-6">

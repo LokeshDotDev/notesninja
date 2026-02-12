@@ -76,10 +76,13 @@
 
 @layer base {
 	* {
-		@apply border-gray-200 outline-blue-500/50;
+		@apply outline-blue-500/50;
 	}
 	body {
-		@apply bg-background text-foreground;
+		@apply bg-background text-foreground overflow-x-hidden;
+	}
+	html {
+		@apply overflow-x-hidden;
 	}
 }
 

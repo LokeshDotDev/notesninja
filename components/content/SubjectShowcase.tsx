@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const productCategories = [
   {
@@ -13,8 +14,10 @@ const productCategories = [
     description: "Master of Business Administration notes, case studies, and exam resources",
     materials: 245,
     gradient: "from-blue-500 to-cyan-500",
-    price: "₹299-999",
-    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg"
+    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg",
+    slug: "online-manipal-university/notes-and-mockpaper/mba",
+    originalPrice: "₹5,999",
+    discountedPrice: "₹3,999"
   },
   {
     icon: BookOpen,
@@ -22,8 +25,10 @@ const productCategories = [
     description: "Bachelor of Business Administration notes, assignments, and study guides",
     materials: 189,
     gradient: "from-purple-500 to-pink-500",
-    price: "₹199-699",
-    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.47.15.jpeg"
+    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.47.15.jpeg",
+    slug: "online-manipal-university/notes-and-mockpaper/bba",
+    originalPrice: "₹5,999",
+    discountedPrice: "₹3,999"
   },
   {
     icon: BookOpen,
@@ -31,8 +36,10 @@ const productCategories = [
     description: "Master of Computer Applications programming notes, algorithms, and projects",
     materials: 156,
     gradient: "from-green-500 to-emerald-500",
-    price: "₹249-899",
-    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg"
+    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg",
+    slug: "online-manipal-university/notes-and-mockpaper/mca",
+    originalPrice: "₹5,999",
+    discountedPrice: "₹3,999"
   },
   {
     icon: BookOpen,
@@ -40,17 +47,21 @@ const productCategories = [
     description: "Bachelor of Computer Applications notes, practical files, and resources",
     materials: 134,
     gradient: "from-orange-500 to-red-500",
-    price: "₹149-599",
-    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.47.15.jpeg"
+    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.47.15.jpeg",
+    slug: "online-manipal-university/notes-and-mockpaper/bca",
+    originalPrice: "₹5,999",
+    discountedPrice: "₹3,999"
   },
   {
     icon: BookOpen,
-    title: "MAECO Study Materials",
+    title: "MA Economics Study Materials",
     description: "Master of Arts in Economics notes, economic theories, and research papers",
     materials: 98,
     gradient: "from-indigo-500 to-purple-500",
-    price: "₹199-799",
-    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg"
+    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg",
+    slug: "online-manipal-university/notes-and-mockpaper/maeco",
+    originalPrice: "₹5,999",
+    discountedPrice: "₹3,999"
   },
   {
     icon: BookOpen,
@@ -58,8 +69,10 @@ const productCategories = [
     description: "Master of Arts in Journalism & Mass Communication media studies and resources",
     materials: 67,
     gradient: "from-pink-500 to-rose-500",
-    price: "₹179-699",
-    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.47.15.jpeg"
+    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.47.15.jpeg",
+    slug: "online-manipal-university/notes-and-mockpaper/majmc",
+    originalPrice: "₹5,999",
+    discountedPrice: "₹3,999"
   }
 ];
 
@@ -134,6 +147,7 @@ const testimonials = [
 
 export function SubjectShowcase() {
   const [, setCurrentTestimonial] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -142,6 +156,10 @@ export function SubjectShowcase() {
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleCardClick = (slug: string) => {
+    router.push(`/${slug}`);
+  };
 
   return (
     <section className="py-20 px-4 bg-gradient-to-b from-white via-neutral-50 to-white dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
@@ -182,8 +200,10 @@ export function SubjectShowcase() {
               transition={{ duration: 0.6, delay: index * 0.08 }}
               viewport={{ once: true }}
             >
-              <Card className="h-full group hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] transition-all duration-500 border border-neutral-200/50 dark:border-neutral-700/50 bg-white dark:bg-neutral-800/80 backdrop-blur-xl relative overflow-hidden rounded-3xl p-0">
-                
+              <Card 
+                className="h-full group hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] transition-all duration-500 border border-neutral-200/50 dark:border-neutral-700/50 bg-white dark:bg-neutral-800/80 backdrop-blur-xl relative overflow-hidden rounded-3xl p-0 cursor-pointer"
+                onClick={() => handleCardClick(category.slug)}
+              >  
                 {/* Image Section */}
                 <div className="relative h-56 overflow-hidden rounded-t-3xl bg-neutral-100 dark:bg-neutral-900">
                   <Image 
@@ -194,12 +214,7 @@ export function SubjectShowcase() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                   
-                  {/* Price Tag */}
-                  <div className="absolute bottom-4 left-4">
-                    <span className="bg-white/95 backdrop-blur-md text-neutral-900 font-semibold px-4 py-2 rounded-2xl text-sm shadow-lg border border-white/20">
-                      {category.price}
-                    </span>
-                  </div>
+                                    
                 </div>
                 
                 <CardContent className="p-8 space-y-4">

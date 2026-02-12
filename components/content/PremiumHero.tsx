@@ -17,7 +17,7 @@ export function PremiumHero() {
   }, [pathname]);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 overflow-hidden">
+    <section className="relative min-h-[80vh] md:min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 overflow-hidden">
       {/* Premium Animated Grid Pattern Background */}
       <AnimatedGridPattern
         numSquares={50}

@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import settings from "@/lib/settings";
 import { ChevronDown, BookOpen, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -16,7 +15,7 @@ const appleNavbar = {
     hover: "hover:text-[rgb(0, 122, 255)] dark:hover:text-blue-400"
   },
   button: {
-    primary: "bg-[rgb(0, 122, 255)] hover:bg-[rgb(0, 105, 217)] text-white",
+    primary: "bg-[rgb(0, 122, 255)] hover:bg-[rgb(0, 105, 217)] text-black",
     secondary: "bg-[rgb(248, 248, 248)] dark:bg-neutral-800 hover:bg-[rgb(0, 122, 255)]/10"
   }
 };
@@ -177,9 +176,7 @@ export function DynamicNavbar() {
 							className={`${appleNavbar.button.primary} px-8 py-3 rounded-2xl font-semibold text-base shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-0`}
 						>
 							<a
-								href={settings.whatsapp.url()}
-								target="_blank"
-								rel="noopener noreferrer"
+								href="http://localhost:3001/online-manipal-university/notes-and-mockpaper"
 								className="flex items-center gap-2"
 							>
 								<BookOpen className="w-5 h-5" />
@@ -255,9 +252,7 @@ export function DynamicNavbar() {
 									className={`w-full ${appleNavbar.button.primary} px-8 py-4 rounded-2xl font-semibold text-base shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-0`}
 								>
 									<a
-										href={settings.whatsapp.url()}
-										target="_blank"
-										rel="noopener noreferrer"
+										href="http://localhost:3001/online-manipal-university/notes-and-mockpaper"
 										className="flex items-center justify-center gap-2"
 										onClick={() => setIsMobileMenuOpen(false)}
 									>
