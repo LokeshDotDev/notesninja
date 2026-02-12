@@ -30,5 +30,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|sitemap).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|sitemap|\\.well-known/acme-challenge).*)"],
 };
