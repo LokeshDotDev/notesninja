@@ -8,16 +8,87 @@ import Link from "next/link";
 import { 
   BookOpen, 
   Download, 
-  Star, 
   ArrowRight, 
   Search, 
-  Filter,
   Grid3X3,
   List,
   Clock,
-  TrendingUp
+  TrendingUp,
+  FileText,
+  GraduationCap,
+  Notebook,
+  PenTool,
+  Library,
+  Brain,
+  Coffee,
+  Target,
+  Award,
+  CheckCircle
 } from "lucide-react";
 import { PremiumLoader } from "@/components/ui/premium-loader";
+import Image from "next/image";
+
+// Function to get appropriate icon based on category name
+const getCategoryIcon = (categoryName: string) => {
+  const name = categoryName.toLowerCase();
+  
+  if (name.includes('notes') || name.includes('note')) return <FileText className="w-7 h-7" />;
+  if (name.includes('mock') || name.includes('paper') || name.includes('exam')) return <FileText className="w-7 h-7" />;
+  if (name.includes('assignment') || name.includes('homework')) return <PenTool className="w-7 h-7" />;
+  if (name.includes('study') || name.includes('learn')) return <BookOpen className="w-7 h-7" />;
+  if (name.includes('university') || name.includes('college')) return <GraduationCap className="w-7 h-7" />;
+  if (name.includes('library') || name.includes('resource')) return <Library className="w-7 h-7" />;
+  if (name.includes('brain') || name.includes('intelligence')) return <Brain className="w-7 h-7" />;
+  if (name.includes('coffee') || name.includes('break')) return <Coffee className="w-7 h-7" />;
+  if (name.includes('target') || name.includes('goal')) return <Target className="w-7 h-7" />;
+  if (name.includes('award') || name.includes('certificate')) return <Award className="w-7 h-7" />;
+  if (name.includes('complete') || name.includes('done')) return <CheckCircle className="w-7 h-7" />;
+  
+  // Default icon
+  return <Notebook className="w-7 h-7" />;
+};
+
+// Function to get appropriate icon based on post title
+const getPostIcon = (postTitle: string) => {
+  const title = postTitle.toLowerCase();
+  
+  if (title.includes('semester') || title.includes('sem')) return <GraduationCap className="w-7 h-7" />;
+  if (title.includes('notes') || title.includes('note')) return <FileText className="w-7 h-7" />;
+  if (title.includes('mock') || title.includes('paper') || title.includes('exam')) return <FileText className="w-7 h-7" />;
+  if (title.includes('assignment') || title.includes('homework')) return <PenTool className="w-7 h-7" />;
+  if (title.includes('study') || title.includes('guide')) return <BookOpen className="w-7 h-7" />;
+  if (title.includes('syllabus') || title.includes('curriculum')) return <Library className="w-7 h-7" />;
+  if (title.includes('question') || title.includes('qb')) return <FileText className="w-7 h-7" />;
+  if (title.includes('practical') || title.includes('lab')) return <Target className="w-7 h-7" />;
+  
+  // Default icon for materials
+  return <Download className="w-7 h-7" />;
+};
+
+// Apple-inspired design system
+const appleDesign = {
+  typography: {
+    heroTitle: "text-5xl md:text-7xl lg:text-8xl font-semibold tracking-tight",
+    sectionTitle: "text-3xl md:text-4xl font-semibold tracking-tight",
+    cardTitle: "text-xl md:text-2xl font-semibold tracking-tight",
+    body: "text-base leading-relaxed",
+    caption: "text-sm leading-relaxed"
+  },
+  spacing: {
+    section: "py-24 md:py-32",
+    card: "p-8 md:p-10",
+    hero: "pt-32 pb-16 md:pt-48 md:pb-24"
+  },
+  colors: {
+    primary: "rgb(0, 122, 255)",
+    secondary: "rgb(142, 142, 147)",
+    background: "rgb(248, 248, 248)",
+    surface: "rgb(255, 255, 255)",
+    text: "rgb(28, 28, 30)",
+    textSecondary: "rgb(99, 99, 102)",
+    border: "rgb(229, 229, 234)"
+  }
+};
 
 interface Post {
   id: string;
@@ -25,6 +96,21 @@ interface Post {
   description?: string;
   fileUrl?: string;
   file_type?: string;
+  coverImage?: string;
+  image?: string;
+  imageUrl?: string;
+  thumbnail?: string;
+  cover?: string;
+  cloudinaryUrl?: string;
+  secure_url?: string;
+  url?: string;
+  images?: Array<{
+    id: string;
+    imageUrl: string;
+    publicId: string;
+    order: number;
+    postId: string;
+  }>;
 }
 
 interface Category {
@@ -167,28 +253,32 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-neutral-900 dark:to-neutral-800">
-      {/* Professional Hero Section */}
+    <div className="min-h-screen bg-[rgb(248, 248, 248)] dark:bg-neutral-900">
+      {/* Premium Apple-style Hero Section */}
       <section className="relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-blue-900/20 dark:via-neutral-900 dark:to-purple-900/20"></div>
+        {/* Subtle gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[rgb(248, 248, 248)] via-white to-white dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900"></div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center">
-            {/* Breadcrumb */}
+        {/* Ambient light effect */}
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-r from-blue-100/20 via-purple-100/10 to-pink-100/20 dark:from-blue-900/10 dark:via-purple-900/5 dark:to-pink-900/10 rounded-full blur-3xl"></div>
+        
+        <div className={`relative max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 ${appleDesign.spacing.hero}`}>
+          <div className="text-center max-w-4xl mx-auto">
+            {/* Apple-style breadcrumb */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center space-x-2 text-sm text-neutral-600 dark:text-neutral-400 mb-6 flex-wrap"
+              transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="flex items-center justify-center space-x-2 text-sm text-[rgb(99, 99, 102)] dark:text-neutral-500 mb-8 flex-wrap font-medium"
             >
-              <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
+              <Link href="/" className="hover:text-[rgb(0, 122, 255)] transition-colors duration-200">Home</Link>
               {breadcrumbs.map((crumb, index) => (
                 <React.Fragment key={crumb.path}>
-                  <span>/</span>
+                  <span className="text-[rgb(199, 199, 204)]">/</span>
                   {index === breadcrumbs.length - 1 ? (
-                    <span className="text-blue-600 font-medium">{crumb.name}</span>
+                    <span className="text-[rgb(0, 122, 255)] font-semibold">{crumb.name}</span>
                   ) : (
-                    <Link href={crumb.path} className="hover:text-blue-600 transition-colors">
+                    <Link href={crumb.path} className="hover:text-[rgb(0, 122, 255)] transition-colors duration-200">
                       {crumb.name}
                     </Link>
                   )}
@@ -196,136 +286,124 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
               ))}
             </motion.div>
 
-            {/* Title */}
+            {/* Apple-style hero title */}
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-4xl md:text-6xl font-bold text-neutral-900 dark:text-white mb-6"
+              transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className={`${appleDesign.typography.heroTitle} text-[rgb(28, 28, 30)] dark:text-white mb-8 leading-[1.1]`}
             >
               {category.name}
             </motion.h1>
 
-            {/* Subtitle */}
+            {/* Apple-style subtitle */}
             <motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-xl text-neutral-600 dark:text-neutral-300 max-w-3xl mx-auto mb-8"
+              transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className={`${appleDesign.typography.body} text-[rgb(99, 99, 102)] dark:text-neutral-400 max-w-2xl mx-auto mb-12 text-2xl`}
             >
               Comprehensive study materials and resources for {category.name.toLowerCase()}
             </motion.p>
 
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="flex flex-wrap items-center justify-center gap-6 mb-8"
-            >
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold text-neutral-900 dark:text-white">
-                  {category._count.posts} Materials
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Grid3X3 className="w-5 h-5 text-purple-600" />
-                <span className="font-semibold text-neutral-900 dark:text-white">
-                  {category.children?.length || 0} Topics
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Star className="w-5 h-5 text-yellow-500" />
-                <span className="font-semibold text-neutral-900 dark:text-white">
-                  Expert Verified
-                </span>
-              </div>
-            </motion.div>
-
-            {/* CTA Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center"
-            >
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                <Download className="w-5 h-5 mr-2" />
-                Browse All Materials
-              </Button>
-              <Button variant="outline" size="lg" className="border-2 border-neutral-300 dark:border-neutral-600 px-8 py-3 rounded-full font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-300">
-                <Filter className="w-5 h-5 mr-2" />
-                Filter Topics
-              </Button>
-            </motion.div>
-          </div>
+            
+                      </div>
         </div>
       </section>
 
       {/* Content Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section className={`max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 ${appleDesign.spacing.section}`}>
         {/* Materials Section */}
         {posts && posts.length > 0 && (
           <>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="mb-16"
             >
-              <h2 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
+              <h2 className={`${appleDesign.typography.sectionTitle} text-[rgb(28, 28, 30)] dark:text-white mb-4`}>
                 Study Materials
               </h2>
-              <p className="text-neutral-600 dark:text-neutral-400">
+              <p className={`${appleDesign.typography.body} text-[rgb(99, 99, 102)] dark:text-neutral-400`}>
                 Access {posts.length} {posts.length === 1 ? 'material' : 'materials'} in this category
               </p>
             </motion.div>
 
-            {/* Materials Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-              {posts.map((post, index) => (
+            {/* Apple-style Materials Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
+              {posts.map((post, index) => {
+                console.log('Post data:', JSON.stringify(post, null, 2)); // Detailed log with formatting
+                console.log('Available image fields:', {
+                  cloudinaryUrl: post.cloudinaryUrl,
+                  secure_url: post.secure_url,
+                  url: post.url,
+                  coverImage: post.coverImage,
+                  image: post.image,
+                  imageUrl: post.imageUrl,
+                  thumbnail: post.thumbnail,
+                  cover: post.cover
+                });
+                return (
                 <BlurFade key={post.id} delay={0.25 + index * 0.1} inView>
                   <Link href={`/product/${post.id}`}>
                     <motion.div
-                      whileHover={{ y: -5, boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)" }}
+                      whileHover={{ y: -8, boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.15)" }}
                       whileTap={{ scale: 0.98 }}
-                      transition={{ duration: 0.3 }}
-                      className="group relative overflow-hidden rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 h-64 flex flex-col justify-between p-6 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300"
+                      transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      viewport={{ once: true }}
+                      className="group relative overflow-hidden rounded-3xl border border-neutral-200/50 dark:border-neutral-700/50 bg-white dark:bg-neutral-800/80 backdrop-blur-xl h-full"
                     >
-                      {/* Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      
-                      {/* Content */}
-                      <div className="relative z-10">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
-                            <Download className="w-6 h-6" />
+                      {/* Image Section */}
+                      <div className="relative h-56 overflow-hidden rounded-t-3xl bg-neutral-100 dark:bg-neutral-900">
+                        {post.images && post.images.length > 0 && post.images[0].imageUrl ? (
+                          <Image
+                            src={post.images[0].imageUrl}
+                            alt={post.title}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-[rgb(0, 122, 255)]/20 to-purple-500/20 flex items-center justify-center">
+                            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[rgb(0, 122, 255)] to-[rgb(0, 94, 198)] flex items-center justify-center text-black shadow-lg">
+                              {getPostIcon(post.title)}
+                            </div>
                           </div>
-                          <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300">
-                            {post.file_type || 'PDF'}
-                          </Badge>
-                        </div>
-
-                        <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                      </div>
+                      
+                      {/* Content Section */}
+                      <div className="p-8 space-y-4">
+                        <h3 className="text-2xl font-semibold text-neutral-900 dark:text-white mb-2 group-hover:text-[rgb(0, 122, 255)] dark:group-hover:text-blue-400 transition-colors duration-300 line-clamp-2 leading-tight">
                           {post.title}
                         </h3>
                         
                         {post.description && (
-                          <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
+                          <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-6 line-clamp-3">
                             {post.description}
                           </p>
                         )}
-                      </div>
-
-                      {/* Download Icon */}
-                      <div className="absolute bottom-6 right-6 w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center transform translate-x-2 group-hover:translate-x-0 transition-transform duration-300 shadow-lg">
-                        <Download className="w-5 h-5" />
+                        
+                        <div className="flex items-center justify-between mb-6">
+                          <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
+                            <div className="w-2 h-2 bg-black rounded-full"></div>
+                            Instant download
+                          </span>
+                        </div>
+                        
+                        <Button 
+                          className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium shadow-sm hover:shadow-md transition-all duration-300 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700"
+                        >
+                          View Details
+                          <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+                        </Button>
                       </div>
                     </motion.div>
                   </Link>
                 </BlurFade>
-              ))}
+                );
+              })}
             </div>
           </>
         )}
@@ -337,118 +415,129 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8"
+              transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12"
             >
               <div>
-                <h2 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
+                <h2 className={`${appleDesign.typography.sectionTitle} text-[rgb(28, 28, 30)] dark:text-white mb-4`}>
                   Explore Topics
                 </h2>
-                <p className="text-neutral-600 dark:text-neutral-400">
+                <p className={`${appleDesign.typography.body} text-[rgb(99, 99, 102)] dark:text-neutral-400`}>
                   Choose from {category.children.length} specialized topics
                 </p>
               </div>
               
-              {/* View Toggle */}
-              <div className="flex items-center gap-2 mt-4 sm:mt-0">
+              {/* Apple-style View Toggle */}
+              <div className="flex items-center gap-1 mt-6 sm:mt-0 p-1 bg-[rgb(248, 248, 248)] dark:bg-neutral-800 rounded-2xl border border-[rgb(229, 229, 234)] dark:border-neutral-700">
                 <Button
-                  variant={viewMode === "grid" ? "default" : "outline"}
+                  variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
-                  className="p-2"
+                  className={`p-2 rounded-xl transition-all duration-200 ${viewMode === "grid" ? "bg-white dark:bg-neutral-700 shadow-sm" : "hover:bg-[rgb(0, 122, 255)]/10"}`}
                 >
                   <Grid3X3 className="w-4 h-4" />
                 </Button>
                 <Button
-                  variant={viewMode === "list" ? "default" : "outline"}
+                  variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
-                  className="p-2"
+                  className={`p-2 rounded-xl transition-all duration-200 ${viewMode === "list" ? "bg-white dark:bg-neutral-700 shadow-sm" : "hover:bg-[rgb(0, 122, 255)]/10"}`}
                 >
                   <List className="w-4 h-4" />
                 </Button>
               </div>
             </motion.div>
 
-            {/* Topics Grid/List */}
-            <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
+            {/* Apple-style Topics Grid/List */}
+            <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" : "space-y-4"}>
               {category.children.map((subcategory, index) => (
                 <BlurFade key={subcategory.id} delay={0.25 + index * 0.1} inView>
                   <Link href={`/${encodeURIComponent(subcategory.path || subcategory.slug)}`}>
                     {viewMode === "grid" ? (
-                      /* Grid View */
+                      /* Apple-style Grid View */
                       <motion.div
-                        whileHover={{ y: -5, boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)" }}
+                        whileHover={{ y: -8, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.15)" }}
                         whileTap={{ scale: 0.98 }}
-                        transition={{ duration: 0.3 }}
-                        className="group relative overflow-hidden rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 h-64 flex flex-col justify-between p-6 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300"
+                        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        className="group relative overflow-hidden rounded-3xl bg-white dark:bg-neutral-800 border border-[rgb(229, 229, 234)] dark:border-neutral-700 h-96 flex flex-col justify-between cursor-pointer hover:border-[rgb(0, 122, 255)]/50 transition-all duration-300 shadow-sm hover:shadow-xl"
                       >
-                        {/* Gradient Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        {/* Subtle gradient overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-[rgb(0, 122, 255)]/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         
                         {/* Content */}
-                        <div className="relative z-10">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                              {subcategory.name.charAt(0).toUpperCase()}
+                        <div className={`relative z-10 ${appleDesign.spacing.card} flex-1 flex flex-col justify-between`}>
+                          <div>
+                            <div className="flex items-start justify-between mb-6">
+                              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[rgb(0, 122, 255)] to-[rgb(0, 94, 198)] flex items-center justify-center text-black font-bold text-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                {getCategoryIcon(subcategory.name)}
+                              </div>
+                              {/* <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="bg-[rgb(0, 122, 255)]/10 text-[rgb(0, 122, 255)] border-[rgb(0, 122, 255)]/20 dark:bg-[rgb(0, 122, 255)]/20 dark:text-blue-300 font-medium">
+                                  {subcategory._count.posts} items
+                                </Badge>
+                              </div> */}
                             </div>
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300">
-                              {subcategory._count.posts} items
-                            </Badge>
+
+                            <h3 className={`${appleDesign.typography.cardTitle} text-[rgb(28, 28, 30)] dark:text-white mb-4 group-hover:text-[rgb(0, 122, 255)] dark:group-hover:text-blue-400 transition-colors duration-300`}>
+                              {subcategory.name}
+                            </h3>
+                            
+                            <p className={`${appleDesign.typography.body} text-[rgb(99, 99, 102)] dark:text-neutral-400 mb-6 leading-relaxed`}>
+                              Access comprehensive {subcategory.name.toLowerCase()} study materials
+                            </p>
+
+                            <div className="flex items-center gap-6 text-[rgb(142, 142, 147)] dark:text-neutral-500">
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-[rgb(99, 99, 102)] dark:text-neutral-400" />
+                                <span className={`${appleDesign.typography.caption}`}>Updated recently</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <TrendingUp className="w-4 h-4 text-[rgb(99, 99, 102)] dark:text-neutral-400" />
+                                <span className={`${appleDesign.typography.caption}`}>Popular</span>
+                              </div>
+                            </div>
                           </div>
 
-                          <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                            {subcategory.name}
-                          </h3>
-                          
-                          <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-                            Access comprehensive {subcategory.name.toLowerCase()} study materials
-                          </p>
-
-                          <div className="flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              <span>Updated recently</span>
+                          {/* Arrow indicator */}
+                          <div className="flex items-center justify-between mt-6">
+                            <div className="text-[rgb(142, 142, 147)] dark:text-neutral-500">
+                              <span className={`${appleDesign.typography.caption}`}>{subcategory._count.posts} materials</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <TrendingUp className="w-3 h-3" />
-                              <span>Popular</span>
+                            <div className="w-10 h-10 rounded-full bg-[rgb(0, 122, 255)] text-black flex items-center justify-center transform translate-x-2 group-hover:translate-x-0 transition-all duration-300 shadow-lg">
+                              <ArrowRight className="w-5 h-5" />
                             </div>
                           </div>
-                        </div>
-
-                        {/* Arrow Icon */}
-                        <div className="absolute bottom-6 right-6 w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center transform translate-x-2 group-hover:translate-x-0 transition-transform duration-300 shadow-lg">
-                          <ArrowRight className="w-5 h-5" />
                         </div>
                       </motion.div>
                     ) : (
-                      /* List View */
+                      /* Apple-style List View */
                       <motion.div
-                        whileHover={{ x: 5 }}
+                        whileHover={{ x: 8 }}
                         whileTap={{ scale: 0.98 }}
-                        transition={{ duration: 0.3 }}
-                        className="group bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl p-6 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300"
+                        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        className="group bg-white dark:bg-neutral-800 border border-[rgb(229, 229, 234)] dark:border-neutral-700 rounded-2xl p-6 cursor-pointer hover:border-[rgb(0, 122, 255)]/50 hover:shadow-lg transition-all duration-300"
                       >
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                              {subcategory.name.charAt(0).toUpperCase()}
+                          <div className="flex items-center gap-6">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[rgb(0, 122, 255)] to-[rgb(0, 94, 198)] flex items-center justify-center text-black font-bold text-xl shadow-md">
+                              {getCategoryIcon(subcategory.name)}
                             </div>
                             <div>
-                              <h3 className="text-lg font-bold text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                              <h3 className={`${appleDesign.typography.cardTitle} text-[rgb(28, 28, 30)] dark:text-white group-hover:text-[rgb(0, 122, 255)] dark:group-hover:text-blue-400 transition-colors duration-300`}>
                                 {subcategory.name}
                               </h3>
-                              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                              <p className={`${appleDesign.typography.body} text-[rgb(99, 99, 102)] dark:text-neutral-400 mt-1`}>
                                 {subcategory._count.posts} study materials available
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300">
+                          <div className="flex items-center gap-4">
+                            <Badge variant="secondary" className="bg-[rgb(0, 122, 255)]/10 text-[rgb(0, 122, 255)] border-[rgb(0, 122, 255)]/20 dark:bg-[rgb(0, 122, 255)]/20 dark:text-blue-300 font-medium">
                               {subcategory._count.posts}
                             </Badge>
-                            <ArrowRight className="w-5 h-5 text-neutral-400 group-hover:text-blue-600 transition-colors" />
+                            <div className="w-10 h-10 rounded-full bg-[rgb(0, 122, 255)]/10 text-[rgb(0, 122, 255)] flex items-center justify-center group-hover:bg-[rgb(0, 122, 255)] group-hover:text-white transition-all duration-300">
+                              <ArrowRight className="w-5 h-5" />
+                            </div>
                           </div>
                         </div>
                       </motion.div>
@@ -459,26 +548,29 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
             </div>
           </>
         ) : (
-          /* Empty State - No Topics */
+          /* Apple-style Empty State */
           !posts || posts.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-center py-16"
+              transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="text-center py-24"
             >
-              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                <BookOpen className="w-12 h-12 text-neutral-400" />
+              <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-[rgb(248, 248, 248)] dark:bg-neutral-800 flex items-center justify-center border border-[rgb(229, 229, 234)] dark:border-neutral-700">
+                <BookOpen className="w-16 h-16 text-[rgb(142, 142, 147)] dark:text-neutral-500" />
               </div>
-              <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
+              <h3 className={`${appleDesign.typography.sectionTitle} text-[rgb(28, 28, 30)] dark:text-white mb-6`}>
                 No Content Available Yet
               </h3>
-              <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto mb-8">
+              <p className={`${appleDesign.typography.body} text-[rgb(99, 99, 102)] dark:text-neutral-400 max-w-lg mx-auto mb-12 leading-relaxed`}>
                 We&apos;re working on adding {category.name.toLowerCase()} materials and topics. Check back soon for new study materials!
               </p>
-              <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Button 
+                asChild 
+                className="bg-[rgb(0, 122, 255)] hover:bg-[rgb(0, 105, 217)] text-white px-8 py-4 rounded-2xl font-semibold text-base shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-0"
+              >
                 <Link href="/">
-                  <ArrowRight className="w-4 h-4 mr-2" />
+                  <ArrowRight className="w-5 h-5 mr-2" />
                   Explore Other Categories
                 </Link>
               </Button>

@@ -6,6 +6,21 @@ import { ChevronDown, BookOpen, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
+// Apple-inspired design system for navbar
+const appleNavbar = {
+  background: "bg-white/95 dark:bg-neutral-900/95",
+  border: "border-[rgb(229, 229, 234)]/80 dark:border-neutral-800/80",
+  text: {
+    primary: "text-[rgb(28, 28, 30)] dark:text-white",
+    secondary: "text-[rgb(99, 99, 102)] dark:text-neutral-400",
+    hover: "hover:text-[rgb(0, 122, 255)] dark:hover:text-blue-400"
+  },
+  button: {
+    primary: "bg-[rgb(0, 122, 255)] hover:bg-[rgb(0, 105, 217)] text-white",
+    secondary: "bg-[rgb(248, 248, 248)] dark:bg-neutral-800 hover:bg-[rgb(0, 122, 255)]/10"
+  }
+};
+
 interface Category {
   id: string;
   name: string;
@@ -67,14 +82,14 @@ export function DynamicNavbar() {
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
 
-	// Render nested categories for dropdown
+	// Render nested categories for dropdown with Apple styling
 	const renderNestedCategories = (categories: Category[], depth = 0) => {
 		return categories.map((category) => (
 			<div key={category.id}>
 				<Link
 					href={`/${category.path || category.slug}`}
-					className="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-primary transition-colors"
-					style={{ paddingLeft: `${12 + depth * 16}px` }}
+					className={`block px-6 py-3 text-sm ${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
+					style={{ paddingLeft: `${24 + depth * 16}px` }}
 					onClick={() => setIsDropdownOpen(false)}
 				>
 					{category.name}
@@ -87,45 +102,45 @@ export function DynamicNavbar() {
 	};
 
 	return (
-		<nav className="sticky top-0 z-50 w-full border-b border-neutral-200/80 bg-white/95 backdrop-blur-sm dark:border-neutral-800/80 dark:bg-neutral-900/95">
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div className="flex h-16 items-center justify-between">
+		<nav className={`sticky top-0 z-50 w-full ${appleNavbar.border} ${appleNavbar.background} backdrop-blur-xl`}>
+			<div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
+				<div className="flex h-20 items-center justify-between">
 					{/* Logo */}
 					<div className="flex items-center">
-						<Link href="/" className="flex items-center space-x-2">
+						<Link href="/" className="flex items-center space-x-3 group">
 							<Image 
 								src="/assets/Notes ninja Logo copy.png" 
 								alt="NotesNinja" 
-							width={180}
-							height={48}
-							className="h-12 w-auto"
-						/>
-					</Link>
-				</div>
+								width={180}
+								height={48}
+								className="h-14 w-auto transition-transform duration-300 group-hover:scale-105"
+							/>
+						</Link>
+					</div>
 
-				{/* Desktop Navigation */}
-					<div className="hidden md:flex items-center space-x-8">
+					{/* Desktop Navigation */}
+					<div className="hidden lg:flex items-center space-x-12">
 						{/* Study Materials Dropdown */}
 						<div className="relative" ref={dropdownRef}>
 							<button
 								onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-								className="flex items-center space-x-1 text-neutral-700 dark:text-neutral-300 hover:text-primary transition-colors py-2"
+								className={`flex items-center space-x-2 ${appleNavbar.text.primary} ${appleNavbar.text.hover} transition-all duration-200 py-2 font-medium`}
 							>
 								<span>Study Materials</span>
-								<ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+								<ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
 							</button>
 							
 							{isDropdownOpen && (
-								<div className="absolute top-full left-0 mt-2 w-80 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-									<div className="py-2 max-h-96 overflow-y-auto">
+								<div className="absolute top-full left-0 mt-3 w-96 bg-white dark:bg-neutral-800 rounded-2xl shadow-xl border border-[rgb(229, 229, 234)] dark:border-neutral-700 overflow-hidden backdrop-blur-xl">
+									<div className="py-2 max-h-96 overflow-y-auto scrollbar-thin">
 										{loading ? (
-											<div className="px-4 py-2 text-sm text-neutral-500 dark:text-neutral-400">
+											<div className="px-6 py-4 text-sm text-[rgb(142, 142, 147)] dark:text-neutral-500">
 												Loading categories...
 											</div>
 										) : categories.length > 0 ? (
 											renderNestedCategories(categories)
 										) : (
-											<div className="px-4 py-2 text-sm text-neutral-500 dark:text-neutral-400">
+											<div className="px-6 py-4 text-sm text-[rgb(142, 142, 147)] dark:text-neutral-500">
 												No categories available
 											</div>
 										)}
@@ -137,29 +152,29 @@ export function DynamicNavbar() {
 						{/* Other Links */}
 						<Link
 							href="/privacy-policy"
-							className="text-neutral-700 dark:text-neutral-300 hover:text-primary transition-colors"
+							className={`${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
 						>
 							Privacy Policy
 						</Link>
 						<Link
 							href="/terms-conditions"
-							className="text-neutral-700 dark:text-neutral-300 hover:text-primary transition-colors"
+							className={`${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
 						>
 							Terms & Conditions
 						</Link>
 						<Link
 							href="/refund-cancellation"
-							className="text-neutral-700 dark:text-neutral-300 hover:text-primary transition-colors"
+							className={`${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
 						>
 							Refund & Cancellation
 						</Link>
 					</div>
 
-					{/* CTA Button */}
-					<div className="hidden md:block">
+					{/* Apple-style CTA Button */}
+					<div className="hidden lg:block">
 						<Button
 							asChild
-							className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-6 py-2 rounded-full shadow transition-all duration-300 hover:shadow-2xl hover:scale-105"
+							className={`${appleNavbar.button.primary} px-8 py-3 rounded-2xl font-semibold text-base shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-0`}
 						>
 							<a
 								href={settings.whatsapp.url()}
@@ -167,19 +182,19 @@ export function DynamicNavbar() {
 								rel="noopener noreferrer"
 								className="flex items-center gap-2"
 							>
-								<BookOpen className="w-4 h-4" />
+								<BookOpen className="w-5 h-5" />
 								<span>Get Study Materials</span>
 							</a>
 						</Button>
 					</div>
 
 					{/* Mobile Menu Toggle */}
-					<div className="md:hidden">
+					<div className="lg:hidden">
 						<Button
 							variant="ghost"
 							size="sm"
 							onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-							className="text-neutral-700 dark:text-neutral-300"
+							className={`${appleNavbar.text.primary} p-2 rounded-xl hover:bg-[rgb(248, 248, 248)] dark:hover:bg-neutral-800 transition-all duration-200`}
 						>
 							{isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
 						</Button>
@@ -188,22 +203,22 @@ export function DynamicNavbar() {
 
 				{/* Mobile Navigation */}
 				{isMobileMenuOpen && (
-					<div className="md:hidden py-4 border-t border-neutral-200 dark:border-neutral-800">
-						<div className="space-y-4">
+					<div className="lg:hidden py-6 border-t border-[rgb(229, 229, 234)] dark:border-neutral-800">
+						<div className="space-y-6">
 							{/* Study Materials Section */}
 							<div>
-								<div className="px-3 py-2 text-sm font-semibold text-neutral-900 dark:text-white">
+								<div className="px-6 py-3 text-sm font-semibold text-[rgb(28, 28, 30)] dark:text-white">
 									Study Materials
 								</div>
-								<div className="pl-6 space-y-1 max-h-64 overflow-y-auto">
+								<div className="pl-6 space-y-1 max-h-64 overflow-y-auto scrollbar-thin">
 									{loading ? (
-										<div className="py-2 text-sm text-neutral-500 dark:text-neutral-400">
+										<div className="py-3 text-sm text-[rgb(142, 142, 147)] dark:text-neutral-500">
 											Loading categories...
 										</div>
 									) : categories.length > 0 ? (
 										renderNestedCategories(categories)
 									) : (
-										<div className="py-2 text-sm text-neutral-500 dark:text-neutral-400">
+										<div className="py-3 text-sm text-[rgb(142, 142, 147)] dark:text-neutral-500">
 											No categories available
 										</div>
 									)}
@@ -213,31 +228,31 @@ export function DynamicNavbar() {
 							{/* Other Links */}
 							<Link
 								href="/privacy-policy"
-								className="block px-3 py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-primary transition-colors"
+								className={`block px-6 py-3 text-sm ${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
 								onClick={() => setIsMobileMenuOpen(false)}
 							>
 								Privacy Policy
 							</Link>
 							<Link
 								href="/terms-conditions"
-								className="block px-3 py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-primary transition-colors"
+								className={`block px-6 py-3 text-sm ${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
 								onClick={() => setIsMobileMenuOpen(false)}
 							>
 								Terms & Conditions
 							</Link>
 							<Link
 								href="/refund-cancellation"
-								className="block px-3 py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-primary transition-colors"
+								className={`block px-6 py-3 text-sm ${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
 								onClick={() => setIsMobileMenuOpen(false)}
 							>
 								Refund & Cancellation
 							</Link>
 
 							{/* Mobile CTA Button */}
-							<div className="px-3 pt-4">
+							<div className="px-6 pt-6">
 								<Button
 									asChild
-									className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-6 py-2 rounded-full shadow transition-all duration-300 hover:shadow-2xl"
+									className={`w-full ${appleNavbar.button.primary} px-8 py-4 rounded-2xl font-semibold text-base shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-0`}
 								>
 									<a
 										href={settings.whatsapp.url()}
@@ -246,7 +261,7 @@ export function DynamicNavbar() {
 										className="flex items-center justify-center gap-2"
 										onClick={() => setIsMobileMenuOpen(false)}
 									>
-										<BookOpen className="w-4 h-4" />
+										<BookOpen className="w-5 h-5" />
 										<span>Get Study Materials</span>
 									</a>
 								</Button>
