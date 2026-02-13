@@ -17,6 +17,11 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow HTML verification file to be served directly
+  if (pathname === "/udfqcfua9mzrfa6zp5jath0qx5skal.html") {
+    return NextResponse.next();
+  }
+
   // Protect admin routes
   if (pathname.startsWith("/admin")) {
     if (!token) {

@@ -228,7 +228,7 @@ export const NavbarLogo = () => {
 		<Link
 			href='/'
 			className='relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black'>
-			<Image src='/assets/Notes ninja Logo copy.png' alt='NotesNinja' width={180} height={180} />
+			<Image src='/assets/Notes ninja Logo copy.png' alt='NotesNinja' width={180} height={180} priority />
 		</Link>
 	);
 };
