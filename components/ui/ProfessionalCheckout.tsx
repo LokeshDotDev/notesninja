@@ -10,7 +10,6 @@ import {
   Shield, 
   Download, 
   CheckCircle, 
-  AlertCircle, 
   Loader2,
   ArrowRight,
   FileText,
@@ -51,6 +50,12 @@ interface RazorpayOptions {
   };
   theme?: {
     color?: string;
+  };
+  modal?: {
+    ondismiss?: () => void;
+    escape?: boolean;
+    backdropclose?: boolean;
+    handleback?: boolean;
   };
 }
 
@@ -260,6 +265,15 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
             throw new Error(verifyData.error || 'Payment verification failed');
           }
         },
+        modal: {
+          ondismiss: function() {
+            // Redirect to the specified page when user closes the payment modal
+            window.location.href = '/online-manipal-university/notes-and-mockpaper';
+          },
+          escape: true,
+          backdropclose: true,
+          handleback: true
+        },
         prefill: {
           name: `${formData.firstName} ${formData.lastName}`,
           email: formData.email,
@@ -277,6 +291,11 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
       console.error('Payment error:', error);
       setPaymentStep("error");
       setError(error instanceof Error ? error.message : "Payment failed. Please try again.");
+      
+      // Redirect to the specified page on payment failure
+      setTimeout(() => {
+        window.location.href = '/online-manipal-university/notes-and-mockpaper';
+      }, 2000);
     } finally {
       setIsProcessing(false);
     }
@@ -409,29 +428,11 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
   }
 
   if (error || !product) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-neutral-900 dark:to-neutral-800">
-        <div className="flex items-center justify-center min-h-screen px-4">
-          <div className="text-center max-w-md">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-              <AlertCircle className="w-10 h-10 text-red-600" />
-            </div>
-            <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-4">
-              {error || "Product Not Found"}
-            </h1>
-            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-              Unable to load product for checkout.
-            </p>
-            <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-              <Link href="/">
-                <ArrowRight className="w-4 h-4 mr-2" />
-                Back to Home
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
+    // Auto-redirect to notes page on error
+    if (typeof window !== 'undefined') {
+      window.location.href = '/online-manipal-university/notes-and-mockpaper';
+    }
+    return null;
   }
 
   if (paymentStep === "success" && orderComplete) {

@@ -4,9 +4,6 @@ import Image from "next/image";
 
 const universities = [
   {
-    logo: "/assets/universitesLogo/1.png"
-  },
-  {
     logo: "/assets/universitesLogo/2.png"
   },
   {
@@ -14,6 +11,9 @@ const universities = [
   },
   {
     logo: "/assets/universitesLogo/4.png"
+  },
+  {
+    logo: "/assets/universitesLogo/1.png"
   },
   {
     logo: "/assets/universitesLogo/5.png"
