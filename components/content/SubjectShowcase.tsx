@@ -14,7 +14,7 @@ const productCategories = [
     description: "Master of Business Administration notes, case studies, and exam resources",
     materials: 245,
     gradient: "from-blue-500 to-cyan-500",
-    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg",
+    image: "/assets/courses logo/mba.png",
     slug: "online-manipal-university/notes-and-mockpaper/mba",
     originalPrice: "₹5,999",
     discountedPrice: "₹3,999"
@@ -25,7 +25,7 @@ const productCategories = [
     description: "Bachelor of Business Administration notes, assignments, and study guides",
     materials: 189,
     gradient: "from-purple-500 to-pink-500",
-    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.47.15.jpeg",
+    image: "/assets/courses logo/bba.png",
     slug: "online-manipal-university/notes-and-mockpaper/bba",
     originalPrice: "₹5,999",
     discountedPrice: "₹3,999"
@@ -36,7 +36,7 @@ const productCategories = [
     description: "Master of Computer Applications programming notes, algorithms, and projects",
     materials: 156,
     gradient: "from-green-500 to-emerald-500",
-    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg",
+    image: "/assets/courses logo/mca.png",
     slug: "online-manipal-university/notes-and-mockpaper/mca",
     originalPrice: "₹5,999",
     discountedPrice: "₹3,999"
@@ -47,7 +47,7 @@ const productCategories = [
     description: "Bachelor of Computer Applications notes, practical files, and resources",
     materials: 134,
     gradient: "from-orange-500 to-red-500",
-    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.47.15.jpeg",
+    image: "/assets/courses logo/bca.png",
     slug: "online-manipal-university/notes-and-mockpaper/bca",
     originalPrice: "₹5,999",
     discountedPrice: "₹3,999"
@@ -58,7 +58,7 @@ const productCategories = [
     description: "Master of Arts in Economics notes, economic theories, and research papers",
     materials: 98,
     gradient: "from-indigo-500 to-purple-500",
-    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg",
+    image: "/assets/courses logo/maineco.png",
     slug: "online-manipal-university/notes-and-mockpaper/maeco",
     originalPrice: "₹5,999",
     discountedPrice: "₹3,999"
@@ -69,7 +69,7 @@ const productCategories = [
     description: "Master of Commerce advanced accounting, finance, and business studies",
     materials: 85,
     gradient: "from-indigo-500 to-blue-500",
-    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg",
+    image: "/assets/courses logo/mcom.png",
     slug: "online-manipal-university/notes-and-mockpaper/mcom",
     originalPrice: "₹5,999",
     discountedPrice: "₹3,999"
@@ -80,7 +80,7 @@ const productCategories = [
     description: "Bachelor of Commerce accounting, business law, and financial management",
     materials: 120,
     gradient: "from-teal-500 to-cyan-500",
-    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.47.15.jpeg",
+    image: "/assets/courses logo/bcom.png",
     slug: "online-manipal-university/notes-and-mockpaper/bcom",
     originalPrice: "₹5,999",
     discountedPrice: "₹3,999"
@@ -91,7 +91,7 @@ const productCategories = [
     description: "Master of Arts in Journalism & Mass Communication media studies and resources",
     materials: 67,
     gradient: "from-pink-500 to-rose-500",
-    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.47.15.jpeg",
+    image: "/assets/courses logo/majmc.png",
     slug: "online-manipal-university/notes-and-mockpaper/majmc",
     originalPrice: "₹5,999",
     discountedPrice: "₹3,999"

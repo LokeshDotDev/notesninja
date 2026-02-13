@@ -68,6 +68,7 @@ export function PremiumHero() {
             autoPlay
             loop
             playsInline
+            muted
             controls
             className="w-full h-auto rounded-2xl shadow-2xl"
           >
