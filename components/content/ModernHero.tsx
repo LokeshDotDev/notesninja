@@ -60,7 +60,7 @@ export function ModernHero() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight mb-6"
+          className="text-7xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 dark:text-white leading-tight mb-6"
         >
           Premium Study Materials for <br className="hidden sm:inline" />
           <span className="text-indigo-600 dark:text-indigo-400">Academic Excellence</span>

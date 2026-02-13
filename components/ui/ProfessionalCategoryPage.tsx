@@ -439,6 +439,26 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
             </div>
           </>
         )}
+        {/* Video Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          viewport={{ once: true }}
+          className="mb-20"
+        >
+          <div className="relative rounded-3xl overflow-hidden shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)]">
+            <video
+              src="/assets/videos/ad.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              controls
+              className="w-full h-auto rounded-3xl"
+            />
+          </div>
+        </motion.div>
 
         {/* Topics Section */}
         {category.children && category.children.length > 0 ? (
@@ -480,6 +500,8 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
               </div>
             </motion.div>
 
+            
+
             {/* Apple-style Topics Grid/List */}
             <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" : "space-y-4"}>
               {category.children.map((subcategory, index) => (
@@ -503,11 +525,6 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
                               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[rgb(0, 122, 255)] to-[rgb(0, 94, 198)] flex items-center justify-center text-black font-bold text-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
                                 {getCategoryIcon(subcategory.name)}
                               </div>
-                              {/* <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className="bg-[rgb(0, 122, 255)]/10 text-[rgb(0, 122, 255)] border-[rgb(0, 122, 255)]/20 dark:bg-[rgb(0, 122, 255)]/20 dark:text-blue-300 font-medium">
-                                  {subcategory._count.posts} items
-                                </Badge>
-                              </div> */}
                             </div>
 
                             <h3 className={`${appleDesign.typography.cardTitle} text-[rgb(28, 28, 30)] dark:text-white mb-4 group-hover:text-[rgb(0, 122, 255)] dark:group-hover:text-blue-400 transition-colors duration-300`}>
@@ -579,9 +596,11 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
               ))}
             </div>
           </>
-        ) : (
-          /* Apple-style Empty State */
-          !posts || posts.length === 0 ? (
+        ) : null}
+
+        {/* Empty State */}
+        {!posts || posts.length === 0 ? (
+          !category.children || category.children.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -608,7 +627,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
               </Button>
             </motion.div>
           ) : null
-        )}
+        ) : null}
       </section>
     </div>
   );

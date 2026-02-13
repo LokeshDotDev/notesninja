@@ -69,14 +69,14 @@ export const MacbookScroll = ({
   return (
     <div
       ref={ref}
-      className="flex min-h-[200vh] shrink-0 scale-[0.35] transform flex-col items-center justify-start py-0 [perspective:800px] sm:scale-50 md:scale-100 md:pt-20"
+      className="flex min-h-[70vh] sm:min-h-[85vh] md:min-h-[130vh] shrink-0 scale-[0.58] sm:scale-[0.65] md:scale-85 lg:scale-100 transform flex-col items-center justify-start py-0 [perspective:800px] md:pt-20"
     >
       <motion.h2
         style={{
           translateY: textTransform,
           opacity: textOpacity,
         }}
-        className="mb-20 text-center text-3xl font-bold text-neutral-800 dark:text-white"
+        className="mb-5 sm:mb-10 md:mb-20 text-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-neutral-800 dark:text-white px-3"
       >
         {title || (
           <span>
@@ -166,13 +166,25 @@ export const Lid = ({
         className="absolute inset-0 h-96 w-[32rem] rounded-2xl bg-[#010101] p-2"
       >
         <div className="absolute inset-0 rounded-lg bg-[#272729]" />
-        <Image
-          src={src as string}
-          alt="aceternity logo"
-          width={512}
-          height={384}
-          className="absolute inset-0 h-full w-full rounded-lg object-cover object-center"
-        />
+        {src?.endsWith('.mp4') || src?.endsWith('.webm') || src?.endsWith('.mov') ? (
+          <video
+            src={src}
+            autoPlay
+            loop
+            muted
+            playsInline
+            controls
+            className="absolute inset-0 h-full w-full rounded-lg object-cover object-center"
+          />
+        ) : (
+          <Image
+            src={src as string}
+            alt="aceternity logo"
+            width={512}
+            height={384}
+            className="absolute inset-0 h-full w-full rounded-lg object-cover object-center"
+          />
+        )}
       </motion.div>
     </div>
   );

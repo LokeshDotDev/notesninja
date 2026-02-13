@@ -17,7 +17,7 @@ export function PremiumHero() {
   }, [pathname]);
 
   return (
-    <section className="relative min-h-[80vh] md:min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 overflow-hidden">
+    <section className="relative min-h-screen sm:min-h-[80vh] md:min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 overflow-hidden">
       {/* Premium Animated Grid Pattern Background */}
       <AnimatedGridPattern
         numSquares={50}
@@ -44,9 +44,10 @@ export function PremiumHero() {
           transition={{ duration: 0.8, delay: 0.3 }}
           // className="relative"
         >
+
           <MacbookScroll
             title={
-              <span className="text-gray-900 dark:text-white text-7xl">
+              <span className="text-gray-900  dark:text-white text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight">
                  Premium Study Materials for <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 font-semibold">
                   Academic Excellence
@@ -58,7 +59,7 @@ export function PremiumHero() {
                 <Download className="h-6 w-6 text-white" />
               </div>
             }
-            src={`/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg`}
+            src={`/assets/videos/success in study.mp4`}
             showGradient={false}
           />
         </motion.div>
