@@ -12,15 +12,6 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '4mb',
     },
   },
-  // Add rewrites to handle static HTML files
-  async rewrites() {
-    return [
-      {
-        source: '/udfqcfua9mzrfa6zp5jath0qx5skal.html',
-        destination: '/api/serve-html?file=udfqcfua9mzrfa6zp5jath0qx5skal.html',
-      },
-    ];
-  },
   images: {
     remotePatterns: [
       {
