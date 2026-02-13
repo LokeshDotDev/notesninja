@@ -65,6 +65,28 @@ const productCategories = [
   },
   {
     icon: BookOpen,
+    title: "MCOM Study Materials",
+    description: "Master of Commerce advanced accounting, finance, and business studies",
+    materials: 85,
+    gradient: "from-indigo-500 to-blue-500",
+    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.48.32.jpeg",
+    slug: "online-manipal-university/notes-and-mockpaper/mcom",
+    originalPrice: "₹5,999",
+    discountedPrice: "₹3,999"
+  },
+  {
+    icon: BookOpen,
+    title: "BCOM Study Materials",
+    description: "Bachelor of Commerce accounting, business law, and financial management",
+    materials: 120,
+    gradient: "from-teal-500 to-cyan-500",
+    image: "/assets/courses logo/WhatsApp Image 2026-02-12 at 01.47.15.jpeg",
+    slug: "online-manipal-university/notes-and-mockpaper/bcom",
+    originalPrice: "₹5,999",
+    discountedPrice: "₹3,999"
+  },
+  {
+    icon: BookOpen,
     title: "MAJMC Study Materials",
     description: "Master of Arts in Journalism & Mass Communication media studies and resources",
     materials: 67,
@@ -164,6 +186,15 @@ export function SubjectShowcase() {
   return (
     <section className="py-20 px-4 bg-gradient-to-b from-white via-neutral-50 to-white dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
       <div className="max-w-7xl mx-auto">
+        {/* University Logo */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8"
+        >
+        </motion.div>
+
         {/* Section Header */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -171,15 +202,17 @@ export function SubjectShowcase() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-neutral-900 via-neutral-700 to-neutral-900 dark:from-white dark:via-neutral-200 dark:to-white bg-clip-text text-transparent mb-6">
-            Professional Study Materials
+          <h2 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-neutral-900 via-neutral-700 to-neutral-900 dark:from-white dark:via-neutral-200 dark:to-white bg-clip-text text-transparent mb-1">
+            Professional Study Materials for 
+            <br />
+            Online Manipal University 
           </h2>
           <p className="text-xl text-neutral-600 dark:text-neutral-400 max-w-4xl mx-auto mb-8 leading-relaxed">
-            Access high-quality study materials for MBA, BBA, MCA, BCA, MAECO, and MAJMC courses
+            Access high-quality study materials for MBA, BBA, MCA, BCA, MAECO, BCOM, MCOM, and MAJMC
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <span className="text-sm font-semibold text-primary bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
-              6 Courses
+              8 Courses
             </span>
             <span className="text-sm font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-full border border-emerald-200 dark:border-emerald-700">
               Instant Downloads
@@ -227,12 +260,6 @@ export function SubjectShowcase() {
                     {category.description}
                   </p>
                   
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
-                      <div className="w-2 h-2 bg-black rounded-full"></div>
-                      {category.materials} materials available
-                    </span>
-                  </div>
                   
                   <Button 
                     className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium shadow-sm hover:shadow-md transition-all duration-300 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700"

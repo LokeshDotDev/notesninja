@@ -1,12 +1,10 @@
 "use client";
-import { Download } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import * as gtm from "@/lib/gtm";
 import { cn } from "@/lib/utils";
 import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern";
-import { MacbookScroll } from "@/components/ui/macbook-scroll";
 
 
 export function PremiumHero() {
@@ -33,35 +31,49 @@ export function PremiumHero() {
       {/* Additional gradient overlay for depth */}
       {/* <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-purple-50/50 dark:from-blue-900/20 dark:via-transparent dark:to-purple-900/20"></div> */}
 
-      <div className="relative z-10 w-full">
-        {/* Premium headline - positioned above macbook */}
-       
+      <div className="relative z-10 w-full px-4">
+        {/* University Logo */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0 }}
+          className="text-center mb-8"
+        >
+        </motion.div>
 
-        {/* Integrated Macbook Scroll Component - Main Hero Element */}
+        {/* Premium Hero Text */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className="text-center mb-12"
+        >
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-neutral-900 via-neutral-700 to-neutral-900 dark:from-white dark:via-neutral-200 dark:to-white bg-clip-text text-transparent leading-tight mb-6">
+            Premium Study Materials for
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-green-500 to-green-800">
+              Academic Excellence
+            </span>
+          </h1>
+        </motion.div>
+
+        {/* Video Component - Main Hero Element */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          // className="relative"
+          className="relative w-full max-w-6xl mx-auto"
         >
-
-          <MacbookScroll
-            title={
-              <span className="text-gray-900  dark:text-white text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight">
-                 Premium Study Materials for <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 font-semibold">
-                  Academic Excellence
-                </span>
-              </span>
-            }
-            badge={
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-full">
-                <Download className="h-6 w-6 text-white" />
-              </div>
-            }
-            src={`/assets/videos/success in study.mp4`}
-            showGradient={false}
-          />
+          <video
+            autoPlay
+            loop
+            playsInline
+            controls
+            className="w-full h-auto rounded-2xl shadow-2xl"
+          >
+            <source src={`/assets/videos/success in study.mp4`} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </motion.div>
 
         {/* Premium CTA buttons - positioned below macbook */}

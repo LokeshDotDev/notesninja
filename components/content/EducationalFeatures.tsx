@@ -25,7 +25,7 @@ export function EducationalFeatures() {
         >
           <h2 className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-white mb-4">
             Why Students Choose{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">NotesNinja</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-green-600 to-green-400">NotesNinja</span>
           </h2>
           <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto">
             Discover the features that make NotesNinja the preferred choice for ambitious students worldwide

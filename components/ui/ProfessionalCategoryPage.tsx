@@ -75,9 +75,9 @@ const appleDesign = {
     caption: "text-sm leading-relaxed"
   },
   spacing: {
-    section: "py-24 md:py-32",
+    section: "py-2 md:py-2",
     card: "p-8 md:p-10",
-    hero: "pt-32 pb-16 md:pt-48 md:pb-24"
+    hero: "pt-16 pb-8 md:pt-20 md:pb-1"
   },
   colors: {
     primary: "rgb(0, 122, 255)",
@@ -257,7 +257,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
   return (
     <div className="min-h-screen bg-[rgb(248, 248, 248)] dark:bg-neutral-900">
       {/* Premium Apple-style Hero Section */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden pt-4">
         {/* Subtle gradient background */}
         <div className="absolute inset-0 bg-gradient-to-b from-[rgb(248, 248, 248)] via-white to-white dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900"></div>
         
@@ -293,7 +293,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className={`${appleDesign.typography.heroTitle} text-[rgb(28, 28, 30)] dark:text-white mb-8 leading-[1.1]`}
+              className={`${appleDesign.typography.heroTitle} text-[rgb(28, 28, 30)] dark:text-white mb-6 leading-[1.1]`}
             >
               {category.name}
             </motion.h1>
@@ -303,7 +303,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className={`${appleDesign.typography.body} text-[rgb(99, 99, 102)] dark:text-neutral-400 max-w-2xl mx-auto mb-12 text-2xl`}
+              className={`${appleDesign.typography.body} text-[rgb(99, 99, 102)] dark:text-neutral-400 max-w-2xl mx-auto mb-12 text-xl`}
             >
               Comprehensive study materials and resources for {category.name.toLowerCase()}
             </motion.p>
@@ -439,26 +439,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
             </div>
           </>
         )}
-        {/* Video Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          viewport={{ once: true }}
-          className="mb-20"
-        >
-          <div className="relative rounded-3xl overflow-hidden shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)]">
-            <video
-              src="/assets/videos/ad.mp4"
-              autoPlay
-              loop
-              muted
-              playsInline
-              controls
-              className="w-full h-auto rounded-3xl"
-            />
-          </div>
-        </motion.div>
+        
 
         {/* Topics Section */}
         {category.children && category.children.length > 0 ? (

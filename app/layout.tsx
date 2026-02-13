@@ -6,11 +6,13 @@ import { DynamicNavbar } from "@/components/custom/DynamicNavbar";
 import JsonLd from "@/components/custom/JsonLd";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import VisitorTracker from "@/components/analytics/GoogleAnalytics";
+import MetaPixel from "@/components/analytics/MetaPixel";
 import PerformanceMonitor from "@/components/custom/PerformanceMonitor";
 import NavigationLoader from "@/components/custom/NavigationLoader";
 import settings from "@/lib/settings";
 import { GTM_ID } from "@/lib/gtm";
 import Script from "next/script";
+import { WhatsAppChat } from "@/components/ui/WhatsAppChat";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -107,15 +109,17 @@ export default function RootLayout({
           />
         </head>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased pt-20`}
         >
           <GoogleAnalytics ga_id={settings.site.analytics_ga_id} />
           <VisitorTracker ga_id={settings.site.analytics_ga_id} />
+          <MetaPixel />
           <JsonLd />
           <PerformanceMonitor />
           <NavigationLoader />
           <DynamicNavbar />
           {children}
+          <WhatsAppChat />
 
           {/* Google Tag Manager (noscript) */}
           <noscript>

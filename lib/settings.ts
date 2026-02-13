@@ -1,6 +1,6 @@
 const settings = {
 	whatsapp: {
-		number: "15128013803",
+		number: "916378990158",
 		message:
 			"Hello, I am interested in your educational digital products from NotesNinja.",
 		url: function () {
@@ -22,15 +22,15 @@ const settings = {
 		ogImage: "/images/og-image.jpg",
 		twitterImage: "/images/twitter-image.jpg",
 		geo: {
-			region: "US",
-			position: "37.0902;-95.7129",
-			icbm: "37.0902, -95.7129",
+			region: "IN",
+			position: "20.5937;78.9629",
+			icbm: "20.5937, 78.9629",
 		},
 		verification: {
 			google: "google-site-verification-code",
 			yandex: "yandex-verification-code",
 		},
-		analytics_ga_id: "G-PWSQW6TQZ0",
+		analytics_ga_id: "G-RHBBN9K8D8",
 	},
 };
 

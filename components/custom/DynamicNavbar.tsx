@@ -101,7 +101,7 @@ export function DynamicNavbar() {
 	};
 
 	return (
-		<nav className={`sticky top-0 z-50 w-full ${appleNavbar.border} ${appleNavbar.background} backdrop-blur-xl`}>
+		<nav className={`fixed top-0 left-0 right-0 z-50 w-full ${appleNavbar.border} ${appleNavbar.background} backdrop-blur-xl shadow-sm`}>
 			<div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
 				<div className="flex h-20 items-center justify-between">
 					{/* Logo */}
