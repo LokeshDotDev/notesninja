@@ -10,6 +10,7 @@ import {
   Shield, 
   Download, 
   CheckCircle, 
+  AlertCircle, 
   Loader2,
   ArrowRight,
   FileText,
@@ -428,11 +429,29 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
   }
 
   if (error || !product) {
-    // Auto-redirect to notes page on error
-    if (typeof window !== 'undefined') {
-      window.location.href = '/online-manipal-university/notes-and-mockpaper';
-    }
-    return null;
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-neutral-900 dark:to-neutral-800">
+        <div className="flex items-center justify-center min-h-screen px-4">
+          <div className="text-center max-w-md">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+              <AlertCircle className="w-10 h-10 text-red-600" />
+            </div>
+            <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-4">
+              {error || "Product Not Found"}
+            </h1>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
+              Unable to load product for checkout.
+            </p>
+            <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Link href="/online-manipal-university/notes-and-mockpaper">
+                <ArrowRight className="w-4 h-4 mr-2" />
+                Back to notes
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (paymentStep === "success" && orderComplete) {
