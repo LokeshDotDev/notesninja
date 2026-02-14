@@ -1,116 +1,98 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { signIn, getSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 function LoginPageContent() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const [isAuthModalOpen] = useState(true);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        console.error("Login error:", result.error);
-      } else {
-        // Refresh session and redirect
-        await getSession();
-        router.push(callbackUrl);
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleAuthSuccess = () => {
+    // Redirect to dashboard or intended page after successful auth
+    router.push("/dashboard");
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-tr from-blue-200 via-blue-400 to-blue-700 relative overflow-hidden">
-      {/* Decorative background shapes */}
-      <div
-        className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-tr from-blue-300 via-blue-400 to-blue-600 opacity-80 z-0"
-        style={{ clipPath: "ellipse(120% 60% at 50% 0%)" }}
-      />
-      <div
-        className="absolute bottom-0 right-0 w-2/3 h-1/3 bg-gradient-to-br from-blue-100 via-blue-200 to-blue-400 opacity-40 z-0"
-        style={{ clipPath: "ellipse(80% 60% at 100% 100%)" }}
-      />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-100 via-transparent to-transparent"></div>
+      
+      {/* Main Content */}
+      <div className="relative z-10 w-full max-w-md">
+        {/* Logo and Header */}
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-block mb-6">
+            <Image 
+              src="/assets/Notes ninja Logo copy.png" 
+              alt="NotesNinja" 
+              width={120}
+              height={32}
+              className="h-8 w-auto mx-auto"
+            />
+          </Link>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Notes Ninja</h1>
+          <p className="text-gray-600">Sign in to access your dashboard and track your purchases</p>
+        </div>
 
-      {/* Centered card for login */}
-      <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-md mx-auto px-2 sm:px-0 py-8">
-        <div className="mb-6 flex flex-col items-center">
-          <h1 className="text-2xl font-bold text-white drop-shadow-lg tracking-tight">
-            Welcome Back
-          </h1>
-          <p className="text-white/80 text-sm mt-2">Sign in to your account</p>
-          </div>
-
-        <div className="w-full bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-              <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your email"
-                />
+        {/* Benefits Section */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
+          <h3 className="font-semibold text-gray-900 mb-4">Why create an account?</h3>
+          <ul className="space-y-3">
+            <li className="flex items-start gap-3">
+              <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
               </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your password"
-                />
+              <span className="text-sm text-gray-700">Track all your purchases in one place</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
               </div>
+              <span className="text-sm text-gray-700">Easy access to download links</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <span className="text-sm text-gray-700">Optional - Purchase without account too!</span>
+            </li>
+          </ul>
+        </div>
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isLoading ? "Signing in..." : "Sign In"}
-              </button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                <span>Don&apos;t have an account? </span>{" "}
-                <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
-                  Sign up
-                </Link>
-              </p>
-            </div>
-          </div>
+        {/* Guest Option */}
+        <div className="text-center">
+          <p className="text-sm text-gray-600 mb-4">
+            Just want to make a quick purchase?
+          </p>
+          <Link 
+            href="/online-manipal-university/notes-and-mockpaper"
+            className="inline-flex items-center gap-2 text-black font-medium hover:text-gray-700 transition-colors"
+          >
+            Continue as Guest
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
         </div>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => router.push("/")}
+        onSuccess={handleAuthSuccess}
+        initialView="signin"
+      />
+    </div>
   );
 }
 

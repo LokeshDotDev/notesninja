@@ -36,9 +36,17 @@ export async function GET(req: NextRequest) {
 			orderBy: { createdAt: "desc" },
 		});
 
+		// Add cache-busting timestamp to imageUrl for all posts
+		posts.forEach(post => {
+			if (post.imageUrl) {
+				const cacheBuster = Math.random().toString(36).substring(7);
+				post.imageUrl = `${post.imageUrl}?v=${cacheBuster}`;
+			}
+		});
+
 		// Set cache headers (reduced cache time for better UX)
 		const response = NextResponse.json(posts);
-		response.headers.set("Cache-Control", "public, max-age=60, s-maxage=60"); // Reduced to 1 minute
+		response.headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
 		return response;
 	} catch (error) {
 		console.log("Error fetching posts:", error);

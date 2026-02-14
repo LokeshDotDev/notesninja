@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 declare global {
   interface Window {
     Razorpay: {
@@ -96,6 +97,7 @@ interface ProfessionalCheckoutProps {
 }
 
 export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
+  const { data: session } = useSession();
   const [product, setProduct] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -134,6 +136,19 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
 
     fetchProduct();
   }, [productId]);
+
+  // Pre-fill form data for authenticated users
+  useEffect(() => {
+    if (session?.user) {
+      const nameParts = session.user.name?.split(' ') || ['', ''];
+      setFormData(prev => ({
+        ...prev,
+        email: session.user?.email || '',
+        firstName: nameParts[0] || '',
+        lastName: nameParts[1] || '',
+      }));
+    }
+  }, [session]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -224,7 +239,8 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
               razorpay_signature: response.razorpay_signature,
               productId,
               customerEmail: formData.email,
-              customerName: `${formData.firstName} ${formData.lastName}`
+              customerName: `${formData.firstName} ${formData.lastName}`,
+              userId: session?.user?.id || null
             })
           });
 
@@ -769,7 +785,45 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
             </motion.div>
           </motion.div>
 
-          {/* Payment Form - Apple Style */}
+          {/* User Info Section */}
+            <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden mb-6">
+              <div className="p-6 border-b border-gray-200/60">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {session ? "Account Information" : "Contact Information"}
+                  </h3>
+                  {session && (
+                    <div className="flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full border border-green-200/50">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-green-700">Signed In</span>
+                    </div>
+                  )}
+                </div>
+                
+                {session ? (
+                  <div className="mt-4 p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-gray-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">{session.user?.name}</p>
+                        <p className="text-sm text-gray-600">{session.user?.email}</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-3">
+                      Your purchase will be linked to your account for easy access in your dashboard.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-600 mt-3">
+                    You can purchase as a guest or create an account to track your orders.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Payment Form - Apple Style */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -844,53 +898,59 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                     </div>
                     
                     <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <Label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                            First Name
-                          </Label>
-                          <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <Input
-                              id="firstName"
-                              type="text"
-                              value={formData.firstName}
-                              onChange={(e) => handleInputChange("firstName", e.target.value)}
-                              onFocus={() => handleFieldFocus("firstName")}
-                              onBlur={handleFieldBlur}
-                              className={`pl-10 h-12 rounded-xl border transition-all duration-200 ${
-                                focusedField === "firstName"
-                                  ? 'border-black bg-gray-50'
-                                  : 'border-gray-300 bg-white'
-                              }`}
-                              placeholder="John"
-                            />
+                      {!session && (
+                        <>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                              <Label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                                First Name
+                              </Label>
+                              <div className="relative">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <Input
+                                  id="firstName"
+                                  type="text"
+                                  value={formData.firstName}
+                                  onChange={(e) => handleInputChange("firstName", e.target.value)}
+                                  onFocus={() => handleFieldFocus("firstName")}
+                                  onBlur={handleFieldBlur}
+                                  className={`pl-10 h-12 rounded-xl border transition-all duration-200 ${
+                                    focusedField === "firstName"
+                                      ? 'border-black bg-gray-50'
+                                      : 'border-gray-300 bg-white'
+                                  }`}
+                                  placeholder="John"
+                                  required
+                                />
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <Label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                                Last Name
+                              </Label>
+                              <div className="relative">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <Input
+                                  id="lastName"
+                                  type="text"
+                                  value={formData.lastName}
+                                  onChange={(e) => handleInputChange("lastName", e.target.value)}
+                                  onFocus={() => handleFieldFocus("lastName")}
+                                  onBlur={handleFieldBlur}
+                                  className={`pl-10 h-12 rounded-xl border transition-all duration-200 ${
+                                    focusedField === "lastName"
+                                      ? 'border-black bg-gray-50'
+                                      : 'border-gray-300 bg-white'
+                                  }`}
+                                  placeholder="Doe"
+                                  required
+                                />
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                            Last Name
-                          </Label>
-                          <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <Input
-                              id="lastName"
-                              type="text"
-                              value={formData.lastName}
-                              onChange={(e) => handleInputChange("lastName", e.target.value)}
-                              onFocus={() => handleFieldFocus("lastName")}
-                              onBlur={handleFieldBlur}
-                              className={`pl-10 h-12 rounded-xl border transition-all duration-200 ${
-                                focusedField === "lastName"
-                                  ? 'border-black bg-gray-50'
-                                  : 'border-gray-300 bg-white'
-                              }`}
-                              placeholder="Doe"
-                            />
-                          </div>
-                        </div>
-                      </div>
+                        </>
+                      )}
                       
                       <div>
                         <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -905,14 +965,19 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                             onChange={(e) => handleInputChange("email", e.target.value)}
                             onFocus={() => handleFieldFocus("email")}
                             onBlur={handleFieldBlur}
+                            disabled={!!session}
                             className={`pl-10 h-12 rounded-xl border transition-all duration-200 ${
                               focusedField === "email"
                                 ? 'border-black bg-gray-50'
                                 : 'border-gray-300 bg-white'
-                            }`}
+                            } ${session ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             placeholder="john@example.com"
+                            required
                           />
                         </div>
+                        {session && (
+                          <p className="text-xs text-gray-500 mt-1">Email is pre-filled from your account</p>
+                        )}
                       </div>
                       
                       <div>
@@ -933,7 +998,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                                 ? 'border-black bg-gray-50'
                                 : 'border-gray-300 bg-white'
                             }`}
-                            placeholder="+1 (555) 123-4567"
+                            placeholder="+1234567890"
                           />
                         </div>
                       </div>

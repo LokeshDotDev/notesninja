@@ -179,20 +179,43 @@ export async function deleteContent(publicId: string): Promise<unknown> {
 	try {
 		console.log(`Attempting to delete Cloudinary resource: ${publicId}`);
 		
-		// First try to delete as image
-		let result = await cloudinary.uploader.destroy(publicId);
-		console.log(`Delete result for ${publicId}:`, result);
+		// Try different variations of the public_id
+		const variations = [
+			publicId, // Original public_id
+			`${publicId}.jpg`, // With .jpg extension
+			`${publicId}.jpeg`, // With .jpeg extension
+			`${publicId}.png`, // With .png extension
+		];
 		
-		// If result is 'not found' as image, try to delete as raw resource
-		if (result.result === 'not found') {
-			console.log(`Trying to delete ${publicId} as raw resource...`);
-			result = await cloudinary.uploader.destroy(publicId, { 
-				resource_type: 'raw' 
-			});
-			console.log(`Raw delete result for ${publicId}:`, result);
+		for (const variation of variations) {
+			console.log(`Trying to delete as image: ${variation}`);
+			const result = await cloudinary.uploader.destroy(variation);
+			console.log(`Delete result for ${variation}:`, result);
+			
+			if (result.result === 'ok' || result.result === 'deleted') {
+				console.log(`✅ Successfully deleted: ${variation}`);
+				return result;
+			}
 		}
 		
-		return result;
+		// If all image attempts failed, try as raw resource with variations
+		for (const variation of variations) {
+			console.log(`Trying to delete ${variation} as raw resource...`);
+			const result = await cloudinary.uploader.destroy(variation, { 
+				resource_type: 'raw' 
+			});
+			console.log(`Raw delete result for ${variation}:`, result);
+			
+			if (result.result === 'ok' || result.result === 'deleted') {
+				console.log(`✅ Successfully deleted as raw: ${variation}`);
+				return result;
+			}
+		}
+		
+		// If nothing worked, return the last result
+		console.log(`❌ Could not delete any variation of: ${publicId}`);
+		return { result: 'not found' };
+		
 	} catch (error) {
 		console.error("Error deleting the content from Cloudinary:", error);
 		throw new Error("Error deleting the content from Cloudinary!");

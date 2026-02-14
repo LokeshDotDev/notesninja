@@ -49,7 +49,10 @@ export async function PATCH(req: NextRequest) {
 		const descripition = formData.get("descripition") as string | null;
 		const categoryId = formData.get("categoryId") as string | null;
 		const authorId = formData.get("authorId") as string | null;
-		const file = formData.get("file") as File | null;
+		// Handle both multiple files and single file for backward compatibility
+		const files = formData.getAll("files") as File[];
+		const singleFile = formData.get("file") as File | null;
+		const file = files.length > 0 ? files[0] : singleFile;
 
 		const existing = await prisma.featured.findUnique({ where: { id } });
 
@@ -76,10 +79,24 @@ export async function PATCH(req: NextRequest) {
 		
 		// If new image is provided
 		if (file) {
+			console.log("🔄 Featured image update process started");
+			console.log("📸 Existing featured:", { 
+				id: existing.id, 
+				hasImage: !!existing.imageUrl, 
+				publicId: existing.publicId 
+			});
+			
 			await deleteContent(existing.publicId);
+			console.log("🗑️ Deleted old featured image:", existing.publicId);
+			
 			const uploadResult = (await uploadContent(
 				file
 			)) as CloudinaryUploadResult;
+			
+			console.log("✅ New featured image uploaded:", { 
+				secure_url: uploadResult.secure_url, 
+				public_id: uploadResult.public_id 
+			});
 
 			dataToUpdate.imageUrl = uploadResult.secure_url;
 			dataToUpdate.publicId = uploadResult.public_id;
@@ -97,7 +114,21 @@ export async function PATCH(req: NextRequest) {
 			data: dataToUpdate,
 		});
 
-		return NextResponse.json(updated);
+		// Add cache-busting timestamp to imageUrl if it was updated
+		if (dataToUpdate.imageUrl) {
+			updated.imageUrl = `${dataToUpdate.imageUrl}?t=${Date.now()}`;
+		}
+
+		console.log("🎯 Final updated featured data:", {
+			id: updated.id,
+			title: updated.title,
+			imageUrl: updated.imageUrl,
+			publicId: updated.publicId
+		});
+
+		const response = NextResponse.json(updated);
+		response.headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+		return response;
 	} catch (error) {
 		console.error("Error updating featured:", error);
 		return NextResponse.json({ error: "Failed to update" }, { status: 500 });

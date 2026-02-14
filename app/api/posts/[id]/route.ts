@@ -49,7 +49,15 @@ export async function GET(
 			return NextResponse.json({ error: "Post not found" }, { status: 404 });
 		}
 
-		return NextResponse.json(post);
+		// Add cache-busting timestamp to imageUrl if it exists
+		if (post.imageUrl) {
+			const cacheBuster = Math.random().toString(36).substring(7);
+			post.imageUrl = `${post.imageUrl}?v=${cacheBuster}`;
+		}
+
+		const response = NextResponse.json(post);
+		response.headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+		return response;
 	} catch (error) {
 		console.error("Error fetching post:", error);
 		return NextResponse.json(
@@ -76,7 +84,10 @@ export async function PATCH(
 		const title = formData.get("title") as string | null;
 		const description = formData.get("description") as string | null;
 		const categoryId = formData.get("categoryId") as string | null;
-		const file = formData.get("file") as File | null;
+		// Handle both multiple files and single file for backward compatibility
+		const files = formData.getAll("files") as File[];
+		const singleFile = formData.get("file") as File | null;
+		const file = files.length > 0 ? files[0] : singleFile;
 
 		const existingPost = await prisma.post.findUnique({
 			where: { id: resolvedParams.id },
@@ -100,13 +111,44 @@ export async function PATCH(
 		
 		// If a new image is uploaded, replace the old one
 		if (file) {
+			console.log("🔄 Image update process started");
+			console.log("📸 Existing post:", { 
+				id: existingPost.id, 
+				hasImage: !!existingPost.imageUrl, 
+				publicId: existingPost.publicId 
+			});
+			
+			// Get existing gallery images to delete them too
+			const existingImages = await prisma.postImage.findMany({
+				where: { postId: resolvedParams.id }
+			});
+			console.log("📸 Existing gallery images:", existingImages.length);
+			
+			// Delete main image if it exists
 			if (existingPost.publicId) {
-				await deleteContent(existingPost.publicId);
+				console.log("🗑️ Deleting old main image from Cloudinary:", existingPost.publicId);
+				const deleteResult = await deleteContent(existingPost.publicId);
+				console.log("✅ Main image delete result:", deleteResult);
+			}
+			
+			// Delete all gallery images from Cloudinary
+			for (const image of existingImages) {
+				if (image.publicId) {
+					console.log("🗑️ Deleting gallery image from Cloudinary:", image.publicId);
+					const deleteResult = await deleteContent(image.publicId);
+					console.log("✅ Gallery image delete result:", deleteResult);
+				}
 			}
 
+			console.log("⬆️ Uploading new image:", file.name);
 			const uploadResult = (await uploadContent(
 				file
 			)) as CloudinaryUploadResult;
+
+			console.log("✅ New image uploaded:", { 
+				secure_url: uploadResult.secure_url, 
+				public_id: uploadResult.public_id 
+			});
 
 			if (
 				!uploadResult ||
@@ -122,6 +164,30 @@ export async function PATCH(
 
 			dataToUpdate.imageUrl = uploadResult.secure_url;
 			dataToUpdate.publicId = uploadResult.public_id;
+			
+			// Also update the first gallery image or create one if none exists
+			if (existingImages.length > 0) {
+				// Update the first gallery image
+				await prisma.postImage.update({
+					where: { id: existingImages[0].id },
+					data: {
+						imageUrl: uploadResult.secure_url,
+						publicId: uploadResult.public_id,
+					}
+				});
+				console.log("✅ Updated first gallery image");
+			} else {
+				// Create a new gallery image
+				await prisma.postImage.create({
+					data: {
+						imageUrl: uploadResult.secure_url,
+						publicId: uploadResult.public_id,
+						order: 0,
+						postId: resolvedParams.id,
+					}
+				});
+				console.log("✅ Created new gallery image");
+			}
 		}
 
 		if (Object.keys(dataToUpdate).length === 0) {
@@ -136,7 +202,22 @@ export async function PATCH(
 			data: dataToUpdate,
 		});
 
-		return NextResponse.json(updatedPost);
+		// Add cache-busting timestamp to imageUrl if it was updated
+		if (dataToUpdate.imageUrl) {
+			const cacheBuster = Math.random().toString(36).substring(7);
+			updatedPost.imageUrl = `${dataToUpdate.imageUrl}?v=${cacheBuster}`;
+		}
+
+		console.log("🎯 Final updated post data:", {
+			id: updatedPost.id,
+			title: updatedPost.title,
+			imageUrl: updatedPost.imageUrl,
+			publicId: updatedPost.publicId
+		});
+
+		const response = NextResponse.json(updatedPost);
+		response.headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+		return response;
 	} catch (error) {
 		console.error("Error updating post:", error);
 		return NextResponse.json(

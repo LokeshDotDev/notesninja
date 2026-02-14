@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
+import { isAdmin } from "./lib/admin";
 
 export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -28,6 +29,13 @@ export async function middleware(req: NextRequest) {
       const url = req.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(url);
+    }
+    
+    // Check if user email is in admin list
+    if (!isAdmin(token.email || undefined)) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/unauthorized";
       return NextResponse.redirect(url);
     }
   }

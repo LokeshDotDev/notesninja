@@ -106,6 +106,7 @@ model Purchase {
   id            String   @id @default(cuid())
   postId        String
   userEmail     String
+  userId        String?  // Optional user ID for authenticated users
   paymentId     String?
   amount        Float
   currency      String   @default("USD")
@@ -114,6 +115,7 @@ model Purchase {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   post          Post     @relation(fields: [postId], references: [id])
+  user          User?    @relation(fields: [userId], references: [id])
 }
 
 model User {
@@ -123,10 +125,17 @@ model User {
   emailVerified DateTime?
   password      String
   image         String?
+  role          Role      @default(USER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   accounts      Account[]
   sessions      Session[]
+  purchases     Purchase[]
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 model Account {

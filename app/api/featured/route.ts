@@ -57,7 +57,11 @@ export async function POST(req: NextRequest) {
 
 	try {
 		const formData = await req.formData();
-		const file = formData.get("file") as File;
+		// Handle both multiple files and single file for backward compatibility
+		const files = formData.getAll("files") as File[];
+		const singleFile = formData.get("file") as File | null;
+		const file = files.length > 0 ? files[0] : singleFile;
+		
 		const title = formData.get("title") as string;
 		const descripition = formData.get("descripition") as string;
 		const categoryId = formData.get("categoryId") as string;
