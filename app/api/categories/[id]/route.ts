@@ -239,6 +239,72 @@ export async function PUT(
 	}
 }
 
+// PATCH update category (for partial updates)
+export async function PATCH(
+	request: Request,
+	{ params }: { params: Promise<{ id: string }> }
+) {
+	try {
+		const resolvedParams = await params;
+		const formData = await request.formData();
+		const name = formData.get("name") as string | null;
+
+		if (!name || typeof name !== "string" || name.trim() === "") {
+			return NextResponse.json(
+				{ error: "Category name is required" },
+				{ status: 400 }
+			);
+		}
+
+		const existingCategory = await prisma.category.findFirst({
+			where: {
+				name: {
+					equals: name.trim(),
+					mode: "insensitive",
+				},
+				NOT: {
+					id: resolvedParams.id,
+				},
+			},
+		});
+
+		if (existingCategory) {
+			return NextResponse.json(
+				{ error: "Category with this name already exists" },
+				{ status: 409 }
+			);
+		}
+
+		const category = await prisma.category.update({
+			where: { id: resolvedParams.id },
+			data: {
+				name: name.trim(),
+			},
+			include: {
+				subcategories: {
+					select: {
+						id: true,
+						name: true,
+					},
+				},
+				_count: {
+					select: {
+						posts: true,
+					},
+				},
+			},
+		});
+
+		return NextResponse.json(category);
+	} catch (error) {
+		console.error("Error updating category:", error);
+		return NextResponse.json(
+			{ error: "Failed to update category" },
+			{ status: 500 }
+		);
+	}
+}
+
 // DELETE category
 export async function DELETE(
 	request: Request,

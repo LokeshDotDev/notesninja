@@ -264,8 +264,8 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
         {/* Ambient light effect */}
         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-r from-blue-100/20 via-purple-100/10 to-pink-100/20 dark:from-blue-900/10 dark:via-purple-900/5 dark:to-pink-900/10 rounded-full blur-3xl"></div>
         
-        <div className={`relative max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 ${appleDesign.spacing.hero}`}>
-          <div className="text-center max-w-4xl mx-auto">
+        <div className={`relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 ${appleDesign.spacing.hero}`}>
+          <div className="text-center max-w-7xl mx-auto">
             {/* Apple-style breadcrumb */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
