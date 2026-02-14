@@ -177,7 +177,7 @@ export function DynamicNavbar() {
 							className={`${appleNavbar.button.primary} px-8 py-3 rounded-2xl font-semibold text-base shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-0`}
 						>
 							<a
-								href="http://localhost:3001/online-manipal-university/notes-and-mockpaper"
+								href="https://notesninja.in/online-manipal-university/notes-and-mockpaper"
 								className="flex items-center gap-2"
 							>
 								<BookOpen className="w-5 h-5" />
