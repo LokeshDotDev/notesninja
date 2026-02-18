@@ -50,6 +50,36 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Redirect old product URLs to new SEO-friendly URLs
+  if (pathname.startsWith("/product/") && pathname.split("/").length === 3) {
+    const productId = pathname.split("/")[2];
+    if (productId) {
+      const url = req.nextUrl.clone();
+      url.pathname = `/api/redirect-product/${productId}`;
+      url.searchParams.set("from", pathname);
+      return NextResponse.rewrite(url);
+    }
+  }
+
+  // Handle incomplete product URLs (catch-all route priority issue)
+  const pathSegments = pathname.split("/").filter(Boolean);
+  if (pathSegments.length >= 2 && !pathname.startsWith("/checkout/")) {
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    
+    // Check if the last segment looks like a product ID (cuid pattern)
+    if (lastSegment && lastSegment.startsWith('c') && lastSegment.length === 25) {
+      // Only redirect if this looks like an incomplete URL
+      // Complete SEO URLs should have at least 3 segments before the product ID
+      if (pathSegments.length < 4) {
+        // This looks like an incomplete product URL, rewrite to redirect API
+        const url = req.nextUrl.clone();
+        url.pathname = `/api/redirect-product/${lastSegment}`;
+        url.searchParams.set("from", pathname);
+        return NextResponse.rewrite(url);
+      }
+    }
+  }
+
   return NextResponse.next();
 }
 

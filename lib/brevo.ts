@@ -10,9 +10,10 @@ interface EmailData {
   productName?: string;
   downloadLinks?: Array<{
     fileName: string;
-    fileUrl: string;
-    fileSize: number;
-    fileType: string;
+    fileUrl?: string;
+    downloadUrl?: string;
+    fileSize?: number;
+    fileType?: string;
     publicId?: string;
   }>;
 }
@@ -69,12 +70,38 @@ function generatePurchaseEmailTemplate(data: EmailData): string {
   console.log('Download links:', data.downloadLinks);
   
   const downloadItems = data.downloadLinks?.map((file, index) => {
+    // Handle both fileUrl (from purchases API) and downloadUrl (from checkout)
+    let fileUrl = file.fileUrl;
+    let fileName = file.fileName;
+    
+    console.log(`Email: Processing file ${index}:`, { 
+      fileUrl, 
+      fileName, 
+      downloadUrl: file.downloadUrl,
+      hasFileUrl: !!fileUrl,
+      hasDownloadUrl: !!file.downloadUrl
+    });
+    
+    // If fileUrl is undefined, try to extract it from downloadUrl
+    if (!fileUrl && file.downloadUrl) {
+      console.log('Email: Extracting fileUrl from downloadUrl...');
+      // Extract fileUrl from the downloadUrl parameter
+      const urlParams = new URLSearchParams(file.downloadUrl.split('?')[1] || '');
+      fileUrl = urlParams.get('fileUrl') || '';
+      console.log('Email: Extracted fileUrl:', fileUrl);
+    }
+    
+    // Ensure fileUrl is a string
+    if (!fileUrl) {
+      fileUrl = '';
+    }
+    
     // Use new secure download endpoint with absolute URL
     // For production emails, we need to use the actual domain
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://test.notesninja.in' || 'https://notesninja.in';
-    const downloadUrl = `${baseUrl}/api/download?fileUrl=${encodeURIComponent(file.fileUrl)}&fileName=${encodeURIComponent(file.fileName)}`;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://notesninja.in';
+    const downloadUrl = `${baseUrl}/api/download?fileUrl=${encodeURIComponent(fileUrl)}&fileName=${encodeURIComponent(fileName)}`;
     
-    console.log('Email: Using secure download URL:', { fileName: file.fileName, downloadUrl });
+    console.log('Email: Using secure download URL:', { fileName, fileUrl, downloadUrl });
     
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 30); // 30 days from now

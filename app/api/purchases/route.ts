@@ -52,22 +52,6 @@ export async function POST(req: NextRequest) {
 			);
 		}
 
-		// Check if user already purchased this product
-		const existingPurchase = await prisma.purchase.findFirst({
-			where: {
-				postId,
-				userEmail,
-				status: "completed"
-			}
-		});
-
-		if (existingPurchase) {
-			return NextResponse.json(
-				{ error: "Product already purchased" },
-				{ status: 400 }
-			);
-		}
-
 		// Create purchase record
 		const purchase = await prisma.purchase.create({
 			data: {

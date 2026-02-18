@@ -16,6 +16,7 @@ model Post {
   price          Float?
   compareAtPrice Float?
   isDigital      Boolean       @default(false)
+  userId         String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   categoryId     String
@@ -25,6 +26,7 @@ model Post {
   category       Category      @relation(fields: [categoryId], references: [id])
   productType    ProductType?  @relation(fields: [productTypeId], references: [id])
   subcategory    Subcategory?  @relation(fields: [subcategoryId], references: [id])
+  user           User?         @relation(fields: [userId], references: [id])
   images         PostImage[]
   purchases      Purchase[]
 }
@@ -52,6 +54,7 @@ model Category {
   featured      Featured[]
   posts         Post[]
   subcategories Subcategory[]
+  articles      Article[]
 
   @@unique([slug, parentId])
 }
@@ -119,18 +122,24 @@ model Purchase {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  password      String
-  image         String?
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-  purchases     Purchase[]
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  image     String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  accounts     Account[]
+  sessions     Session[]
+  posts        Post[]
+  purchases    Purchase[]
+  articles     Article[]
+  faqs         Faq[]
+  
+  @@map("users")
 }
 
 enum Role {
@@ -178,4 +187,115 @@ model Visitor {
   ipAddress String   @unique
   location  String
   visitedAt DateTime @default(now())
+}
+
+model Article {
+  id              String    @id @default(cuid())
+  title           String
+  slug            String    @unique
+  content         String    @db.Text
+  excerpt         String?   @db.Text
+  featuredImage   String?
+  featuredImagePublicId String?
+  status          ArticleStatus @default(DRAFT)
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // SEO Fields
+  metaTitle       String?
+  metaDescription String?   @db.Text
+  metaKeywords    String?   @db.Text
+  ogImage         String?
+  ogTitle         String?
+  ogDescription   String?   @db.Text
+  canonicalUrl    String?
+  schemaMarkup    String?   @db.Text
+  focusKeyword    String?
+  readingTime     Int?      // in minutes
+  wordCount       Int?      @default(0)
+  
+  // Author and categorization
+  authorId        String
+  categoryId      String?
+  tagRelations    ArticleTagRelation[]
+  
+  // Analytics
+  views           Int       @default(0)
+  shares          Int       @default(0)
+  
+  author          User      @relation(fields: [authorId], references: [id])
+  category        Category? @relation(fields: [categoryId], references: [id])
+  
+  @@map("articles")
+}
+
+model ArticleTag {
+  id         String @id @default(cuid())
+  name       String
+  slug       String @unique
+  relations  ArticleTagRelation[]
+  
+  @@map("article_tags")
+}
+
+model ArticleTagRelation {
+  id         String @id @default(cuid())
+  articleId  String
+  tagId      String
+  createdAt  DateTime @default(now())
+  
+  article    Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag        ArticleTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@unique([articleId, tagId])
+}
+
+model FaqCategory {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  description String?
+  icon      String?
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  faqs     Faq[]
+  
+  @@index([slug])
+  @@index([order])
+  @@index([isActive])
+}
+
+model Faq {
+  id            String   @id @default(cuid())
+  question      String
+  answer        String
+  categoryId    String
+  order         Int      @default(0)
+  isActive      Boolean  @default(true)
+  isFeatured    Boolean  @default(false)
+  views         Int      @default(0)
+  helpfulCount  Int      @default(0)
+  notHelpfulCount Int    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  authorId      String?
+  
+  category      FaqCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  author        User?      @relation(fields: [authorId], references: [id])
+  
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([order])
+  @@index([createdAt])
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
 }

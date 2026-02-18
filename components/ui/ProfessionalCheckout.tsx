@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import { generateProductUrl } from "@/lib/url-utils";
 declare global {
   interface Window {
     Razorpay: {
@@ -110,6 +111,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   useEffect(() => {
@@ -190,7 +192,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
     setPaymentStep("processing");
 
     try {
-      // Create Razorpay order
+      // Step 1: Create Razorpay order from backend
       const orderResponse = await fetch('/api/razorpay/create-order', {
         method: 'POST',
         headers: {
@@ -199,7 +201,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         body: JSON.stringify({
           amount: product.price,
           currency: 'INR',
-          receipt: `receipt_${productId}`,
+          receipt: `order_${Date.now()}`,
           notes: {
             productId,
             customerEmail: formData.email,
@@ -208,50 +210,68 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         })
       });
 
-      const orderData = await orderResponse.json();
-
       if (!orderResponse.ok) {
-        throw new Error(orderData.error || 'Failed to create payment order');
+        const errorData = await orderResponse.json();
+        setError(`Failed to create order: ${errorData.error || 'Unknown error'}`);
+        setIsProcessing(false);
+        setPaymentStep("idle");
+        return;
       }
 
-      // Check if Razorpay is loaded
-      if (!window.Razorpay) {
-        throw new Error('Razorpay SDK not loaded. Please refresh the page and try again.');
-      }
+      const orderData = await orderResponse.json();
+      const razorpayOrderId = orderData.order.id;
+      const razorpayKeyId = orderData.keyId;
 
-      const options = {
-        key: orderData.keyId,
-        amount: orderData.order.amount,
-        currency: orderData.order.currency,
+      // Step 2: Open Razorpay checkout
+      const options: RazorpayOptions = {
+        key: razorpayKeyId,
+        amount: Math.round(product.price * 100), // Amount in paise
+        currency: 'INR',
         name: 'Notes Ninja',
         description: product.title,
-        order_id: orderData.order.id,
-        handler: async function (response: RazorpayResponse) {
-          // Verify payment
-          const verifyResponse = await fetch('/api/razorpay/verify-payment', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              productId,
-              customerEmail: formData.email,
-              customerName: `${formData.firstName} ${formData.lastName}`,
-              userId: session?.user?.id || null
-            })
-          });
+        order_id: razorpayOrderId,
+        prefill: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          contact: formData.phone
+        },
+        handler: async (response: RazorpayResponse) => {
+          try {
+            // Step 3: Verify payment on backend
+            const verifyResponse = await fetch('/api/razorpay/verify-payment', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                productId,
+                customerEmail: formData.email,
+                customerName: `${formData.firstName} ${formData.lastName}`
+              })
+            });
 
-          const verifyData = await verifyResponse.json();
+            if (!verifyResponse.ok) {
+              const errorData = await verifyResponse.json();
+              setError(`Payment verification failed: ${errorData.error}`);
+              setIsProcessing(false);
+              setPaymentStep("idle");
+              return;
+            }
 
-          if (verifyResponse.ok && verifyData.success) {
-            // Send confirmation email
+            const verifyData = await verifyResponse.json();
+
+            // Step 4: Send confirmation email with download links
             try {
-              console.log('Product data:', product);
-              console.log('Digital files:', product.digitalFiles);
-              
+              // Generate download links for email
+              const downloadLinks = product.digitalFiles?.map(file => ({
+                fileName: file.fileName,
+                downloadUrl: `/api/download?fileUrl=${encodeURIComponent(file.fileUrl)}&fileName=${encodeURIComponent(file.fileName)}`
+              })) || [];
+
+              // Send email
               const emailResponse = await fetch('/api/send-email', {
                 method: 'POST',
                 headers: {
@@ -261,59 +281,46 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                   to: formData.email,
                   customerName: `${formData.firstName} ${formData.lastName}`,
                   productName: product.title,
-                  downloadLinks: product.digitalFiles || []
+                  downloadLinks
                 })
               });
 
-              const emailResult = await emailResponse.json();
-              
-              if (!emailResponse.ok) {
-                console.error('Failed to send email:', emailResult.error);
+              if (emailResponse.ok) {
+                console.log('Confirmation email sent successfully');
               } else {
-                console.log('Email sent successfully:', emailResult);
+                console.error('Failed to send confirmation email');
               }
             } catch (emailError) {
               console.error('Email error:', emailError);
             }
-            
-            setOrderComplete(true);
+
             setPaymentStep("success");
-          } else {
-            throw new Error(verifyData.error || 'Payment verification failed');
+            setOrderComplete(true);
+            setError(null);
+          } catch (error) {
+            console.error('Payment handler error:', error);
+            setError(error instanceof Error ? error.message : 'Payment processing failed');
+            setPaymentStep("error");
+          } finally {
+            setIsProcessing(false);
           }
         },
         modal: {
-          ondismiss: function() {
-            // Redirect to the specified page when user closes the payment modal
-            window.location.href = '/online-manipal-university/notes-and-mockpaper';
-          },
-          escape: true,
-          backdropclose: true,
-          handleback: true
-        },
-        prefill: {
-          name: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          contact: formData.phone
-        },
-        theme: {
-          color: '#000000'
+          ondismiss: () => {
+            setIsProcessing(false);
+            setPaymentStep("idle");
+            setError("Payment cancelled");
+          }
         }
       };
 
-      const razorpay = new (window.Razorpay as unknown as new (options: RazorpayOptions) => RazorpayInstance)(options);
-      razorpay.open();
-
+      // Step 5: Open Razorpay checkout modal
+      const razorpayInstance = new (window as any).Razorpay(options);
+      razorpayInstance.open();
     } catch (error) {
-      console.error('Payment error:', error);
+      console.error('Payment initialization error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to initialize payment. Please try again.');
       setPaymentStep("error");
-      setError(error instanceof Error ? error.message : "Payment failed. Please try again.");
-      
-      // Redirect to the specified page on payment failure
-      setTimeout(() => {
-        window.location.href = '/online-manipal-university/notes-and-mockpaper';
-      }, 2000);
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -557,7 +564,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
             </motion.div>
 
             {/* Downloads Section - Apple Style */}
-            {product.digitalFiles && product.digitalFiles.length > 0 && (
+            {product.digitalFiles && product.digitalFiles.length > 0 ? (
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -590,7 +597,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                             </div>
                           </div>
                           <Button
-                            onClick={() => handleDownload(file.id, file.fileName)}
+                            onClick={() => handleDownload(file.id, file.fileName, orderId || undefined)}
                             disabled={downloadingFiles.has(file.id)}
                             className="bg-black hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                           >
@@ -610,6 +617,27 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                       </div>
                     </motion.div>
                   ))}
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.8 }}
+                className="mt-12 text-center"
+              >
+                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-8 max-w-2xl mx-auto">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileText className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Digital Files Available</h3>
+                  <p className="text-gray-600 mb-4">
+                    This product doesn't have any digital files for download. 
+                    You may receive physical materials or access through other means.
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    If you believe this is an error, please contact support.
+                  </p>
                 </div>
               </motion.div>
             )}
@@ -678,7 +706,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
       
       {/* Apple-style Content Layout */}
       <main className="relative z-10 max-w-6xl mx-auto px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Order Summary - Apple Style */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -900,7 +928,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                     <div className="space-y-6">
                       {!session && (
                         <>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div>
                               <Label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
                                 First Name
@@ -985,7 +1013,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                           Phone Number (Optional)
                         </Label>
                         <div className="relative">
-                          <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                          <div className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                           <Input
                             id="phone"
                             type="tel"
@@ -998,7 +1026,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                                 ? 'border-black bg-gray-50'
                                 : 'border-gray-300 bg-white'
                             }`}
-                            placeholder="+1234567890"
+                            placeholder="+1 (555) 123-4567"
                           />
                         </div>
                       </div>

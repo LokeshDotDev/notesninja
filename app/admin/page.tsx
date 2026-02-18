@@ -14,6 +14,8 @@ import { Trash2 } from "lucide-react";
 import FormDialog from "@/components/custom/FormDialog";
 import Notification from "@/components/custom/Notification";
 import { NestedCategoryList } from "@/components/custom/NestedCategoryList";
+import ArticleManager from "@/components/custom/ArticleManager";
+import FaqManager from "@/components/custom/FaqManager";
 
 interface Post {
 	id: string;
@@ -1090,7 +1092,11 @@ export default function Dashboard() {
 						</div>
 					</CardContent>
 				</Card>
-				{/* Visitors Section */}
+				{/* Article Management Section */}
+				<ArticleManager />
+				{/* FAQ Management Section */}
+				<FaqManager />
+				{/* Recent Visitors Section */}
 				<Card className='mb-10 shadow-xl border-0 bg-white/90 backdrop-blur-md h-[400px] flex flex-col'>
 					<CardHeader className='flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-0 px-4 md:px-8 pt-6 pb-2 flex-shrink-0'>
 						<CardTitle className='text-lg font-bold'>

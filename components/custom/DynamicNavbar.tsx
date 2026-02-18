@@ -169,6 +169,18 @@ export function DynamicNavbar() {
 
 						{/* Other Links */}
 						<Link
+							href="/articles"
+							className={`${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
+						>
+							Articles
+						</Link>
+						<Link
+							href="/faq"
+							className={`${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
+						>
+							FAQ
+						</Link>
+						<Link
 							href="/privacy-policy"
 							className={`${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
 						>

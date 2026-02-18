@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { PremiumLoader } from "@/components/ui/premium-loader";
 import Image from "next/image";
+import { generateProductUrl } from "@/lib/url-utils";
 
 // Function to get appropriate icon based on category name
 const getCategoryIcon = (categoryName: string) => {
@@ -113,6 +114,16 @@ interface Post {
     order: number;
     postId: string;
   }>;
+  category?: {
+    id: string;
+    name: string;
+    slug: string;
+    path?: string;
+  };
+  subcategory?: {
+    id: string;
+    name: string;
+  };
 }
 
 interface Category {
@@ -348,7 +359,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
                 });
                 return (
                 <BlurFade key={post.id} delay={0.25 + index * 0.1} inView>
-                  <Link href={`/product/${post.id}`}>
+                  <Link href={generateProductUrl(post)}>
                     <motion.div
                       whileHover={{ y: -8, boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.15)" }}
                       whileTap={{ scale: 0.98 }}

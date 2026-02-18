@@ -18,6 +18,7 @@ import {
 import { PremiumLoader } from "@/components/ui/premium-loader";
 import Link from "next/link";
 import Image from "next/image";
+import { generateProductUrl } from "@/lib/url-utils";
 
 interface Post {
   id: string;
@@ -38,6 +39,16 @@ interface Post {
     publicId: string;
     order: number;
   }>;
+  category?: {
+    id: string;
+    name: string;
+    slug: string;
+    path?: string;
+  };
+  subcategory?: {
+    id: string;
+    name: string;
+  };
   createdAt?: string;
   updatedAt?: string;
 }
@@ -451,7 +462,7 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
                       {/* Action Buttons */}
                       <div className="flex items-center justify-between">
                         <Button size="sm" asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
-                          <Link href={`/product/${post.id}`}>
+                          <Link href={generateProductUrl(post)}>
                             <Download className="w-4 h-4 mr-1" />
                             View Details
                           </Link>
@@ -459,7 +470,7 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
                         
                         <div className="flex items-center gap-2">
                           <Button variant="ghost" size="sm" className="p-2" asChild>
-                            <Link href={`/product/${post.id}`}>
+                            <Link href={generateProductUrl(post)}>
                               <Eye className="w-4 h-4" />
                             </Link>
                           </Button>
@@ -523,7 +534,7 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Button size="sm" asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
-                              <Link href={`/product/${post.id}`}>
+                              <Link href={generateProductUrl(post)}>
                                 <Download className="w-4 h-4 mr-1" />
                                 View Details
                               </Link>
@@ -532,7 +543,7 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
 
                           <div className="flex items-center gap-2">
                             <Button variant="ghost" size="sm" className="p-2" asChild>
-                              <Link href={`/product/${post.id}`}>
+                              <Link href={generateProductUrl(post)}>
                                 <Eye className="w-4 h-4" />
                               </Link>
                             </Button>

@@ -16,7 +16,13 @@ export async function GET() {
 
     const purchases = await prisma.purchase.findMany({
       where: {
-        userId: session.user.id,
+        OR: [
+          { userId: session.user.id },
+          { 
+            userId: null,
+            userEmail: session.user.email || ''
+          }
+        ]
       },
       include: {
         post: {
