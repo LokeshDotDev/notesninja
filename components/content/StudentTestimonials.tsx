@@ -1,110 +1,215 @@
 "use client";
 import { motion } from "motion/react";
-import { Star, ChevronRight } from "lucide-react";
+import { Star, ChevronRight, ThumbsUp, ThumbsDown, MessageCircle, Share2, TrendingUp, Award, Users, ArrowRight, BarChart3 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
 
 const testimonials = [
   {
     id: 1,
-    name: "Sarah Johnson",
-    role: "Medical Student",
-    university: "Harvard Medical School",
-    avatar: "SJ",
-    initials: "SJ",
+    name: "Rahul Sharma",
+    username: "@rahul_muj_cse",
+    role: "CSE Student",
+    semester: "4th Semester",
+    avatar: "RS",
+    initials: "RS",
     rating: 5,
-    content: "NotesNinja completely transformed my study routine. The medical materials are comprehensive and perfectly structured for exam preparation. I scored in the top 5% of my class!",
-    achievement: "Top 5% Class Rank",
-    subject: "Medicine",
-    gradient: "from-blue-500 to-purple-600",
+    content: "NotesNinja helped me score 76% in Data Structures! The expected questions were spot on. Went from 58% last semester to 76% now. Can't believe the difference! 🚀",
+    achievement: "+18% Improvement",
+    subject: "Data Structures",
+    timestamp: "2 hours ago",
+    likes: 234,
+    comments: 45,
+    shares: 12,
+    verified: true,
+    hasImage: true,
     badge: {
       text: "Top Performer",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+      color: "bg-blue-100 text-blue-800"
     }
   },
   {
     id: 2,
-    name: "Michael Chen",
-    role: "Computer Science Major",
-    university: "MIT",
-    avatar: "MC",
-    initials: "MC",
+    name: "Priya Patel",
+    username: "@priya_ece_muj",
+    role: "ECE Student",
+    semester: "6th Semester",
+    avatar: "PP",
+    initials: "PP",
     rating: 5,
-    content: "The programming notes and algorithm explanations are crystal clear. I went from struggling with data structures to acing my technical interviews. Worth every penny!",
-    achievement: "FAANG Offer",
-    subject: "Computer Science",
-    gradient: "from-green-500 to-teal-600",
+    content: "The 3-day study plan was a lifesaver for my ECE exams. Covered everything important without panic. Scored 79% in Computer Networks! Thank you NotesNinja team! 💯",
+    achievement: "79% Score",
+    subject: "Computer Networks",
+    timestamp: "5 hours ago",
+    likes: 189,
+    comments: 32,
+    shares: 8,
+    verified: true,
+    hasImage: true,
     badge: {
-      text: "Tech Success",
-      color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+      text: "High Achiever",
+      color: "bg-green-100 text-green-800"
     }
   },
   {
     id: 3,
-    name: "Emily Rodriguez",
-    role: "Biology Student",
-    university: "Stanford University",
-    avatar: "ER",
-    initials: "ER",
+    name: "Amit Kumar",
+    username: "@amit_mech_muj",
+    role: "ME Student",
+    semester: "2nd Semester",
+    avatar: "AK",
+    initials: "AK",
     rating: 5,
-    content: "The biology materials are exceptional - from molecular biology to ecology. The diagrams and explanations made complex topics so much easier to understand.",
-    achievement: "4.0 GPA",
-    subject: "Biology",
-    gradient: "from-purple-500 to-pink-600",
+    content: "Mock tests helped me understand the exam pattern perfectly. Much more confident now. Scored 71% in Engineering Mathematics. This platform is game-changing! 🎯",
+    achievement: "71% Score",
+    subject: "Engineering Mathematics",
+    timestamp: "1 day ago",
+    likes: 156,
+    comments: 28,
+    shares: 6,
+    verified: true,
+    hasImage: true,
     badge: {
-      text: "Perfect GPA",
-      color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+      text: "Rising Star",
+      color: "bg-purple-100 text-purple-800"
     }
   },
   {
     id: 4,
-    name: "James Wilson",
-    role: "Engineering Student",
-    university: "Caltech",
-    avatar: "JW",
-    initials: "JW",
+    name: "Neha Gupta",
+    username: "@neha_it_muj",
+    role: "IT Student",
+    semester: "3rd Semester",
+    avatar: "NG",
+    initials: "NG",
     rating: 4,
-    content: "Mathematics and physics notes saved me countless hours. The problem-solving approaches and examples are exactly what I needed for my engineering courses.",
-    achievement: "Dean's List",
-    subject: "Mathematics",
-    gradient: "from-orange-500 to-red-600",
+    content: "The PYQ analysis is incredible! 5-year pattern breakdown helped me prepare strategically. Scored 82% in Database Management Systems. Highly recommended! 📚",
+    achievement: "82% Score",
+    subject: "Database Management",
+    timestamp: "2 days ago",
+    likes: 298,
+    comments: 67,
+    shares: 23,
+    verified: true,
+    hasImage: true,
     badge: {
-      text: "Dean's List",
-      color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+      text: "Expert Analyst",
+      color: "bg-orange-100 text-orange-800"
     }
   },
   {
     id: 5,
-    name: "Priya Patel",
-    role: "Business Student",
-    university: "Wharton School",
-    avatar: "PP",
-    initials: "PP",
+    name: "Karan Singh",
+    username: "@karan_ee_muj",
+    role: "EE Student",
+    semester: "4th Semester",
+    avatar: "KS",
+    initials: "KS",
     rating: 5,
-    content: "The business and economics materials are top-notch. Case studies and analyses helped me secure an internship at a top investment bank.",
-    achievement: "Goldman Sachs Intern",
-    subject: "Business",
-    gradient: "from-yellow-500 to-amber-600",
+    content: "Study time reduced by 40% but results improved! The smart revision kits are amazing. Scored 75% in Electrical Machines. Best investment ever! ⚡",
+    achievement: "40% Time Saved",
+    subject: "Electrical Machines",
+    timestamp: "3 days ago",
+    likes: 412,
+    comments: 89,
+    shares: 34,
+    verified: true,
+    hasImage: true,
     badge: {
-      text: "Investment Banking",
-      color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+      text: "Time Master",
+      color: "bg-yellow-100 text-yellow-800"
     }
   },
   {
     id: 6,
-    name: "David Kim",
-    role: "Literature Major",
-    university: "Yale University",
-    avatar: "DK",
-    initials: "DK",
+    name: "Sneha Reddy",
+    username: "@sneha_cv_muj",
+    role: "CV Student",
+    semester: "5th Semester",
+    avatar: "SR",
+    initials: "SR",
     rating: 5,
-    content: "Literature analysis and critical thinking materials elevated my understanding of classic texts. My essays improved dramatically after using these resources.",
-    achievement: "Published Author",
-    subject: "Literature",
-    gradient: "from-indigo-500 to-blue-600",
+    content: "70%+ expected questions matched in actual exam! Unbelievable accuracy. Scored 77% in Thermodynamics. NotesNinja is the real deal! 🔥",
+    achievement: "77% Score",
+    subject: "Thermodynamics",
+    timestamp: "4 days ago",
+    likes: 523,
+    comments: 102,
+    shares: 45,
+    verified: true,
+    hasImage: true,
     badge: {
-      text: "Published",
-      color: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
+      text: "Prediction Pro",
+      color: "bg-red-100 text-red-800"
+    }
+  },
+  {
+    id: 7,
+    name: "Arjun Verma",
+    username: "@arjun_ce_muj",
+    role: "CE Student",
+    semester: "3rd Semester",
+    avatar: "AV",
+    initials: "AV",
+    rating: 5,
+    content: "The civil engineering notes saved my semester! Construction management and structural analysis became so much easier. Scored 74% in Building Materials! 🏗️",
+    achievement: "74% Score",
+    subject: "Building Materials",
+    timestamp: "5 days ago",
+    likes: 167,
+    comments: 41,
+    shares: 15,
+    verified: true,
+    hasImage: true,
+    badge: {
+      text: "Structural Pro",
+      color: "bg-indigo-100 text-indigo-800"
+    }
+  },
+  {
+    id: 8,
+    name: "Divya Mehta",
+    username: "@divya_chem_muj",
+    role: "Chemical Student",
+    semester: "4th Semester",
+    avatar: "DM",
+    initials: "DM",
+    rating: 5,
+    content: "Organic chemistry made simple! The reaction mechanisms and diagrams helped me score 78% in Organic Chemistry. NotesNinja is a lifesaver! ⚗️",
+    achievement: "78% Score",
+    subject: "Organic Chemistry",
+    timestamp: "6 days ago",
+    likes: 289,
+    comments: 56,
+    shares: 21,
+    verified: true,
+    hasImage: true,
+    badge: {
+      text: "Chemistry Expert",
+      color: "bg-pink-100 text-pink-800"
+    }
+  },
+  {
+    id: 9,
+    name: "Rohit Jain",
+    username: "@rohit_pharma_muj",
+    role: "Pharmacy Student",
+    semester: "2nd Semester",
+    avatar: "RJ",
+    initials: "RJ",
+    rating: 4,
+    content: "Pharmacology notes are comprehensive and easy to understand. Scored 73% in Pharmaceutical Chemistry. Great platform for pharmacy students! 💊",
+    achievement: "73% Score",
+    subject: "Pharmaceutical Chemistry",
+    timestamp: "1 week ago",
+    likes: 198,
+    comments: 38,
+    shares: 17,
+    verified: true,
+    hasImage: true,
+    badge: {
+      text: "Pharma Pro",
+      color: "bg-teal-100 text-teal-800"
     }
   }
 ];
@@ -113,215 +218,148 @@ export function StudentTestimonials() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800">
+    <section className="py-20 px-4 bg-gradient-to-b from-white to-gray-50">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-         {/* Testimonial Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <div className="inline-flex items-center gap-2 bg-green-500/20 px-4 py-2 rounded-full mb-6">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium text-green-600">Real MUJ Students</span>
+          </div>
+          <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            OUR STUDENTS ARE
+            <span className="block text-green-600">WINNING</span>
+          </h2>
+          <p className="text-xl text-gray-600 max-w-7xl mx-auto">
+            Real success stories from Manipal University Jaipur students who transformed their academic journey
+          </p>
+        </motion.div>
+
+        {/* Stats Section */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
           viewport={{ once: true }}
-          // className="py-24 bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-900 dark:to-neutral-800"
+          className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16"
         >
-          <div className="max-w-7xl mx-auto px-6">
-            {/* Modern Header */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <div className="inline-flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 px-4 py-2 rounded-full mb-6">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Student Success Stories</span>
-              </div>
-              <h2 className="text-4xl md:text-6xl font-bold text-neutral-900 dark:text-white mb-6">
-                What our students say
-              </h2>
-              <p className="text-xl text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto">
-                Real experiences from real students who transformed their academic journey
-              </p>
-            </motion.div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Users className="w-6 h-6 text-green-400" />
+              <div className="text-3xl font-bold text-black">5000+</div>
+            </div>
+            <div className="text-gray-400">MUJ Students Helped</div>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <TrendingUp className="w-6 h-6 text-green-400" />
+              <div className="text-3xl font-bold text-black">15%</div>
+            </div>
+            <div className="text-gray-400">Avg Score Improvement</div>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Star className="w-6 h-6 text-green-400" />
+              <div className="text-3xl font-bold text-black">4.8/5</div>
+            </div>
+            <div className="text-gray-400">Student Rating</div>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Award className="w-6 h-6 text-green-400" />
+              <div className="text-3xl font-bold text-black">70%+</div>
+            </div>
+            <div className="text-gray-400">Questions Matched</div>
+          </div>
+        </motion.div>
 
-            {/* Auto-Rotating Featured Testimonial */}
+        {/* X-Style Testimonial Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {testimonials.map((testimonial, index) => (
             <motion.div
+              key={testimonial.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
+              transition={{ duration: 0.8, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="mb-16"
+              className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200"
             >
-              <div className="relative h-64 md:h-80">
-                {testimonials.map((testimonial, index) => (
-                  <motion.div
-                    key={testimonial.id}
-                    initial={{ opacity: 0, x: 100 }}
-                    animate={{
-                      opacity: index === currentTestimonial ? 1 : 0,
-                      x: index === currentTestimonial ? 0 : 100,
-                      scale: index === currentTestimonial ? 1 : 0.9
-                    }}
-                    transition={{
-                      duration: 0.8,
-                      ease: "easeInOut"
-                    }}
-                    className={`absolute inset-0 ${index === currentTestimonial ? 'z-10' : 'z-0'}`}
-                  >
-                    <div className={`bg-gradient-to-r ${testimonial.gradient} rounded-3xl p-12 text-white relative overflow-hidden h-full`}>
-                      <div className="absolute inset-0 bg-black/20"></div>
-                      <div className="relative z-10 h-full flex flex-col justify-center">
-                        <motion.div 
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.6, delay: 0.2 }}
-                          className="flex items-start gap-8"
-                        >
-                          <div className="flex-1">
-                            <motion.div 
-                              initial={{ opacity: 0, scale: 0.5 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ duration: 0.6, delay: 0.3 }}
-                              className="text-6xl font-bold mb-6 opacity-20"
-                            >
-                              &quot;
-                            </motion.div>
-                            <motion.p 
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.6, delay: 0.4 }}
-                              className="text-2xl font-medium mb-8 leading-relaxed"
-                            >
-                              {testimonial.content}
-                            </motion.p>
-                            <motion.div 
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.6, delay: 0.5 }}
-                              className="flex items-center gap-4"
-                            >
-                              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-white text-xl font-bold">
-                                {testimonial.initials}
-                              </div>
-                              <div>
-                                <p className="text-xl font-semibold">{testimonial.name}</p>
-                                <p className="text-white/80">{testimonial.role}</p>
-                              </div>
-                            </motion.div>
+              {/* X-Style Header */}
+              <div className="p-4 pb-2">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                      {testimonial.initials}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1">
+                        <p className="font-bold text-gray-900 text-sm">{testimonial.name}</p>
+                        {testimonial.verified && (
+                          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                            <div className="text-white text-xs">✓</div>
                           </div>
-                        </motion.div>
+                        )}
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-              
-              {/* Progress Indicators */}
-              <div className="flex justify-center gap-2 mt-6">
-                {testimonials.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentTestimonial(index)}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      index === currentTestimonial 
-                        ? 'w-8 bg-neutral-900 dark:bg-white' 
-                        : 'bg-neutral-300 dark:bg-neutral-600'
-                    }`}
-                  />
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Premium Testimonial Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 mb-16">
-              {testimonials.map((testimonial, index) => (
-                <motion.div
-                  key={testimonial.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.2 + index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="p-6"
-                >
-                  <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 h-full shadow-lg hover:shadow-xl transition-all duration-300 border border-neutral-100 dark:border-neutral-800">
-                    {/* Star Rating */}
-                    <div className="flex mb-4">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                      ))}
-                    </div>
-                    
-                    {/* Quote Icon */}
-                    <div className="text-6xl font-bold text-neutral-200 dark:text-neutral-700 mb-4">&quot;</div>
-                    
-                    {/* Testimonial Content */}
-                    <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed mb-6 text-sm">
-                      {testimonial.content}
-                    </p>
-                    
-                    {/* Badge */}
-                    <div className="mb-6">
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${testimonial.badge.color}`}>
-                        {testimonial.badge.text}
-                      </span>
-                    </div>
-                    
-                    {/* Author Info */}
-                    <div className="flex items-center">
-                      <div className={`w-12 h-12 bg-gradient-to-br ${testimonial.gradient} rounded-full mr-4 flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
-                        {testimonial.initials}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-neutral-900 dark:text-white text-base">{testimonial.name}</p>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400">{testimonial.university}</p>
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <span>{testimonial.username}</span>
+                        <span>·</span>
+                        <span>{testimonial.timestamp}</span>
                       </div>
                     </div>
                   </div>
-                </motion.div>
-              ))}
-            </div>
+                  <button className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                    <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                    <div className="w-1 h-1 bg-gray-400 rounded-full mt-1"></div>
+                    <div className="w-1 h-1 bg-gray-400 rounded-full mt-1"></div>
+                  </button>
+                </div>
+              </div>
 
-            {/* Stats Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              viewport={{ once: true }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16"
-            >
-              <div className="text-center">
-                <div className="text-4xl font-bold text-neutral-900 dark:text-white mb-2">10K+</div>
-                <div className="text-neutral-600 dark:text-neutral-400">Happy Students</div>
+              {/* X-Style Content */}
+              <div className="px-4 pb-3">
+                <p className="text-gray-900 text-sm leading-normal whitespace-pre-wrap">
+                  {testimonial.content}
+                </p>
               </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-neutral-900 dark:text-white mb-2">50K+</div>
-                <div className="text-neutral-600 dark:text-neutral-400">Downloads</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-neutral-900 dark:text-white mb-2">4.9★</div>
-                <div className="text-neutral-600 dark:text-neutral-400">Average Rating</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-neutral-900 dark:text-white mb-2">6</div>
-                <div className="text-neutral-600 dark:text-neutral-400">Courses Covered</div>
-              </div>
-            </motion.div>
 
-            {/* CTA Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.7 }}
-              viewport={{ once: true }}
-              className="text-center"
-            >
-              <Button size="lg" className="bg-neutral-900 hover:bg-neutral-800 text-white font-medium px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
-                Join Our Community
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </Button>
-            </motion.div>
-          </div>
+              {/* X-Style Image */}
+              <div className="px-4 pb-3">
+                <div className="w-full h-64 bg-gray-100 rounded-xl overflow-hidden">
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="w-20 h-20 bg-gray-300 rounded-lg mb-3 mx-auto"></div>
+                      <p className="text-sm text-gray-500">Result Screenshot</p>
+                      <p className="text-xs text-gray-400 mt-1">Click to view full size</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              </motion.div>
+          ))}
+        </div>
+
+        {/* CTA Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mt-16"
+        >
+          <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+            Start Winning Too
+            <ChevronRight className="w-4 h-4 ml-2" />
+          </Button>
+          <p className="text-gray-600 text-sm mt-4">
+            Join 5000+ MUJ students who are already winning with NotesNinja
+          </p>
         </motion.div>
       </div>
     </section>

@@ -1,9 +1,13 @@
-import { PremiumHero } from "@/components/content/PremiumHero";
-import { EducationalFeatures } from "@/components/content/EducationalFeatures";
-import { SubjectShowcase } from "@/components/content/SubjectShowcase";
+import { HeroSection } from "@/components/landing/HeroSection";
+import { ProofGrid } from "@/components/landing/ProofGrid";
 import { StudentTestimonials } from "@/components/content/StudentTestimonials";
-import { HowItWorks } from "@/components/content/HowItWorks";
-import { UniversitiesShowcase } from "@/components/content/UniversitiesShowcase";
+import { StudentExperience } from "@/components/content/StudentExperience";
+import { VideoInterviews } from "@/components/landing/VideoInterviews";
+import { ServicesSection } from "@/components/landing/ServicesSection";
+import { AuthoritySection } from "@/components/landing/AuthoritySection";
+import { PricingSection } from "@/components/landing/PricingSection";
+import { FAQSection } from "@/components/landing/FAQSection";
+import { FinalCTASection } from "@/components/landing/FinalCTASection";
 import { Metadata } from "next";
 import settings from "@/lib/settings";
 import Footer from "@/components/content/Footer";
@@ -17,13 +21,16 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
-      <PremiumHero />
-      <UniversitiesShowcase />
-      <SubjectShowcase />
-      <EducationalFeatures />
+      <HeroSection />
+      <ProofGrid />
       <StudentTestimonials />
-      <HowItWorks />
-      {/* <CallToAction /> */}
+      {/* <VideoInterviews /> */}
+      <ServicesSection />
+      {/* <StudentExperience /> */}
+      <AuthoritySection />
+      <PricingSection />
+      <FAQSection />
+      <FinalCTASection />
       <Footer />
     </>
   );
