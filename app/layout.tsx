@@ -25,7 +25,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: `${settings.site.name} | Premium Hospitality Supplies for US Motels & Hotels`,
+  title: `${settings.site.name}`,
   description: settings.site.description,
   keywords: settings.site.keywords,
   authors: [{ name: settings.site.author }],
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: `${settings.site.name} | Premium Hospitality Solutions`,
+    title: `${settings.site.name}`,
     description: settings.site.description,
     url: settings.site.url,
     siteName: settings.site.name,
@@ -49,10 +49,9 @@ export const metadata: Metadata = {
         url: settings.site.ogImage,
         width: 1200,
         height: 630,
-        alt: `${settings.site.name} - Premium Hospitality Furnishings`,
+        alt: `${settings.site.name}`,
       },
     ],
-    locale: "en_US",
     type: "website",
   },
   robots: {
@@ -68,7 +67,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${settings.site.name} | Premium Hospitality Solutions`,
+    title: `${settings.site.name}`,
     description: settings.site.description,
     images: [settings.site.twitterImage],
   },
