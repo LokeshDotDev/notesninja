@@ -71,7 +71,7 @@ function generatePurchaseEmailTemplate(data: EmailData): string {
   const downloadItems = data.downloadLinks?.map((file, index) => {
     // Use new secure download endpoint with absolute URL
     // For production emails, we need to use the actual domain
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://test.notesninja.in' || 'https://notesninja.in';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://notesninja.in';
     const downloadUrl = `${baseUrl}/api/download?fileUrl=${encodeURIComponent(file.fileUrl)}&fileName=${encodeURIComponent(file.fileName)}`;
     
     console.log('Email: Using secure download URL:', { fileName: file.fileName, downloadUrl });

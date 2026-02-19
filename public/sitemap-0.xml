@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-<url><loc>https://notesninja.in/categories</loc><lastmod>2026-02-19T09:24:01.033Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-<url><loc>https://notesninja.in/unauthorized</loc><lastmod>2026-02-19T09:24:01.034Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-<url><loc>https://notesninja.in/register</loc><lastmod>2026-02-19T09:24:01.034Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-<url><loc>https://notesninja.in/privacy-policy</loc><lastmod>2026-02-19T09:24:01.034Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-<url><loc>https://notesninja.in/terms-conditions</loc><lastmod>2026-02-19T09:24:01.034Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-<url><loc>https://notesninja.in</loc><lastmod>2026-02-19T09:24:01.034Z</lastmod><changefreq>daily</changefreq><priority>1</priority></url>
-<url><loc>https://notesninja.in/refund-cancellation</loc><lastmod>2026-02-19T09:24:01.034Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-<url><loc>https://notesninja.in/login</loc><lastmod>2026-02-19T09:24:01.034Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+<url><loc>https://notesninja.in/categories</loc><lastmod>2026-02-19T13:59:04.428Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+<url><loc>https://notesninja.in/login</loc><lastmod>2026-02-19T13:59:04.429Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+<url><loc>https://notesninja.in/unauthorized</loc><lastmod>2026-02-19T13:59:04.429Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+<url><loc>https://notesninja.in/register</loc><lastmod>2026-02-19T13:59:04.429Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+<url><loc>https://notesninja.in/refund-cancellation</loc><lastmod>2026-02-19T13:59:04.429Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+<url><loc>https://notesninja.in</loc><lastmod>2026-02-19T13:59:04.429Z</lastmod><changefreq>daily</changefreq><priority>1</priority></url>
+<url><loc>https://notesninja.in/privacy-policy</loc><lastmod>2026-02-19T13:59:04.429Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+<url><loc>https://notesninja.in/terms-conditions</loc><lastmod>2026-02-19T13:59:04.429Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
 <url><loc>https://notesninja.in/online-manipal-university</loc><lastmod>2026-02-10T20:12:30.758Z</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
 <url><loc>https://notesninja.in/online-manipal-university/notes-and-mockpaper</loc><lastmod>2026-02-14T07:59:29.608Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
 <url><loc>https://notesninja.in/online-manipal-university/notes-and-mockpaper/mba</loc><lastmod>2026-02-10T20:13:20.639Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
