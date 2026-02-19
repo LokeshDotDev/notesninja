@@ -9,6 +9,41 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Analytics tracking helper
+async function trackDownloadEvent(fileId: string, fileName: string, userEmail?: string) {
+  try {
+    // Get file details from database
+    const digitalFile = await prisma.digitalFile.findUnique({
+      where: { id: fileId },
+      include: {
+        post: {
+          select: {
+            id: true,
+            title: true,
+            category: {
+              select: { name: true }
+            }
+          }
+        }
+      }
+    });
+
+    if (digitalFile) {
+      // Track download event (client-side will be called from frontend)
+      console.log('📊 Download tracked:', {
+        file_id: fileId,
+        file_name: fileName,
+        product_id: digitalFile.post.id,
+        product_name: digitalFile.post.title,
+        category: digitalFile.post.category?.name,
+        user_email: userEmail
+      });
+    }
+  } catch (error) {
+    console.error('Failed to track download:', error);
+  }
+}
+
 interface DownloadRequest {
   fileId?: string;
   fileUrl?: string;
@@ -109,6 +144,9 @@ export async function GET(request: NextRequest) {
         where: { id: purchaseId },
         data: { downloadCount: { increment: 1 } }
       });
+
+      // Track download event
+      await trackDownloadEvent(fileId, file.fileName, userEmail);
 
     } 
     // Option 2: Download by fileUrl + fileName (for email links, no purchase verification needed)

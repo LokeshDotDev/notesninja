@@ -20,6 +20,7 @@ import {
 import { PremiumPageLoader } from "@/components/ui/premium-loader";
 import Link from "next/link";
 import Image from "next/image";
+import { trackViewItem, trackDownload, trackCustomEvent, trackBeginCheckout } from "@/lib/analytics";
 
 interface PostImage {
   id: string;
@@ -114,6 +115,16 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
 
         const productData = await response.json();
         setProduct(productData);
+        
+        // Track product view when loaded
+        trackViewItem({
+          id: productData.id,
+          title: productData.title,
+          price: productData.price,
+          category: productData.category?.name,
+          subcategory: productData.subcategory?.name,
+          imageUrl: productData.imageUrl
+        });
       } catch (err) {
         setError("Failed to load product");
         console.error("Error fetching product:", err);
@@ -133,6 +144,25 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
       // Add to cart logic here
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
       console.log("Added to cart:", product.id, quantity);
+      
+      // Track add to cart event
+      trackBeginCheckout({
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        category: product.category?.name,
+        subcategory: product.subcategory?.name,
+        imageUrl: product.imageUrl
+      });
+      
+      // Track custom event
+      trackCustomEvent('add_to_cart', {
+        product_id: product.id,
+        product_name: product.title,
+        category: product.category?.name,
+        price: product.price
+      });
+      
     } catch (error) {
       console.error("Failed to add to cart:", error);
     } finally {

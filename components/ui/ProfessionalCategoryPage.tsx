@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { PremiumLoader } from "@/components/ui/premium-loader";
 import Image from "next/image";
+import { trackCategoryView, trackSearch, trackCustomEvent } from "@/lib/analytics";
 
 // Function to get appropriate icon based on category name
 const getCategoryIcon = (categoryName: string) => {
@@ -181,7 +182,9 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
 
         const data = await response.json();
         setCategory(data);
-        // Build breadcrumbs from the actual category path returned from API
+        // Track category view
+        trackCategoryView(data.name || categoryName);
+        // Build breadcrumbs from actual category path returned from API
         // This ensures we always have the correct full path, even for nested categories
         setBreadcrumbs(buildBreadcrumbs(data.path || categoryName));
 
