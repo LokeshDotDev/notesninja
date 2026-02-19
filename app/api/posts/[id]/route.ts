@@ -17,9 +17,41 @@ export async function GET(
 
 		const post = await prisma.post.findUnique({
 			where: { id: resolvedParams.id },
-			include: {
-				images: true,
-				digitalFiles: true,
+			select: {
+				id: true,
+				title: true,
+				slug: true,
+				description: true,
+				imageUrl: true,
+				publicId: true,
+				price: true,
+				compareAtPrice: true,
+				isDigital: true,
+				createdAt: true,
+				updatedAt: true,
+				categoryId: true,
+				subcategoryId: true,
+				productTypeId: true,
+				images: {
+					select: {
+						id: true,
+						imageUrl: true,
+						publicId: true,
+						order: true,
+					},
+				},
+				digitalFiles: {
+					select: {
+						id: true,
+						fileName: true,
+						fileUrl: true,
+						publicId: true,
+						fileSize: true,
+						fileType: true,
+						postId: true,
+						createdAt: true,
+					}
+				},
 				category: {
 					select: {
 						id: true,
@@ -37,6 +69,12 @@ export async function GET(
 					},
 				},
 				subcategory: {
+					select: {
+						id: true,
+						name: true,
+					},
+				},
+				productType: {
 					select: {
 						id: true,
 						name: true,
@@ -83,6 +121,7 @@ export async function PATCH(
 		const formData = await req.formData();
 		const title = formData.get("title") as string | null;
 		const description = formData.get("description") as string | null;
+		const slug = formData.get("slug") as string | null;
 		const categoryId = formData.get("categoryId") as string | null;
 		// Handle both multiple files and single file for backward compatibility
 		const files = formData.getAll("files") as File[];
@@ -103,6 +142,7 @@ export async function PATCH(
 		const dataToUpdate: {
 			title?: string;
 			description?: string;
+			slug?: string;
 			categoryId?: string;
 			imageUrl?: string;
 			publicId?: string;
@@ -110,6 +150,7 @@ export async function PATCH(
 
 		if (title) dataToUpdate.title = title;
 		if (description) dataToUpdate.description = description;
+		if (slug) dataToUpdate.slug = slug;
 		if (categoryId) dataToUpdate.categoryId = categoryId;
 		
 		// If a new image is uploaded, replace the old one

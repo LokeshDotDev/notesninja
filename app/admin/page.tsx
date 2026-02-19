@@ -20,6 +20,7 @@ interface Post {
 	title: string;
 	description: string;
 	imageUrl: string;
+	slug?: string;
 }
 
 interface Featured {
@@ -76,6 +77,7 @@ type PostEdit = {
 	description?: string;
 	imageUrl?: string;
 	categoryId?: string;
+	slug?: string;
 };
 type FeaturedEdit = {
 	id?: string;
@@ -676,6 +678,7 @@ export default function Dashboard() {
 								<thead className='sticky top-0 bg-white z-10'>
 									<tr className='border-b border-gray-200'>
 										<th className='text-left p-3 font-semibold'>Title</th>
+										<th className='text-left p-3 font-semibold'>Slug</th>
 										<th className='text-left p-3 font-semibold'>Description</th>
 										<th className='text-left p-3 font-semibold'>Actions</th>
 									</tr>
@@ -687,6 +690,13 @@ export default function Dashboard() {
 											className='border-b border-gray-100 hover:bg-blue-50/40 transition-colors group'>
 											<td className='p-3 font-medium max-w-xs truncate'>
 												{post.title}
+											</td>
+											<td className='p-3 max-w-xs truncate text-gray-600'>
+												{post.slug || (
+													<span className='italic text-gray-400'>
+														No slug
+													</span>
+												)}
 											</td>
 											<td className='p-3 max-w-md truncate text-gray-600'>
 												{post.description || (

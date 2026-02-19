@@ -39,6 +39,7 @@ interface FormDialogProps {
 		isDigital?: boolean;
 		name?: string;
 		parentId?: string;
+		slug?: string;
 	};
 	onSave: (data: { id?: string; formData: FormData }) => void;
 	isLoading?: boolean;
@@ -82,6 +83,7 @@ export default function FormDialog({
 		compareAtPrice: "",
 		isDigital: false,
 		name: "",
+		slug: "",
 	});
 	const [files, setFiles] = useState<File[]>([]);
 	const [digitalFiles, setDigitalFiles] = useState<File[]>([]);
@@ -126,6 +128,7 @@ export default function FormDialog({
 				compareAtPrice: initialData.compareAtPrice?.toString() || "",
 				isDigital: initialData.isDigital || false,
 				name: initialData.name || "",
+				slug: initialData.slug || "",
 			});
 		} else {
 			// Reset form for new item
@@ -139,6 +142,7 @@ export default function FormDialog({
 				compareAtPrice: "",
 				isDigital: false,
 				name: "",
+				slug: "",
 			});
 			setFiles([]);
 			setDigitalFiles([]);
@@ -159,6 +163,9 @@ export default function FormDialog({
 			submitData.append("title", formData.title);
 			submitData.append("description", formData.description);
 			if (type === "post") {
+				if (formData.slug) {
+					submitData.append("slug", formData.slug);
+				}
 				submitData.append("categoryId", formData.categoryId);
 				if (formData.subcategoryId) {
 					submitData.append("subcategoryId", formData.subcategoryId);
@@ -215,6 +222,7 @@ export default function FormDialog({
 				compareAtPrice: "",
 				isDigital: false,
 				name: "",
+				slug: "",
 			});
 			setFiles([]);
 			setDigitalFiles([]);
@@ -289,6 +297,19 @@ export default function FormDialog({
 								placeholder="Enter product title"
 								required
 							/>
+						</div>
+
+						<div>
+							<Label htmlFor="slug">Custom Slug (Optional)</Label>
+							<Input
+								id="slug"
+								value={formData.slug}
+								onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+								placeholder="custom-product-slug"
+							/>
+							<p className="text-xs text-gray-500 mt-1">
+								Leave empty to auto-generate from title
+							</p>
 						</div>
 						
 						<div>

@@ -10,12 +10,14 @@ datasource db {
 model Post {
   id             String        @id @default(cuid())
   title          String
+  slug           String?
   description    String
   imageUrl       String?
   publicId       String?
   price          Float?
   compareAtPrice Float?
   isDigital      Boolean       @default(false)
+  isDiscounted   Boolean?      @default(false)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   categoryId     String
