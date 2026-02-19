@@ -4,7 +4,7 @@ import { sendPurchaseEmail } from '@/lib/brevo';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { to, customerName, productName, downloadLinks } = body;
+    const { to, customerName, productName, downloadLinks, price, compareAtPrice } = body;
 
     if (!to || !productName || !downloadLinks) {
       return NextResponse.json(
@@ -18,6 +18,8 @@ export async function POST(request: NextRequest) {
       subject: `Thank You for Your Purchase - ${productName}`,
       customerName,
       productName,
+      price,
+      compareAtPrice,
       downloadLinks
     };
 

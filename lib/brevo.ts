@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { formatPrice } from './pricing';
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const BREVO_API_URL = 'https://api.brevo.com/v3';
@@ -8,6 +9,8 @@ interface EmailData {
   subject: string;
   customerName?: string;
   productName?: string;
+  price?: number;
+  compareAtPrice?: number;
   downloadLinks?: Array<{
     fileName: string;
     fileUrl: string;
@@ -67,6 +70,9 @@ export async function sendPurchaseEmail(emailData: EmailData) {
 function generatePurchaseEmailTemplate(data: EmailData): string {
   console.log('Email template data:', data);
   console.log('Download links:', data.downloadLinks);
+  
+  // Get pricing information
+  const formattedPrice = formatPrice(data.price || 0);
   
   const downloadItems = data.downloadLinks?.map((file, index) => {
     // Use new secure download endpoint with absolute URL
@@ -179,13 +185,13 @@ function generatePurchaseEmailTemplate(data: EmailData): string {
                                 <tr>
                                     <td style="padding: 15px; font-size: 14px; color: #333333; border-bottom: 1px solid #e5e5e5;">${data.productName || 'Digital Product'}</td>
                                     <td style="padding: 15px; font-size: 14px; color: #333333; text-align: center; border-bottom: 1px solid #e5e5e5;">1</td>
-                                    <td style="padding: 15px; font-size: 14px; color: #333333; text-align: right; border-bottom: 1px solid #e5e5e5;">₹${data.downloadLinks?.[0]?.fileSize ? '3,999.00' : '0.00'}</td>
+                                    <td style="padding: 15px; font-size: 14px; color: #333333; text-align: right; border-bottom: 1px solid #e5e5e5;">${formattedPrice}</td>
                                 </tr>
                                 
                                 <!-- Subtotal -->
                                 <tr style="background-color: #f8f8f8;">
                                     <td colspan="2" style="padding: 12px 15px; font-size: 14px; color: #333333; font-weight: 700;">Subtotal:</td>
-                                    <td style="padding: 12px 15px; font-size: 14px; color: #333333; text-align: right; font-weight: 700;">₹${data.downloadLinks?.[0]?.fileSize ? '3,999.00' : '0.00'}</td>
+                                    <td style="padding: 12px 15px; font-size: 14px; color: #333333; text-align: right; font-weight: 700;">${formattedPrice}</td>
                                 </tr>
                                 
                                 <!-- Shipping -->
@@ -203,7 +209,7 @@ function generatePurchaseEmailTemplate(data: EmailData): string {
                                 <!-- Total -->
                                 <tr style="background: linear-gradient(135deg, #e6faf5, #f0fdf9);">
                                     <td colspan="2" style="padding: 15px; font-size: 16px; color: #00b386; font-weight: 700;">Total:</td>
-                                    <td style="padding: 15px; font-size: 18px; color: #00b386; text-align: right; font-weight: 800;">₹${data.downloadLinks?.[0]?.fileSize ? '3,999.00' : '0.00'}</td>
+                                    <td style="padding: 15px; font-size: 18px; color: #00b386; text-align: right; font-weight: 800;">${formattedPrice}</td>
                                 </tr>
                             </table>
                         </td>

@@ -92,7 +92,9 @@ export async function POST(req: NextRequest) {
             customerEmail,
             purchase.post.title,
             purchase.id,
-            downloadLinks
+            downloadLinks,
+            purchase.post.price || undefined,
+            purchase.post.compareAtPrice || undefined
           );
           
           console.log(`Purchase confirmation email sent to ${customerEmail}`);

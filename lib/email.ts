@@ -3,7 +3,9 @@ export async function sendPurchaseConfirmationEmail(
   userEmail: string,
   productTitle: string,
   purchaseId: string,
-  downloadLinks: Array<{ fileName: string; fileUrl: string }>
+  downloadLinks: Array<{ fileName: string; fileUrl: string }>,
+  price?: number,
+  compareAtPrice?: number
 ) {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/send-email`, {
@@ -13,6 +15,8 @@ export async function sendPurchaseConfirmationEmail(
         to: userEmail,
         customerName: userEmail.split('@')[0], // Extract name from email
         productName: productTitle,
+        price: price,
+        compareAtPrice: compareAtPrice,
         downloadLinks: downloadLinks.map(link => ({
           fileName: link.fileName,
           fileUrl: link.fileUrl,
