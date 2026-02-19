@@ -127,6 +127,13 @@ export async function POST(req: NextRequest) {
 		const compareAtPrice = formData.get("compareAtPrice") as string | null;
 		const isDigital = formData.get("isDigital") === "true";
 
+		// Auto-calculate compareAtPrice if not provided but price is given
+		let finalCompareAtPrice = compareAtPrice ? parseFloat(compareAtPrice) : null;
+		if (price && !finalCompareAtPrice) {
+			finalCompareAtPrice = Math.round((parseFloat(price) * 1.5) / 100) * 100;
+			console.log(`Auto-calculated compareAtPrice: ₹${finalCompareAtPrice} for price: ₹${price}`);
+		}
+
 		console.log("2. Extracted fields:", {
 			title: title?.substring(0, 50),
 			slug: slug || "auto-generated",
@@ -170,7 +177,7 @@ export async function POST(req: NextRequest) {
 				subcategoryId: subcategoryId || null,
 				productTypeId: productTypeId || null,
 				price: price ? parseFloat(price) : null,
-				compareAtPrice: compareAtPrice ? parseFloat(compareAtPrice) : null,
+				compareAtPrice: finalCompareAtPrice,
 				isDigital,
 			},
 		});
