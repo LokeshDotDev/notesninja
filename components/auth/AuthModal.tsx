@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "next-auth/react";
 import { useSession } from "next-auth/react";
+import { trackLogin, trackSignUp, trackError } from "@/lib/analytics";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -103,6 +104,9 @@ export function AuthModal({ isOpen, onClose, initialView = "signin", onSuccess }
       setSuccess("Account created successfully! Please sign in.");
       setView("signin");
       
+      // Track successful signup
+      trackSignUp('email');
+      
       // Clear form except email
       setFormData(prev => ({
         ...prev,
@@ -113,6 +117,9 @@ export function AuthModal({ isOpen, onClose, initialView = "signin", onSuccess }
 
     } catch (error) {
       setError(error instanceof Error ? error.message : "Signup failed. Please try again.");
+      
+      // Track signup error
+      trackError(error instanceof Error ? error.message : "Signup failed", 'signup');
     } finally {
       setIsLoading(false);
     }
@@ -139,6 +146,10 @@ export function AuthModal({ isOpen, onClose, initialView = "signin", onSuccess }
 
       if (result?.ok) {
         setSuccess("Signed in successfully!");
+        
+        // Track successful login
+        trackLogin('email');
+        
         setTimeout(() => {
           onSuccess?.();
           onClose();
@@ -147,6 +158,9 @@ export function AuthModal({ isOpen, onClose, initialView = "signin", onSuccess }
 
     } catch (error) {
       setError(error instanceof Error ? error.message : "Sign in failed. Please try again.");
+      
+      // Track login error
+      trackError(error instanceof Error ? error.message : "Sign in failed", 'login');
     } finally {
       setIsLoading(false);
     }

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Download, Mail } from "lucide-react";
 import { PremiumLoader } from "@/components/ui/premium-loader";
+import { trackDownload } from "@/lib/analytics";
 
 interface DownloadDialogProps {
 	open: boolean;
@@ -54,6 +55,9 @@ export default function DownloadDialog({
 	};
 
 	const handleDownload = (fileId: string, fileName: string) => {
+		// Track download event
+		trackDownload(fileName, purchaseId);
+		
 		// Construct secure download URL
 		const downloadUrl = `/api/download?fileId=${fileId}&fileName=${encodeURIComponent(fileName)}&purchaseId=${purchaseId}&userEmail=${encodeURIComponent(userEmail)}`;
 		
