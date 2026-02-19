@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { PremiumLoader } from "@/components/ui/premium-loader";
 import Image from "next/image";
-import { trackCategoryView, trackSearch, trackCustomEvent } from "@/lib/analytics";
+import { trackCategoryView } from "@/lib/analytics";
 
 // Function to get appropriate icon based on category name
 const getCategoryIcon = (categoryName: string) => {

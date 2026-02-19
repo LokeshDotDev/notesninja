@@ -20,7 +20,7 @@ interface PurchaseData {
 }
 
 // GA4 Events
-export const trackGA4Event = (eventName: string, parameters?: Record<string, any>) => {
+export const trackGA4Event = (eventName: string, parameters?: Record<string, unknown>) => {
   if (typeof window !== 'undefined' && window.gtag) {
     window.gtag('event', eventName, parameters);
     console.log(`📊 GA4 Event: ${eventName}`, parameters);
@@ -28,7 +28,7 @@ export const trackGA4Event = (eventName: string, parameters?: Record<string, any
 };
 
 // Meta Pixel Events
-export const trackMetaEvent = (eventName: string, parameters?: Record<string, any>) => {
+export const trackMetaEvent = (eventName: string, parameters?: Record<string, unknown>) => {
   if (typeof window !== 'undefined' && window.fbq) {
     window.fbq('track', eventName, parameters);
     console.log(`📘 Meta Event: ${eventName}`, parameters);
@@ -264,7 +264,7 @@ export const trackError = (error: string, context?: string) => {
 };
 
 // 11. Custom Events
-export const trackCustomEvent = (eventName: string, parameters?: Record<string, any>) => {
+export const trackCustomEvent = (eventName: string, parameters?: Record<string, unknown>) => {
   // GA4
   trackGA4Event(eventName, parameters);
 
@@ -282,7 +282,7 @@ export const trackCustomEvent = (eventName: string, parameters?: Record<string, 
 // Type declarations for global window objects
 declare global {
   interface Window {
-    gtag: (command: string, eventName: string, parameters?: Record<string, any>) => void;
-    fbq: (command: string, eventName: string, parameters?: Record<string, any>) => void;
+    gtag: (command: string, eventName: string, parameters?: Record<string, unknown>) => void;
+    fbq: (command: string, eventName: string, parameters?: Record<string, unknown>) => void;
   }
 }

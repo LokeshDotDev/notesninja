@@ -26,7 +26,6 @@ import { useSession } from "next-auth/react";
 import { 
   trackViewItem, 
   trackBeginCheckout, 
-  trackAddPaymentInfo, 
   trackPurchase, 
   trackCheckoutPageView, 
   trackError,

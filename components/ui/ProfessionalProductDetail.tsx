@@ -20,7 +20,7 @@ import {
 import { PremiumPageLoader } from "@/components/ui/premium-loader";
 import Link from "next/link";
 import Image from "next/image";
-import { trackViewItem, trackDownload, trackCustomEvent, trackBeginCheckout } from "@/lib/analytics";
+import { trackViewItem, trackCustomEvent, trackBeginCheckout } from "@/lib/analytics";
 
 interface PostImage {
   id: string;
