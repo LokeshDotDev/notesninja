@@ -29,7 +29,8 @@ import {
   trackPurchase, 
   trackCheckoutPageView, 
   trackError,
-  trackCustomEvent
+  trackCustomEvent,
+  trackDownload
 } from "@/lib/analytics";
 declare global {
   interface Window {
@@ -409,6 +410,9 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
       document.body.removeChild(link);
       
       console.log('Secure download triggered successfully');
+      
+      // Track download event
+      trackDownload(fileName, productId);
       
       // Remove from downloading set after a short delay
       setTimeout(() => {
