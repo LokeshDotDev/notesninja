@@ -88,6 +88,9 @@ export async function PATCH(
 		const files = formData.getAll("files") as File[];
 		const singleFile = formData.get("file") as File | null;
 		const file = files.length > 0 ? files[0] : singleFile;
+		
+		// Handle digital files
+		const digitalFiles = formData.getAll("digitalFiles") as File[];
 
 		const existingPost = await prisma.post.findUnique({
 			where: { id: resolvedParams.id },
@@ -188,6 +191,54 @@ export async function PATCH(
 				});
 				console.log("✅ Created new gallery image");
 			}
+		}
+
+		// Handle digital files update
+		if (digitalFiles.length > 0) {
+			console.log("🔄 Digital files update process started");
+			
+			// Get existing digital files to delete them from Cloudinary
+			const existingDigitalFiles = await prisma.digitalFile.findMany({
+				where: { postId: resolvedParams.id }
+			});
+			console.log("📁 Existing digital files:", existingDigitalFiles.length);
+			
+			// Delete existing digital files from Cloudinary
+			for (const digitalFile of existingDigitalFiles) {
+				if (digitalFile.publicId) {
+					console.log("🗑️ Deleting existing digital file from Cloudinary:", digitalFile.publicId);
+					const deleteResult = await deleteContent(digitalFile.publicId);
+					console.log("✅ Digital file delete result:", deleteResult);
+				}
+			}
+			
+			// Delete existing digital files from database
+			await prisma.digitalFile.deleteMany({
+				where: { postId: resolvedParams.id }
+			});
+			console.log("✅ Deleted existing digital files from database");
+			
+			// Upload new digital files
+			console.log("⬆️ Uploading new digital files");
+			const filePromises = digitalFiles.map(async (file) => {
+				console.log(`   - Uploading digital file: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+				const uploadResult: CloudinaryUploadResult = await uploadContent(file, true);
+				console.log(`   ✓ Digital file uploaded:`, uploadResult.public_id);
+
+				return prisma.digitalFile.create({
+					data: {
+						postId: resolvedParams.id,
+						fileName: file.name,
+						fileUrl: uploadResult.secure_url,
+						publicId: uploadResult.public_id,
+						fileSize: file.size,
+						fileType: file.type,
+					},
+				});
+			});
+
+			await Promise.all(filePromises);
+			console.log(`✓ All ${digitalFiles.length} digital files uploaded successfully`);
 		}
 
 		if (Object.keys(dataToUpdate).length === 0) {
