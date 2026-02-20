@@ -951,7 +951,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                     transition={{ duration: 0.6 }}
                   >
                     <div className="mb-8">
-                      <h2 className="text-3xl font-semibold text-gray-900 mb-2">Customer Information</h2>
+                      <h2 className="text-3xl font-semibold text-gray-900 mb-2">Student Information</h2>
                       <p className="text-gray-600">Enter your details for a seamless checkout experience</p>
                     </div>
                     
@@ -977,7 +977,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                                       ? 'border-black bg-gray-50'
                                       : 'border-gray-300 bg-white'
                                   }`}
-                                  placeholder="John"
+                                  placeholder="Rahul"
                                   required
                                 />
                               </div>
@@ -1001,7 +1001,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                                       ? 'border-black bg-gray-50'
                                       : 'border-gray-300 bg-white'
                                   }`}
-                                  placeholder="Doe"
+                                  placeholder="Sharma"
                                   required
                                 />
                               </div>
@@ -1029,7 +1029,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                                 ? 'border-black bg-gray-50'
                                 : 'border-gray-300 bg-white'
                             } ${session ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                            placeholder="john@example.com"
+                            placeholder="rahulsharma@example.com"
                             required
                           />
                         </div>
@@ -1091,7 +1091,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                     
                     {/* Customer Summary */}
                     <div className="bg-gray-50 rounded-xl p-6 mb-8">
-                      <h3 className="font-semibold text-gray-900 mb-4">Customer Information</h3>
+                      <h3 className="font-semibold text-gray-900 mb-4">Student Information</h3>
                       <div className="space-y-3">
                         <div className="flex justify-between py-2 border-b border-gray-200">
                           <span className="text-gray-600">Name</span>
