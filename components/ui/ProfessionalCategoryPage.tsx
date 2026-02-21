@@ -190,6 +190,53 @@ export function ProfessionalCategoryPage({
     return breadcrumbTrail;
   };
 
+  // Extract unique semesters from posts
+  const getUniqueSemesters = (posts: Post[]) => {
+    const semesters = new Set<string>();
+    posts.forEach(post => {
+      const title = post.title.toLowerCase();
+      const semesterMatch = title.match(/semester\s*(\d+)|sem\s*(\d+)/);
+      if (semesterMatch) {
+        const semesterNum = semesterMatch[1] || semesterMatch[2];
+        semesters.add(`Semester ${semesterNum}`);
+      }
+    });
+    return Array.from(semesters).sort((a, b) => {
+      const numA = parseInt(a.split(' ')[1]);
+      const numB = parseInt(b.split(' ')[1]);
+      return numA - numB;
+    });
+  };
+
+  // Filter posts based on search query and semester
+  const filterPosts = (posts: Post[], query: string, semester: string) => {
+    let filtered = posts;
+    
+    // Filter by search query
+    if (query.trim()) {
+      filtered = filtered.filter(post => 
+        post.title.toLowerCase().includes(query.toLowerCase()) ||
+        (post.description && post.description.toLowerCase().includes(query.toLowerCase()))
+      );
+    }
+    
+    // Filter by semester
+    if (semester !== "all") {
+      filtered = filtered.filter(post => {
+        const title = post.title.toLowerCase();
+        const semesterNum = semester.split(' ')[1];
+        return title.includes(`semester ${semesterNum}`) || title.includes(`sem ${semesterNum}`);
+      });
+    }
+    
+    return filtered;
+  };
+
+  // Update filtered posts when posts, search query, or semester changes
+  useEffect(() => {
+    setFilteredPosts(filterPosts(posts, searchQuery, selectedSemester));
+  }, [posts, searchQuery, selectedSemester]);
+
   useEffect(() => {
     async function fetchCategory() {
       try {
@@ -379,38 +426,72 @@ export function ProfessionalCategoryPage({
               transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="mb-16"
             >
-              <h2
-                className={`${appleDesign.typography.sectionTitle} text-[rgb(28, 28, 30)] dark:text-white mb-4`}
-              >
-                Study Materials
-              </h2>
-              <p
-                className={`${appleDesign.typography.body} text-[rgb(99, 99, 102)] dark:text-neutral-400`}
-              >
-                Access {posts.length}{" "}
-                {posts.length === 1 ? "material" : "materials"} in this category
-              </p>
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+                <div>
+                  <h2 className={`${appleDesign.typography.sectionTitle} text-[rgb(28, 28, 30)] dark:text-white mb-4`}>
+                    Study Materials
+                  </h2>
+                  <p className={`${appleDesign.typography.body} text-[rgb(99, 99, 102)] dark:text-neutral-400`}>
+                    Access {filteredPosts.length} {filteredPosts.length === 1 ? 'material' : 'materials'} in this category
+                    {searchQuery && ` matching "${searchQuery}"`}
+                    {selectedSemester !== "all" && ` in ${selectedSemester}`}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Search and Filter Section */}
+              <div className="flex flex-col md:flex-row gap-4 mb-8 items-stretch md:items-center">
+                {/* Search Bar */}
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[rgb(142, 142, 147)] dark:text-neutral-500 w-5 h-5" />
+                  <Input
+                    type="text"
+                    placeholder="search your elective"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-12 pr-4 py-3 rounded-2xl border border-[rgb(229, 229, 234)] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-[rgb(28, 28, 30)] dark:text-white placeholder:text-[rgb(142, 142, 147)] dark:placeholder:text-neutral-500 focus:border-[rgb(0, 122, 255)] focus:ring-2 focus:ring-[rgb(0, 122, 255)]/20 transition-all duration-200"
+                  />
+                </div>
+                
+                {/* Semester Filter */}
+                <div className="relative min-w-[180px]">
+                  <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[rgb(142, 142, 147)] dark:text-neutral-500 w-5 h-5 pointer-events-none" />
+                  <Select value={selectedSemester} onValueChange={setSelectedSemester}>
+                    <SelectTrigger className="pl-12 pr-8 py-3 rounded-2xl border border-[rgb(229, 229, 234)] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-[rgb(28, 28, 30)] dark:text-white focus:border-[rgb(0, 122, 255)] focus:ring-2 focus:ring-[rgb(0, 122, 255)]/20 transition-all duration-200 w-full">
+                      <SelectValue placeholder="All Semesters" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl border border-[rgb(229, 229, 234)] dark:border-neutral-700 bg-white dark:bg-neutral-800">
+                      <SelectItem value="all" className="rounded-xl">All Semesters</SelectItem>
+                      {getUniqueSemesters(posts).map((semester) => (
+                        <SelectItem key={semester} value={semester} className="rounded-xl">
+                          {semester}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </motion.div>
 
             {/* Apple-style Materials Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
-              {posts.map((post, index) => {
-                // console.log("Post data:", JSON.stringify(post, null, 2)); // Detailed log with formatting
-                console.log(post)
-                // console.log("Available image fields:", {
-                //   cloudinaryUrl: post.cloudinaryUrl,
-                //   secure_url: post.secure_url,
-                //   url: post.url,
-                //   coverImage: post.coverImage,
-                //   image: post.image,
-                //   imageUrl: post.imageUrl,
-                //   thumbnail: post.thumbnail,
-                //   cover: post.cover,
-                // });
+            {filteredPosts.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
+                {filteredPosts.map((post, index) => {
+                console.log('Post data:', JSON.stringify(post, null, 2)); // Detailed log with formatting
+                console.log('Available image fields:', {
+                  cloudinaryUrl: post.cloudinaryUrl,
+                  secure_url: post.secure_url,
+                  url: post.url,
+                  coverImage: post.coverImage,
+                  image: post.image,
+                  imageUrl: post.imageUrl,
+                  thumbnail: post.thumbnail,
+                  cover: post.cover
+                });
                 return (
                   <BlurFade key={post.id} delay={0.25 + index * 0.1} inView>
-                    {/* <Link href={`/product/${post.id}`}> */}
                     <Link href={`/${categoryName}/${post.id}`}>
+                      {/* <Link href={`/product/${post.id}`}> */}
                       <motion.div
                         whileHover={{
                           y: -8,
@@ -513,8 +594,63 @@ export function ProfessionalCategoryPage({
                     </Link>
                   </BlurFade>
                 );
-              })}
-            </div>
+                })}
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="text-center py-24"
+              >
+                <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-[rgb(248, 248, 248)] dark:bg-neutral-800 flex items-center justify-center border border-[rgb(229, 229, 234)] dark:border-neutral-700">
+                  <Search className="w-16 h-16 text-[rgb(142, 142, 147)] dark:text-neutral-500" />
+                </div>
+                <h3 className={`${appleDesign.typography.sectionTitle} text-[rgb(28, 28, 30)] dark:text-white mb-6`}>
+                  No Materials Found
+                </h3>
+                <p className={`${appleDesign.typography.body} text-[rgb(99, 99, 102)] dark:text-neutral-400 max-w-lg mx-auto mb-8 leading-relaxed`}>
+                  {searchQuery && selectedSemester !== "all"
+                    ? `No materials found matching "${searchQuery}" in ${selectedSemester}. Try adjusting your search or filter.`
+                    : searchQuery
+                    ? `No materials found matching "${searchQuery}". Try different keywords.`
+                    : selectedSemester !== "all"
+                    ? `No materials found in ${selectedSemester}. Try selecting a different semester.`
+                    : "No materials available in this category."}
+                </p>
+                <div className="flex gap-4 justify-center">
+                  {searchQuery && (
+                    <Button 
+                      onClick={() => setSearchQuery("")}
+                      variant="outline"
+                      className="border-[rgb(229, 229, 234)] dark:border-neutral-700 text-[rgb(28, 28, 30)] dark:text-white hover:bg-[rgb(248, 248, 248)] dark:hover:bg-neutral-800 px-6 py-3 rounded-2xl"
+                    >
+                      Clear Search
+                    </Button>
+                  )}
+                  {selectedSemester !== "all" && (
+                    <Button 
+                      onClick={() => setSelectedSemester("all")}
+                      variant="outline"
+                      className="border-[rgb(229, 229, 234)] dark:border-neutral-700 text-[rgb(28, 28, 30)] dark:text-white hover:bg-[rgb(248, 248, 248)] dark:hover:bg-neutral-800 px-6 py-3 rounded-2xl"
+                    >
+                      Clear Filter
+                    </Button>
+                  )}
+                  {(searchQuery || selectedSemester !== "all") && (
+                    <Button 
+                      onClick={() => {
+                        setSearchQuery("");
+                        setSelectedSemester("all");
+                      }}
+                      className="bg-[rgb(0, 122, 255)] hover:bg-[rgb(0, 105, 217)] text-white px-6 py-3 rounded-2xl"
+                    >
+                      Reset All
+                    </Button>
+                  )}
+                </div>
+              </motion.div>
+            )}
           </>
         )}
 

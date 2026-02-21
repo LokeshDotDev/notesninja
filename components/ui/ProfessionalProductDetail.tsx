@@ -402,30 +402,43 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
             <div className="space-y-4">
               {product.price && (
                 <div className="flex flex-col items-start gap-3">
-                  {product.compareAtPrice && (
-                    <div className="flex items-baseline gap-3 mb-2">
-                      <span className="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold">
-                        Limited Time Deal
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex items-baseline gap-2">
-                    {product.compareAtPrice && (
-                      <span className="text-3xl sm:text-4xl font-bold text-red-600">
-                        -{Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}%
-                      </span>
-                    )}
-                    <span className="text-xl sm:text-2xl font-normal text-black dark:text-white">
-                      {formatPrice(product.price || 0)}
-                    </span>
-                  </div>
-                  {product.compareAtPrice && (
-                    <div className="flex items-baseline">
-                      <span className="text-xl text-neutral-500 dark:text-neutral-400">
-                        M.R.P.: <span className="line-through">{formatPrice(product.compareAtPrice)}</span>
-                      </span>
-                    </div>
-                  )}
+                  {(() => {
+                    const pricingInfo = getPricingInfo(product.price || 0, product.compareAtPrice);
+                    return pricingInfo.hasDiscount && (
+                      <div className="flex items-baseline gap-3 mb-2">
+                        <span className="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold">
+                          Limited Time Deal
+                        </span>
+                        <span className="text-lg font-bold text-red-600">
+                          {formatDiscount(pricingInfo.discountPercentage!)}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                  {(() => {
+                    const pricingInfo = getPricingInfo(product.price || 0, product.compareAtPrice);
+                    return (
+                      <>
+                        <div className="flex items-baseline gap-2">
+                          {pricingInfo.hasDiscount && (
+                            <span className="text-3xl sm:text-4xl font-bold text-red-600">
+                              {formatDiscount(pricingInfo.discountPercentage!)}
+                            </span>
+                          )}
+                          <span className="text-xl sm:text-2xl font-normal text-black dark:text-white">
+                            {formatPrice(pricingInfo.price)}
+                          </span>
+                        </div>
+                        {pricingInfo.hasDiscount && (
+                          <div className="flex items-baseline">
+                            <span className="text-xl text-neutral-500 dark:text-neutral-400">
+                              M.R.P.: <span className="line-through">{formatPrice(pricingInfo.compareAtPrice!)}</span>
+                            </span>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
               {product.isDigital && (
