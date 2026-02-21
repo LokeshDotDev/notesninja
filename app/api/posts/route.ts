@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { uploadContent, CloudinaryUploadResult, getAccessibleUrl } from "@/lib/Cloudinary";
+import { calculateDiscountPercentage } from "@/lib/pricing-utils";
 
 // Configure route to handle large file uploads
 // Note: 300 seconds only works on Vercel Pro+. Free tier is limited to 10 seconds.
@@ -36,6 +37,7 @@ export async function GET(req: NextRequest) {
 						imageUrl: true,
 						publicId: true,
 						order: true,
+						isCover: true,
 					},
 					orderBy: { order: "asc" },
 				},
@@ -74,15 +76,23 @@ export async function GET(req: NextRequest) {
 		});
 
 		// Add cache-busting timestamp to imageUrl for all posts
-		posts.forEach(post => {
+		const postsWithDiscount = posts.map(post => {
 			if (post.imageUrl) {
 				const cacheBuster = Math.random().toString(36).substring(7);
 				post.imageUrl = `${post.imageUrl}?v=${cacheBuster}`;
 			}
+			
+			// Calculate discount percentage
+			const discountPercentage = calculateDiscountPercentage(post.price, post.compareAtPrice);
+			
+			return {
+				...post,
+				discountPercentage
+			};
 		});
 
 		// Set cache headers (reduced cache time for better UX)
-		const response = NextResponse.json(posts);
+		const response = NextResponse.json(postsWithDiscount);
 		response.headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
 		return response;
 	} catch (error) {
@@ -126,6 +136,7 @@ export async function POST(req: NextRequest) {
 		const price = formData.get("price") as string | null;
 		const compareAtPrice = formData.get("compareAtPrice") as string | null;
 		const isDigital = formData.get("isDigital") === "true";
+		const coverImageIndex = parseInt(formData.get("coverImageIndex") as string) || 0;
 
 		// Auto-calculate compareAtPrice if not provided but price is given
 		let finalCompareAtPrice = compareAtPrice ? parseFloat(compareAtPrice) : null;
@@ -197,6 +208,7 @@ export async function POST(req: NextRequest) {
 						imageUrl: uploadResult.secure_url,
 						publicId: uploadResult.public_id,
 						order: index,
+						isCover: index === coverImageIndex,
 					},
 				});
 			});
@@ -272,6 +284,7 @@ export async function POST(req: NextRequest) {
 						imageUrl: true,
 						publicId: true,
 						order: true,
+						isCover: true,
 					},
 					orderBy: { order: "asc" },
 				},

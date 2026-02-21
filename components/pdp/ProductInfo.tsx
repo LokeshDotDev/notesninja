@@ -19,6 +19,7 @@ import {
   MessageCircle
 } from 'lucide-react';
 import { getPricingInfo, formatDiscount } from '@/lib/pricing';
+import { formatPrice, calculateDiscountPercentage } from '@/lib/pricing-utils';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import settings from '@/lib/settings';
@@ -29,6 +30,7 @@ interface Product {
   description: string;
   price?: number;
   compareAtPrice?: number;
+  discountPercentage?: number | null;
   isDigital?: boolean;
   category?: {
     id: string;
@@ -210,11 +212,12 @@ export function ProductInfo({
       <div className="space-y-3">
         {product.price && (
           <div className="flex items-baseline gap-3 mt-6">
+            {/* Use API-calculated discount percentage if available, otherwise calculate locally */}
             {(() => {
-              const pricingInfo = getPricingInfo(product.price || 0, product.compareAtPrice);
-              return pricingInfo.hasDiscount && (
+              const discount = product.discountPercentage ?? calculateDiscountPercentage(product.price || null, product.compareAtPrice || null);
+              return discount && (
                 <span className="text-red-600 text-2xl font-bold">
-                  {formatDiscount(pricingInfo.discountPercentage!)} OFF
+                  {Math.round(discount)}% OFF
                 </span>
               );
             })()}
@@ -298,8 +301,8 @@ export function ProductInfo({
           <table className="w-full text-sm">
             <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
               <tr className="flex justify-between py-2">
-                <td className="text-neutral-500 dark:text-neutral-400">Brand</td>
-                <td className="font-medium text-neutral-900 dark:text-white">NotesNinja</td>
+                <td className="text-neutral-500 dark:text-neutral-400">University</td>
+                <td className="font-medium text-neutral-900 dark:text-white">Manipal University</td>
               </tr>
               <tr className="flex justify-between py-2">
                 <td className="text-neutral-500 dark:text-neutral-400">Format</td>

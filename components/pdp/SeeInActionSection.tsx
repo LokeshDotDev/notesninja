@@ -47,21 +47,21 @@ export default function SeeInActionSection({ videos }: SeeInActionSectionProps) 
 
   return (
     <>
-      <section className="w-full bg-[#f8f8f8] py-20">
-        <div className="max-w-7xl mx-auto px-6">
+      <section className="w-full bg-[#f8f8f8] py-12 sm:py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Section Header */}
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">
               Our Student Trust
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-base sm:text-lg text-gray-600">
               Real students. Real results.
             </p>
           </div>
 
           {/* Horizontal Auto-Scrolling Video Row */}
           <div className="overflow-hidden relative group w-full">
-            <div className="flex gap-6 animate-scroll group-hover:[animation-play-state:paused] will-change-transform">
+            <div className="flex gap-4 sm:gap-6 animate-scroll group-hover:[animation-play-state:paused] will-change-transform">
               {duplicatedVideos.map((video, index) => (
                 <VideoCard
                   key={`${video.id}-${index}`}
