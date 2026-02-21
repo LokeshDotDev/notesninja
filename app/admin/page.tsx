@@ -129,13 +129,14 @@ export default function Dashboard() {
 		id: string;
 	}>({
 		open: false,
-		type: "",
+		type: "post",
 		id: "",
 	});
 	const [editDialog, setEditDialog] = useState<{
 		open: boolean;
 		type: "post" | "featured" | "category" | "subcategory" | "product-type";
 		data: PostEdit | FeaturedEdit | CategoryEdit | SubcategoryEdit | ProductTypeEdit | null;
+		isLoading?: boolean;
 	}>({
 		open: false,
 		type: "post",
@@ -418,6 +419,51 @@ export default function Dashboard() {
 		});
 	};
 
+	// Function to fetch complete post data before opening edit dialog
+	const fetchPostForEdit = async (postId: string) => {
+		try {
+			const response = await fetch(`/api/posts/${postId}`);
+			if (!response.ok) throw new Error("Failed to fetch post");
+			
+			const completePost = await response.json();
+			return completePost;
+		} catch (error) {
+			console.error("Error fetching post for edit:", error);
+			Notification({
+				message: "Failed to load post data for editing",
+				type: "error",
+				onClose: () => {},
+			});
+			return null;
+		}
+	};
+
+	const handleEditPost = async (post: Post) => {
+		// Set loading state immediately
+		setEditDialog({ open: true, type: "post", data: null, isLoading: true });
+		
+		try {
+			// Fetch complete post data first
+			const completePost = await fetchPostForEdit(post.id);
+			
+			// Then open dialog with loaded data
+			setEditDialog({
+				open: true,
+				type: "post",
+				data: completePost,
+				isLoading: false,
+			});
+		} catch (error) {
+			console.error("Error fetching post for edit:", error);
+			Notification({
+				message: "Failed to load post data for editing",
+				type: "error",
+				onClose: () => {},
+			});
+			setEditDialog({ open: false, type: "post", data: null, isLoading: false });
+		}
+	};
+
 	const handleEditCategory = (category: Category) => {
 		setEditDialog({
 			open: true,
@@ -474,7 +520,7 @@ export default function Dashboard() {
 			} else if (type === "product-type") {
 				setProductTypes(productTypes.filter((pt) => pt.id !== id));
 			}
-			setDeleteDialog({ open: false, type: "", id: "" });
+			setDeleteDialog({ open: false, type: "post", id: "" });
 			setError(null);
 			// Show success notification
 			setNotification({
@@ -747,13 +793,7 @@ export default function Dashboard() {
 													)}
 												</button>
 												<button
-													onClick={() =>
-														setEditDialog({
-															open: true,
-															type: "post",
-															data: post,
-														})
-													}
+													onClick={() => handleEditPost(post)}
 													className={`p-2 rounded-full ${
 														actionLoading.update && actionLoading.id === post.id
 															? "bg-blue-50"
@@ -1150,7 +1190,7 @@ export default function Dashboard() {
 							<Button
 								variant='outline'
 								onClick={() => {
-									setDeleteDialog({ open: false, type: "", id: "" });
+									setDeleteDialog({ open: false, type: "post", id: "" });
 									setError(null);
 								}}
 								className='border-gray-300 text-gray-700 hover:bg-gray-100'
@@ -1191,41 +1231,22 @@ export default function Dashboard() {
 					</DialogContent>
 				</Dialog>
 				{/* Edit Dialog */}
-				{editDialog.open && (
-					<Dialog
-						open={editDialog.open}
-						onOpenChange={(open) => {
-							if (!open) setEditDialog({ ...editDialog, open: false });
-						}}>
-						<DialogContent className='bg-white rounded-2xl shadow-2xl border-0 p-8 max-w-lg'>
-							<DialogHeader>
-								<DialogTitle className='text-lg font-semibold'>
-									{editDialog.type === "post"
-										? editDialog.data ? "Edit Post" : "Create Post"
-										: editDialog.type === "featured"
-										? editDialog.data ? "Edit Featured Item" : "Create Featured Item"
-										: editDialog.type === "category"
-										? editDialog.data ? "Edit Category" : parentForNewCategory ? "Create Child Category" : "Create Category"
-										: editDialog.type === "subcategory"
-										? editDialog.data ? "Edit Subcategory" : "Create Subcategory"
-										: "Edit Product Type"}
-								</DialogTitle>
-							</DialogHeader>
-							<FormDialog
-								type={editDialog.type}
-								initialData={editDialog.data ?? undefined}
-								parentId={parentForNewCategory || undefined}
-								triggerLabel={null}
-								onSave={async (data) => {
-									await handleSave(editDialog.type, data);
-									setEditDialog({ ...editDialog, open: false, data: null });
-									setParentForNewCategory(null); // Reset parent category after saving
-								}}
-								isLoading={actionLoading.update}
-							/>
-						</DialogContent>
-					</Dialog>
-				)}
+				<FormDialog
+					type={editDialog.type}
+					open={editDialog.open}
+					onOpenChange={(open) => {
+						if (!open) setEditDialog({ ...editDialog, open: false });
+					}}
+					initialData={editDialog.data ?? undefined}
+					parentId={parentForNewCategory || undefined}
+					triggerLabel={null}
+					onSave={async (data) => {
+						await handleSave(editDialog.type, data);
+						setEditDialog({ ...editDialog, open: false, data: null });
+						setParentForNewCategory(null); // Reset parent category after saving
+					}}
+					isLoading={actionLoading.update}
+				/>
 			</div>
 			{/* Notification Toast */}
 			{notification.show && (

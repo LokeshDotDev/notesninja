@@ -5,7 +5,7 @@ import { BlurFade } from "@/components/magicui/blur-fade";
 import { ImageGalleryModal } from "@/components/ui/image-gallery-modal";
 import PurchaseDialog from "@/components/custom/PurchaseDialog";
 import DownloadDialog from "@/components/custom/DownloadDialog";
-import { getPricingInfo, formatPrice, formatDiscount } from "@/lib/pricing";
+import { formatPrice as formatPriceUtil, calculateDiscountPercentage } from '@/lib/pricing-utils';
 
 interface PurchaseDialogState {
   open: boolean;
@@ -31,6 +31,7 @@ id: string;
 imageUrl: string;
 publicId: string;
 order: number;
+isCover: boolean;
 }
 
 interface ApiPost {
@@ -44,6 +45,7 @@ categoryId: string;
 images?: PostImage[]; // New multiple images support
 price?: number;
 compareAtPrice?: number;
+discountPercentage?: number | null;
 isDigital?: boolean;
 digitalFiles?: Array<{
 id: string;
@@ -90,7 +92,9 @@ document.body.style.overflow = "";
 const getImageUrl = (item: ApiPost | GalleryItem): string => {
 if ("url" in item) return item.url; // GalleryItem
 if ("images" in item && item.images && item.images.length > 0) {
-return item.images[0].imageUrl; // ApiPost with new images
+// Find cover image first, fallback to first image
+const coverImage = item.images.find(img => img.isCover);
+return coverImage ? coverImage.imageUrl : item.images[0].imageUrl;
 }
 return item.imageUrl || ""; // ApiPost with legacy single image
 };
@@ -107,6 +111,7 @@ id: "legacy",
 imageUrl: item.imageUrl,
 publicId: "",
 order: 0,
+isCover: true, // Legacy image is considered cover
 },
 ];
 }
@@ -330,27 +335,30 @@ images
 {/* Price Display with Scratch Pricing */}
 <div className='flex flex-col space-y-2'>
 {(() => {
-  const pricingInfo = getPricingInfo(posts[openIdx].price || 0, posts[openIdx].compareAtPrice);
-  return pricingInfo.hasDiscount ? (
+  // Use API-calculated discount percentage if available, otherwise calculate locally
+  const discount = posts[openIdx].discountPercentage ?? calculateDiscountPercentage(posts[openIdx].price || null, posts[openIdx].compareAtPrice || null);
+  const hasDiscount = discount && discount > 0;
+  
+  return hasDiscount ? (
 <div className='flex flex-col items-start'>
 <span className='bg-red-600 text-white px-3 py-2 rounded text-sm font-bold'>
 Limited Time Deal
 </span>
 <div className='flex items-baseline gap-2'>
 <span className='text-xl font-bold text-red-600'>
-{formatDiscount(pricingInfo.discountPercentage!)}
+{Math.round(discount)}% OFF
 </span>
 <span className='text-lg font-normal text-black dark:text-white'>
-{formatPrice(pricingInfo.price)}
+{formatPriceUtil(posts[openIdx].price || 0)}
 </span>
 </div>
 <span className='text-base text-neutral-500 dark:text-neutral-400'>
-M.R.P.: <span className='line-through'>{formatPrice(pricingInfo.compareAtPrice!)}</span>
+M.R.P.: <span className='line-through'>{formatPriceUtil(posts[openIdx].compareAtPrice || posts[openIdx].price || 0)}</span>
 </span>
 </div>
 ) : (
 <span className='text-xl font-normal text-black dark:text-white'>
-{formatPrice(pricingInfo.price)}
+{formatPriceUtil(posts[openIdx].price || 0)}
 </span>
 );
 })()}
@@ -546,7 +554,9 @@ document.body.style.overflow = "";
 const getImageUrl = (item: ApiPost | GalleryItem): string => {
 if ("url" in item) return item.url; // GalleryItem
 if ("images" in item && item.images && item.images.length > 0) {
-return item.images[0].imageUrl; // ApiPost with new images
+// Find cover image first, fallback to first image
+const coverImage = item.images.find(img => img.isCover);
+return coverImage ? coverImage.imageUrl : item.images[0].imageUrl;
 }
 return item.imageUrl || ""; // ApiPost with legacy single image
 };
@@ -563,6 +573,7 @@ id: "legacy",
 imageUrl: item.imageUrl,
 publicId: "",
 order: 0,
+isCover: true, // Legacy image is considered cover
 },
 ];
 }
@@ -769,27 +780,30 @@ images
 {/* Price Display with Scratch Pricing */}
 <div className='flex flex-col space-y-2'>
 {(() => {
-  const pricingInfo = getPricingInfo(posts[openIdx].price || 0, posts[openIdx].compareAtPrice);
-  return pricingInfo.hasDiscount ? (
+  // Use API-calculated discount percentage if available, otherwise calculate locally
+  const discount = posts[openIdx].discountPercentage ?? calculateDiscountPercentage(posts[openIdx].price || null, posts[openIdx].compareAtPrice || null);
+  const hasDiscount = discount && discount > 0;
+  
+  return hasDiscount ? (
 <div className='flex flex-col items-start'>
 <span className='bg-red-600 text-white px-3 py-2 rounded text-sm font-bold'>
 Limited Time Deal
 </span>
 <div className='flex items-baseline gap-2'>
 <span className='text-xl font-bold text-red-600'>
-{formatDiscount(pricingInfo.discountPercentage!)}
+{Math.round(discount)}% OFF
 </span>
 <span className='text-lg font-normal text-black dark:text-white'>
-{formatPrice(pricingInfo.price)}
+{formatPriceUtil(posts[openIdx].price || 0)}
 </span>
 </div>
 <span className='text-base text-neutral-500 dark:text-neutral-400'>
-M.R.P.: <span className='line-through'>{formatPrice(pricingInfo.compareAtPrice!)}</span>
+M.R.P.: <span className='line-through'>{formatPriceUtil(posts[openIdx].compareAtPrice || posts[openIdx].price || 0)}</span>
 </span>
 </div>
 ) : (
 <span className='text-xl font-normal text-black dark:text-white'>
-{formatPrice(pricingInfo.price)}
+{formatPriceUtil(posts[openIdx].price || 0)}
 </span>
 );
 })()}

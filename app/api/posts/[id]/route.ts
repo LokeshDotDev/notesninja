@@ -6,6 +6,7 @@ import {
 	deleteContent,
 	uploadContent,
 } from "@/lib/Cloudinary";
+import { calculateDiscountPercentage } from "@/lib/pricing-utils";
 
 // GET Single Post
 export async function GET(
@@ -38,6 +39,7 @@ export async function GET(
 						imageUrl: true,
 						publicId: true,
 						order: true,
+						isCover: true,
 					},
 				},
 				digitalFiles: {
@@ -93,7 +95,14 @@ export async function GET(
 			post.imageUrl = `${post.imageUrl}?v=${cacheBuster}`;
 		}
 
-		const response = NextResponse.json(post);
+		// Calculate discount percentage
+		const discountPercentage = calculateDiscountPercentage(post.price, post.compareAtPrice);
+		
+		// Add discount percentage to response
+		const response = NextResponse.json({
+			...post,
+			discountPercentage
+		});
 		response.headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
 		return response;
 	} catch (error) {
@@ -123,6 +132,8 @@ export async function PATCH(
 		const description = formData.get("description") as string | null;
 		const slug = formData.get("slug") as string | null;
 		const categoryId = formData.get("categoryId") as string | null;
+		const price = formData.get("price") as string | null;
+		const compareAtPrice = formData.get("compareAtPrice") as string | null;
 		// Handle both multiple files and single file for backward compatibility
 		const files = formData.getAll("files") as File[];
 		const singleFile = formData.get("file") as File | null;
@@ -146,12 +157,16 @@ export async function PATCH(
 			categoryId?: string;
 			imageUrl?: string;
 			publicId?: string;
+			price?: number;
+			compareAtPrice?: number;
 		} = {};
 
 		if (title) dataToUpdate.title = title;
 		if (description) dataToUpdate.description = description;
 		if (slug) dataToUpdate.slug = slug;
 		if (categoryId) dataToUpdate.categoryId = categoryId;
+		if (price) dataToUpdate.price = parseFloat(price);
+		if (compareAtPrice) dataToUpdate.compareAtPrice = parseFloat(compareAtPrice);
 		
 		// If a new image is uploaded, replace the old one
 		if (file) {
@@ -300,14 +315,23 @@ export async function PATCH(
 			updatedPost.imageUrl = `${dataToUpdate.imageUrl}?v=${cacheBuster}`;
 		}
 
+		// Calculate discount percentage for updated post
+		const discountPercentage = calculateDiscountPercentage(updatedPost.price, updatedPost.compareAtPrice);
+
 		console.log("🎯 Final updated post data:", {
 			id: updatedPost.id,
 			title: updatedPost.title,
+			price: updatedPost.price,
+			compareAtPrice: updatedPost.compareAtPrice,
+			discountPercentage,
 			imageUrl: updatedPost.imageUrl,
 			publicId: updatedPost.publicId
 		});
 
-		const response = NextResponse.json(updatedPost);
+		const response = NextResponse.json({
+			...updatedPost,
+			discountPercentage
+		});
 		response.headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
 		return response;
 	} catch (error) {

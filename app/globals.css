@@ -79,10 +79,10 @@
 		@apply outline-blue-500/50;
 	}
 	body {
-		@apply bg-background text-foreground overflow-x-hidden;
+		@apply bg-background text-foreground;
 	}
 	html {
-		@apply overflow-x-hidden;
+		@apply scroll-smooth;
 	}
 }
 
@@ -173,6 +173,48 @@
 	}
 }
 
+/* Custom scrollbar hiding utility */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hide-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* Smooth scrolling utility */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.smooth-scroll * {
+  scroll-behavior: smooth;
+}
+
+/* Video scroll animation */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-100% - 1.5rem));
+  }
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
+}
+
 @keyframes marquee {
   0% {
     transform: translateX(0);
@@ -193,4 +235,46 @@
   body {
     @apply bg-background text-foreground;
 	}
+}
+
+/* Custom scrollbar hiding utility */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hide-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* Smooth scrolling utility */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.smooth-scroll * {
+  scroll-behavior: smooth;
+}
+
+/* Video scroll animation */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-100% - 1.5rem));
+  }
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
 }
