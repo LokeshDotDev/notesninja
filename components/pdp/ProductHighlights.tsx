@@ -33,8 +33,8 @@ export function ProductHighlights() {
           <div className="order-2 lg:order-1">
             <div className="rounded-2xl overflow-hidden shadow-lg relative aspect-video">
               <Image
-                src="/assets/producthighlight images/WhatsApp Image 2026-02-21 at 14.58.18.jpeg"
-                alt="Study materials transformation showing organized notes and resources"
+                src="/assets/producthighlight images/IMG_2006.JPG.jpeg"
+                alt="MUJ online notes showcase with student using laptop"
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
@@ -105,8 +105,8 @@ export function ProductHighlights() {
           <div>
             <div className="rounded-2xl overflow-hidden shadow-lg relative aspect-video">
               <Image
-                src="/assets/producthighlight images/WhatsApp Image 2026-02-21 at 15.08.52.jpeg"
-                alt="Expert educators creating comprehensive study materials"
+                src="/assets/producthighlight images/IMG_2007.JPG.jpeg"
+                alt="Smart notes and mock papers for exam preparation"
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
@@ -129,8 +129,8 @@ export function ProductHighlights() {
           <div className="order-2 lg:order-1">
             <div className="rounded-2xl overflow-hidden shadow-lg relative aspect-video">
               <Image
-                src="/assets/producthighlight images/WhatsApp Image 2026-02-21 at 15.11.42.jpeg"
-                alt="Students achieving academic success with study materials"
+                src="/assets/producthighlight images/IMG_2008.JPG.jpeg"
+                alt="Students collaborating and studying together"
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
@@ -201,8 +201,8 @@ export function ProductHighlights() {
           <div>
             <div className="rounded-2xl overflow-hidden shadow-lg relative aspect-video">
               <Image
-                src="/assets/producthighlight images/WhatsApp Image 2026-02-21 at 15.16.55.jpeg"
-                alt="Students celebrating academic success and achievements"
+                src="/assets/producthighlight images/IMG_2009.JPG.jpeg"
+                alt="Student success journey with books and campus background"
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"

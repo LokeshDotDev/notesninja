@@ -923,7 +923,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                                       ? 'border-black bg-gray-50'
                                       : 'border-gray-300 bg-white'
                                   }`}
-                                  placeholder="John"
+                                  placeholder="Rahul"
                                   required
                                 />
                               </div>
@@ -947,7 +947,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                                       ? 'border-black bg-gray-50'
                                       : 'border-gray-300 bg-white'
                                   }`}
-                                  placeholder="Doe"
+                                  placeholder="Sharma"
                                   required
                                 />
                               </div>
@@ -975,7 +975,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                                 ? 'border-black bg-gray-50'
                                 : 'border-gray-300 bg-white'
                             } ${session ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                            placeholder="john@example.com"
+                            placeholder="rahul@example.com"
                             required
                           />
                         </div>
