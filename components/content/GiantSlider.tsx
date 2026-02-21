@@ -53,14 +53,6 @@ const slides: Slide[] = [
     buttonText: "",
     backgroundImage: "/assets/slider/Slide 5 option 1.png",
     backgroundColor: "from-transparent to-transparent"
-  },
-  {
-    id: 6,
-    title: "",
-    subtitle: "",
-    buttonText: "",
-    backgroundImage: "/assets/slider/Slide 5 Option 2.png",
-    backgroundColor: "from-transparent to-transparent"
   }
 ];
 
