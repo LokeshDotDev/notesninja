@@ -45,7 +45,7 @@ export default function VideoModal({ video, onClose, onNext, onPrevious }: Video
       onClick={onClose}
     >
       <div 
-        className="relative w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto"
+        className="relative w-full max-w-2xl mx-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
@@ -64,7 +64,7 @@ export default function VideoModal({ video, onClose, onNext, onPrevious }: Video
         </button>
 
         {/* Video container */}
-        <div className="relative aspect-[9/16] max-h-[80vh] sm:max-h-[85vh] rounded-2xl overflow-hidden bg-black">
+        <div className="relative w-full rounded-2xl overflow-hidden bg-black" style={{ aspectRatio: "9/16", maxHeight: "90vh" }}>
           <video
             key={video.id}
             ref={videoRef}
@@ -81,10 +81,10 @@ export default function VideoModal({ video, onClose, onNext, onPrevious }: Video
         {onPrevious && (
           <button
             onClick={onPrevious}
-            className="absolute left-2 sm:left-0 top-1/2 -translate-y-1/2 sm:-translate-x-12 w-10 h-10 bg-white/90 sm:bg-white/10 hover:bg-white/20 sm:hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg sm:shadow-none"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hidden md:flex"
           >
             <svg
-              className="w-5 h-5 sm:w-6 sm:h-6 text-gray-900 sm:text-white"
+              className="w-6 h-6 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -97,10 +97,10 @@ export default function VideoModal({ video, onClose, onNext, onPrevious }: Video
         {onNext && (
           <button
             onClick={onNext}
-            className="absolute right-2 sm:right-0 top-1/2 -translate-y-1/2 sm:translate-x-12 w-10 h-10 bg-white/90 sm:bg-white/10 hover:bg-white/20 sm:hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg sm:shadow-none"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hidden md:flex"
           >
             <svg
-              className="w-5 h-5 sm:w-6 sm:h-6 text-gray-900 sm:text-white"
+              className="w-6 h-6 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
