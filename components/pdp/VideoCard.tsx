@@ -30,7 +30,7 @@ export default function VideoCard({ video, onClick }: VideoCardProps) {
 
   return (
     <div
-      className="relative w-[200px] md:w-[240px] h-[360px] md:h-[420px] rounded-2xl overflow-hidden bg-black cursor-pointer hover:scale-105 transition-transform duration-300 flex-shrink-0"
+      className="relative w-[160px] sm:w-[200px] md:w-[240px] h-[280px] sm:h-[360px] md:h-[420px] rounded-2xl overflow-hidden bg-black cursor-pointer hover:scale-105 transition-transform duration-300 flex-shrink-0"
       onClick={() => onClick(video)}
     >
       {/* Poster image as background */}
@@ -57,9 +57,9 @@ export default function VideoCard({ video, onClick }: VideoCardProps) {
       
       {/* Play icon overlay */}
       <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity duration-300">
-        <div className="w-14 h-14 md:w-16 md:h-16 bg-white/95 rounded-full flex items-center justify-center shadow-lg">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-white/95 rounded-full flex items-center justify-center shadow-lg">
           <svg
-            className="w-6 h-6 md:w-8 md:h-8 text-black ml-1"
+            className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-black ml-1"
             fill="currentColor"
             viewBox="0 0 24 24"
           >

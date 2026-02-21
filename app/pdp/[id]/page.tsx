@@ -9,6 +9,7 @@ import { ProductHighlights } from '@/components/pdp/ProductHighlights';
 import { TrustSignals } from '@/components/pdp/TrustSignals';
 import { AccordionSection } from '@/components/pdp/AccordionSection';
 import { StudentReviews } from '@/components/pdp/StudentReviews';
+import SeeInActionSection from '@/components/pdp/SeeInActionSection';
 import { PremiumPageLoader } from '@/components/ui/premium-loader';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ interface PostImage {
   imageUrl: string;
   publicId: string;
   order: number;
+  isCover: boolean;
 }
 
 interface Product {
@@ -63,6 +65,45 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+  // UGC Video Data - Using actual student review videos
+  const ugcVideos = [
+    {
+      id: '1',
+      src: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_1_17_FEB_2026.mp4',
+      thumbnail: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_1_17_FEB_2026.mp4',
+      poster: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_1_17_FEB_2026.mp4',
+      title: 'Student Success Story - Interview Experience'
+    },
+    {
+      id: '2',
+      src: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_2_17_FEB_2026.mp4',
+      thumbnail: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_2_17_FEB_2026.mp4',
+      poster: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_2_17_FEB_2026.mp4',
+      title: 'Academic Achievement Journey'
+    },
+    {
+      id: '3',
+      src: '/assets/student reviews videos/Notes_Ninja_shot_Video01.mp4',
+      thumbnail: '/assets/student reviews videos/Notes_Ninja_shot_Video01.mp4',
+      poster: '/assets/student reviews videos/Notes_Ninja_shot_Video01.mp4',
+      title: 'Study Techniques That Work'
+    },
+    {
+      id: '4',
+      src: '/assets/student reviews videos/Notes_ninja_03.mp4',
+      thumbnail: '/assets/student reviews videos/Notes_ninja_03.mp4',
+      poster: '/assets/student reviews videos/Notes_ninja_03.mp4',
+      title: 'Exam Preparation Success'
+    },
+    {
+      id: '5',
+      src: '/assets/student reviews videos/Notes_ninja_shoot_video02_1.mp4',
+      thumbnail: '/assets/student reviews videos/Notes_ninja_shoot_video02_1.mp4',
+      poster: '/assets/student reviews videos/Notes_ninja_shoot_video02_1.mp4',
+      title: 'For $35. For everyone. Plus tax.'
+    }
+  ];
 
   useEffect(() => {
     async function fetchProduct() {
@@ -208,6 +249,9 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
           <TrustSignals />
         </div>
       </section>
+
+      {/* See It In Action - Student Videos */}
+      <SeeInActionSection videos={ugcVideos} />
 
       {/* Student Reviews */}
       <section className="bg-gray-50 py-12">

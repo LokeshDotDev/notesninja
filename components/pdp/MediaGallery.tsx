@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
 import Image from 'next/image';
-import { Search, FileText } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Search, FileText } from 'lucide-react';
 
 interface PostImage {
   id: string;
   imageUrl: string;
   publicId: string;
   order: number;
+  isCover: boolean;
 }
 
 interface MediaGalleryProps {
@@ -21,16 +22,38 @@ interface MediaGalleryProps {
 export function MediaGallery({ images = [], mainImage, title }: MediaGalleryProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
+  // Find cover image or use first image as fallback
+  const coverImage = images.find(img => img.isCover);
+  const defaultImage = images.length > 0 ? images[0] : null;
+  
   const allImages = images && images.length > 0 
     ? images.sort((a, b) => a.order - b.order)
     : mainImage 
-      ? [{ id: 'main', imageUrl: mainImage, publicId: '', order: 0 }]
+      ? [{ id: 'main', imageUrl: mainImage, publicId: '', order: 0, isCover: false }]
       : [];
+
+  // Set initial image to cover image if available
+  React.useEffect(() => {
+    if (coverImage) {
+      const coverIndex = allImages.findIndex(img => img.id === coverImage.id);
+      if (coverIndex !== -1) {
+        setCurrentImageIndex(coverIndex);
+      }
+    }
+  }, [coverImage, allImages]);
 
   const currentImage = allImages[currentImageIndex] || null;
 
   const handleImageSelect = (index: number) => {
     setCurrentImageIndex(index);
+  };
+
+  const handlePrevious = () => {
+    setCurrentImageIndex(prevIndex => prevIndex === 0 ? allImages.length - 1 : prevIndex - 1);
+  };
+
+  const handleNext = () => {
+    setCurrentImageIndex(prevIndex => (prevIndex + 1) % allImages.length);
   };
 
   return (
@@ -40,14 +63,14 @@ export function MediaGallery({ images = [], mainImage, title }: MediaGalleryProp
       transition={{ duration: 0.6 }}
       className="flex gap-4"
     >
-      {/* Vertical Thumbnail Gallery */}
+      {/* Vertical Thumbnail Gallery - Hidden on mobile */}
       {allImages.length > 1 && (
-        <div className="flex flex-col gap-2 order-1">
+        <div className="hidden md:flex flex-col gap-2 order-1">
           {allImages.map((image, index) => (
             <button
               key={image.id}
               onClick={() => handleImageSelect(index)}
-              className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 bg-neutral-50 dark:bg-neutral-900 ${
+              className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 bg-neutral-50 dark:bg-neutral-900 relative ${
                 index === currentImageIndex
                   ? 'border-orange-500 scale-105 shadow-lg'
                   : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500'
@@ -61,6 +84,11 @@ export function MediaGallery({ images = [], mainImage, title }: MediaGalleryProp
                 quality={95}
                 sizes="80px"
               />
+              {image.isCover && (
+                <div className="absolute top-1 left-1 bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded">
+                  Cover
+                </div>
+              )}
             </button>
           ))}
         </div>
@@ -68,7 +96,7 @@ export function MediaGallery({ images = [], mainImage, title }: MediaGalleryProp
 
       {/* Main Image */}
       <div className="flex-1 order-2">
-        <div className="relative bg-neutral-50 dark:bg-neutral-900 rounded-2xl overflow-hidden shadow-xl group cursor-zoom-in">
+        <div className="relative bg-neutral-50 dark:bg-neutral-900 rounded-2xl overflow-hidden shadow-xl group">
           {currentImage ? (
             <div className="relative w-full" style={{ paddingBottom: '100%' }}>
               <Image
@@ -81,11 +109,29 @@ export function MediaGallery({ images = [], mainImage, title }: MediaGalleryProp
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all duration-300" />
-              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-xl rounded-full p-2 shadow-lg">
-                  <Search className="w-5 h-5 text-neutral-900 dark:text-white" />
-                </div>
-              </div>
+              
+              {/* Navigation Arrows - Show on hover when multiple images */}
+              {allImages.length > 1 && (
+                <React.Fragment>
+                  {/* Left Arrow */}
+                  <button
+                    onClick={handlePrevious}
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-full p-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 hover:bg-white dark:hover:bg-neutral-800 shadow-lg"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-6 h-6 text-neutral-900 dark:text-white" />
+                  </button>
+                  
+                  {/* Right Arrow */}
+                  <button
+                    onClick={handleNext}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-full p-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 hover:bg-white dark:hover:bg-neutral-800 shadow-lg"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-6 h-6 text-neutral-900 dark:text-white" />
+                  </button>
+                </React.Fragment>
+              )}
             </div>
           ) : (
             <div className="aspect-square flex items-center justify-center">

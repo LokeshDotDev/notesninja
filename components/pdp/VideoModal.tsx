@@ -41,20 +41,20 @@ export default function VideoModal({ video, onClose, onNext, onPrevious }: Video
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div 
-        className="relative w-full max-w-sm mx-4"
+        className="relative w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute -top-12 right-0 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors duration-200"
+          className="absolute top-2 right-2 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors duration-200 z-10"
         >
           <svg
-            className="w-6 h-6 text-white"
+            className="w-5 h-5 text-white"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -64,7 +64,7 @@ export default function VideoModal({ video, onClose, onNext, onPrevious }: Video
         </button>
 
         {/* Video container */}
-        <div className="relative aspect-[9/16] max-h-[90vh] rounded-2xl overflow-hidden bg-black">
+        <div className="relative aspect-[9/16] max-h-[80vh] sm:max-h-[85vh] rounded-2xl overflow-hidden bg-black">
           <video
             key={video.id}
             ref={videoRef}
@@ -77,14 +77,14 @@ export default function VideoModal({ video, onClose, onNext, onPrevious }: Video
           </video>
         </div>
 
-        {/* Navigation arrows */}
+        {/* Navigation arrows - Always visible on mobile, visible on hover on desktop */}
         {onPrevious && (
           <button
             onClick={onPrevious}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors duration-200"
+            className="absolute left-2 sm:left-0 top-1/2 -translate-y-1/2 sm:-translate-x-12 w-10 h-10 bg-white/90 sm:bg-white/10 hover:bg-white/20 sm:hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg sm:shadow-none"
           >
             <svg
-              className="w-6 h-6 text-white"
+              className="w-5 h-5 sm:w-6 sm:h-6 text-gray-900 sm:text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -97,10 +97,10 @@ export default function VideoModal({ video, onClose, onNext, onPrevious }: Video
         {onNext && (
           <button
             onClick={onNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors duration-200"
+            className="absolute right-2 sm:right-0 top-1/2 -translate-y-1/2 sm:translate-x-12 w-10 h-10 bg-white/90 sm:bg-white/10 hover:bg-white/20 sm:hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg sm:shadow-none"
           >
             <svg
-              className="w-6 h-6 text-white"
+              className="w-5 h-5 sm:w-6 sm:h-6 text-gray-900 sm:text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -109,11 +109,6 @@ export default function VideoModal({ video, onClose, onNext, onPrevious }: Video
             </svg>
           </button>
         )}
-
-        {/* Video title */}
-        <div className="mt-4 text-center">
-          <h3 className="text-white text-lg font-medium">{video.title}</h3>
-        </div>
       </div>
     </div>
   )

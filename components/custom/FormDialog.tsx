@@ -7,6 +7,7 @@ import {
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
+	DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +41,7 @@ interface FormDialogProps {
 		name?: string;
 		parentId?: string;
 		slug?: string;
+		images?: Array<{id: string; imageUrl: string; publicId: string; order: number; isCover: boolean}>;
 	};
 	onSave: (data: { id?: string; formData: FormData }) => void;
 	isLoading?: boolean;
@@ -85,8 +87,9 @@ export default function FormDialog({
 		name: "",
 		slug: "",
 	});
-	const [files, setFiles] = useState<File[]>([]);
-	const [digitalFiles, setDigitalFiles] = useState<File[]>([]);
+	const [files, setFiles] = useState<(File | { url: string; name: string; publicId: string; isExisting: boolean })[]>([]);
+	const [digitalFiles, setDigitalFiles] = useState<(File | { url: string; name: string; publicId: string; isExisting: boolean })[]>([]);
+	const [coverImageIndex, setCoverImageIndex] = useState<number>(0);
 
 	// Fetch categories, subcategories, and product types
 	useEffect(() => {
@@ -130,6 +133,34 @@ export default function FormDialog({
 				name: initialData.name || "",
 				slug: initialData.slug || "",
 			});
+			
+			// Load existing images for editing
+			if (initialData.images && initialData.images.length > 0) {
+				// Convert existing images to File objects for display
+				const existingImages = initialData.images.map((img: any) => ({
+					name: img.publicId || img.imageUrl?.split('/').pop() || 'image',
+					url: img.imageUrl,
+					publicId: img.publicId,
+					isExisting: true,
+					isCover: img.isCover || false
+				}));
+				setFiles(existingImages as any);
+				
+				// Set cover image index
+				const coverIndex = initialData.images.findIndex((img: any) => img.isCover);
+				setCoverImageIndex(coverIndex >= 0 ? coverIndex : 0);
+			}
+			
+			// Load existing digital files for editing
+			if (initialData.digitalFiles && Array.isArray(initialData.digitalFiles) && initialData.digitalFiles.length > 0) {
+				const existingDigitalFiles = initialData.digitalFiles.map((file: any) => ({
+					name: file.publicId || file.fileUrl?.split('/').pop() || 'file',
+					url: file.fileUrl,
+					publicId: file.publicId,
+					isExisting: true
+				}));
+				setDigitalFiles(existingDigitalFiles as any);
+			}
 		} else {
 			// Reset form for new item
 			setFormData({
@@ -176,6 +207,9 @@ export default function FormDialog({
 				if (formData.price) {
 					submitData.append("price", formData.price);
 				}
+				if (formData.compareAtPrice) {
+					submitData.append("compareAtPrice", formData.compareAtPrice);
+				}
 				submitData.append("isDigital", formData.isDigital.toString());
 			}
 		} else if (type === "category" || type === "subcategory" || type === "product-type") {
@@ -189,14 +223,25 @@ export default function FormDialog({
 		}
 
 		// Add files
-		files.forEach((file: File) => {
-			submitData.append("files", file);
+		files.forEach((file) => {
+			// Only add actual File objects, not existing file objects
+			if (file instanceof File) {
+				submitData.append("files", file);
+			}
 		});
+
+		// Add cover image index for multiple images
+		if (files.length > 0) {
+			submitData.append("coverImageIndex", coverImageIndex.toString());
+		}
 
 		// Add digital files for digital products
 		if (formData.isDigital && digitalFiles.length > 0) {
-			digitalFiles.forEach((file: File) => {
-				submitData.append("digitalFiles", file);
+			digitalFiles.forEach((file) => {
+				// Only add actual File objects, not existing file objects
+				if (file instanceof File) {
+					submitData.append("digitalFiles", file);
+				}
 			});
 		}
 
@@ -287,47 +332,52 @@ export default function FormDialog({
 		switch (type) {
 			case "post":
 				return (
-					<div className="space-y-4">
-						<div>
-							<Label htmlFor="title">Title</Label>
-							<Input
-								id="title"
-								value={formData.title}
-								onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-								placeholder="Enter product title"
-								required
-							/>
-						</div>
-
-						<div>
-							<Label htmlFor="slug">Custom Slug (Optional)</Label>
-							<Input
-								id="slug"
-								value={formData.slug}
-								onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-								placeholder="custom-product-slug"
-							/>
-							<p className="text-xs text-gray-500 mt-1">
-								Leave empty to auto-generate from title
-							</p>
+					<div className="space-y-6">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<div className="space-y-2">
+								<Label htmlFor="title">Title</Label>
+								<Input
+									id="title"
+									value={formData.title}
+									onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+									placeholder="Enter product title"
+									required
+									className="w-full"
+								/>
+							</div>
+							
+							<div className="space-y-2">
+								<Label htmlFor="slug">Custom Slug (Optional)</Label>
+								<Input
+									id="slug"
+									value={formData.slug}
+									onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+									placeholder="custom-product-slug"
+									className="w-full"
+								/>
+								<p className="text-xs text-gray-500">
+									Leave empty to auto-generate from title
+								</p>
+							</div>
 						</div>
 						
-						<div>
+						<div className="space-y-2">
 							<Label htmlFor="description">Description</Label>
 							<Textarea
 								id="description"
 								value={formData.description}
 								onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData(prev => ({ ...prev, description: e.target.value }))}
 								placeholder="Enter product description"
-								rows={3}
+								rows={4}
 								required
+								className="w-full resize-none"
 							/>
 						</div>
 
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<div className="md:col-span-2">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<div className="space-y-2">
 								<Label htmlFor="category">Category *</Label>
-								<p className="text-xs text-neutral-500 mb-2">Select any category (including nested ones)</p>
+								<p className="text-xs text-neutral-500">Select any category (including nested ones)</p>
 								<Select value={formData.categoryId} onValueChange={(value: string) => setFormData(prev => ({ ...prev, categoryId: value, subcategoryId: "" }))}>
 									<SelectTrigger>
 										<SelectValue placeholder="Select category" />
@@ -352,8 +402,8 @@ export default function FormDialog({
 							</div>
 						</div>
 
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<div>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<div className="space-y-2">
 								<Label htmlFor="productType">Product Type (Optional)</Label>
 								<Select value={formData.productTypeId} onValueChange={(value: string) => setFormData(prev => ({ ...prev, productTypeId: value }))}>
 									<SelectTrigger>
@@ -369,7 +419,7 @@ export default function FormDialog({
 								</Select>
 							</div>
 
-							<div>
+							<div className="space-y-2">
 								<Label htmlFor="price">Price ($)</Label>
 								<Input
 									id="price"
@@ -379,10 +429,13 @@ export default function FormDialog({
 									value={formData.price}
 									onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
 									placeholder="0.00"
+									className="w-full"
 								/>
 							</div>
+						</div>
 
-							<div>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<div className="space-y-2">
 								<Label htmlFor="compareAtPrice">M.R.P. / Scratch Price ($) - Optional</Label>
 								<Input
 									id="compareAtPrice"
@@ -392,113 +445,113 @@ export default function FormDialog({
 									value={formData.compareAtPrice}
 									onChange={(e) => setFormData(prev => ({ ...prev, compareAtPrice: e.target.value }))}
 									placeholder="459.00 (higher than actual price)"
+									className="w-full"
 								/>
-								<p className="text-xs text-gray-500 mt-1">
+								<p className="text-xs text-gray-500">
 									Shows as strikethrough price to highlight discount
+								</p>
+							</div>
+
+							<div className="space-y-2">
+								<Label className="flex items-center space-x-2">
+									<input
+										type="checkbox"
+										checked={formData.isDigital}
+										onChange={(e) => setFormData(prev => ({ ...prev, isDigital: e.target.checked }))}
+										className="rounded border-gray-300 w-4 h-4"
+									/>
+									<span>Digital Product</span>
+								</Label>
+								<p className="text-xs text-gray-500">
+									{formData.isDigital 
+										? "Upload a cover image for display and digital files for download"
+										: "Upload product images for display"
+									}
 								</p>
 							</div>
 						</div>
 
+						
+						{/* Product Images Section - For both physical and digital products */}
 						<div>
-							<Label className="flex items-center space-x-2">
-								<input
-									type="checkbox"
-									checked={formData.isDigital}
-									onChange={(e) => setFormData(prev => ({ ...prev, isDigital: e.target.checked }))}
-									className="rounded border-gray-300"
-								/>
-								<span>Digital Product</span>
-							</Label>
+							<Label>Product Images</Label>
 							<p className="text-xs text-gray-500 mt-1">
-								{formData.isDigital 
-									? "Upload a cover image for display and digital files for download"
-									: "Upload product images for display"
-								}
+								Upload multiple images. Select one as cover image for product cards.
 							</p>
+							<div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-4">
+								<input
+									type="file"
+									multiple
+									accept="image/*"
+									onChange={handleFileChange}
+									className="hidden"
+									id="file-upload"
+								/>
+								<label
+									htmlFor="file-upload"
+									className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
+								>
+									<Image className="w-8 h-8 text-gray-400 mb-2" aria-label="Upload product images" />
+									<span className="text-sm text-gray-600">Click to upload images</span>
+									<span className="text-xs text-gray-500">PNG, JPG, GIF - Max 4MB each (Vercel free tier)</span>
+								</label>
+							</div>
+							{files.length > 0 && (
+								<div className="mt-4 space-y-3">
+									<div className="text-sm font-medium text-gray-700">Select Cover Image:</div>
+									{files.map((file, index) => (
+										<div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border">
+											<input
+												type="radio"
+												name="coverImage"
+												checked={coverImageIndex === index}
+												onChange={() => setCoverImageIndex(index)}
+												className="w-4 h-4 text-blue-600 flex-shrink-0"
+											/>
+											<div className="flex-1 flex items-center space-x-3 min-w-0">
+												{/* Image preview */}
+												{file && 'url' in file ? (
+													<img 
+														src={file.url} 
+														alt={file.name}
+														className="w-12 h-12 object-cover rounded flex-shrink-0"
+													/>
+												) : (
+													<div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+														<Image className="w-6 h-6 text-gray-400" />
+													</div>
+												)}
+												<div className="flex-1 min-w-0">
+													<span className="text-sm truncate block">{file.name}</span>
+													<div className="flex items-center space-x-2 mt-1">
+														{file && 'isExisting' in file && file.isExisting && (
+															<span className="text-xs text-gray-500">(Existing)</span>
+														)}
+														{coverImageIndex === index && (
+															<span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Cover</span>
+														)}
+													</div>
+												</div>
+											</div>
+											<Button
+												type="button"
+												variant="ghost"
+												size="sm"
+												onClick={() => {
+													removeFile(index);
+													if (coverImageIndex >= files.length - 1) {
+														setCoverImageIndex(Math.max(0, files.length - 2));
+													}
+												}}
+												className="flex-shrink-0"
+											>
+												<X className="w-4 h-4" />
+											</Button>
+										</div>
+									))}
+								</div>
+							)}
 						</div>
-
-						{/* Cover Image Section - Always show for digital products */}
-						{formData.isDigital && (
-							<div>
-								<Label>Cover Image</Label>
-								<div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-4">
-									<input
-										type="file"
-										accept="image/*"
-										onChange={handleFileChange}
-										className="hidden"
-										id="cover-image-upload"
-									/>
-									<label
-										htmlFor="cover-image-upload"
-										className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
-									>
-										<Image className="w-8 h-8 text-gray-400 mb-2" aria-label="Upload cover image" />
-										<span className="text-sm text-gray-600">Click to upload cover image</span>
-										<span className="text-xs text-gray-500">PNG, JPG, GIF up to 4MB (Vercel free tier)</span>
-									</label>
-								</div>
-								{files.length > 0 && (
-									<div className="mt-2 space-y-2">
-										{files.map((file, index) => (
-											<div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-												<span className="text-sm truncate">{file.name}</span>
-												<Button
-													type="button"
-													variant="ghost"
-													size="sm"
-													onClick={() => removeFile(index)}
-												>
-													<X className="w-4 h-4" />
-												</Button>
-											</div>
-										))}
-									</div>
-								)}
-							</div>
-						)}
-
-						{/* Product Images Section - Only for physical products */}
-						{!formData.isDigital && (
-							<div>
-								<Label>Product Images</Label>
-								<div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-4">
-									<input
-										type="file"
-										multiple
-										accept="image/*"
-										onChange={handleFileChange}
-										className="hidden"
-										id="file-upload"
-									/>
-									<label
-										htmlFor="file-upload"
-										className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
-									>
-										<Image className="w-8 h-8 text-gray-400 mb-2" aria-label="Upload product images" />
-										<span className="text-sm text-gray-600">Click to upload images</span>
-										<span className="text-xs text-gray-500">PNG, JPG, GIF - Max 4MB each (Vercel free tier)</span>
-									</label>
-								</div>
-								{files.length > 0 && (
-									<div className="mt-2 space-y-2">
-										{files.map((file, index) => (
-											<div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-												<span className="text-sm truncate">{file.name}</span>
-												<Button
-													type="button"
-													variant="ghost"
-													size="sm"
-													onClick={() => removeFile(index)}
-												>
-													<X className="w-4 h-4" />
-												</Button>
-											</div>
-										))}
-									</div>
-								)}
-							</div>
-						)}
 
 						{/* Digital Files Section - Only for digital products */}
 						{formData.isDigital && (
@@ -526,12 +579,22 @@ export default function FormDialog({
 									<div className="mt-2 space-y-2">
 										{digitalFiles.map((file, index) => (
 											<div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-												<span className="text-sm truncate">{file.name}</span>
+												<div className="flex items-center space-x-3 flex-1 min-w-0">
+													{/* File icon */}
+													<FileText className="w-8 h-8 text-gray-400 flex-shrink-0" />
+													<div className="flex-1 min-w-0">
+														<span className="text-sm truncate block">{file.name}</span>
+														{file && 'isExisting' in file && file.isExisting && (
+															<span className="text-xs text-gray-500">(Existing)</span>
+														)}
+													</div>
+												</div>
 												<Button
 													type="button"
 													variant="ghost"
 													size="sm"
 													onClick={() => removeDigitalFile(index)}
+													className="flex-shrink-0"
 												>
 													<X className="w-4 h-4" />
 												</Button>
@@ -676,41 +739,48 @@ export default function FormDialog({
 		}
 	};
 
-	const dialogContent = (
-		<div className="space-y-4">
-			<form onSubmit={handleSubmit}>
-				{renderForm()}
-				<div className="flex justify-end space-x-2 pt-6">
-					<Button
-						type="button"
-						variant="outline"
-						onClick={() => setIsOpen(false)}
-						disabled={isLoading}
-						className="border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-					>
-						Cancel
-					</Button>
-					<Button
-						type="submit"
-						disabled={isLoading}
-						className="bg-blue-600 hover:bg-blue-700 text-white"
-					>
-						{isLoading ? (
-							<div className="flex items-center space-x-2">
-								<PremiumLoader variant="apple" size="small" className="text-white" />
-								<span>Submitting...</span>
-							</div>
-						) : (
-							initialData ? "Update" : "Create"
-						)}
-					</Button>
-				</div>
-			</form>
-		</div>
-	);
-
+	
 	if (triggerLabel === null) {
-		return dialogContent;
+		return (
+			<Dialog open={isOpen} onOpenChange={setIsOpen}>
+				<DialogContent className="bg-white dark:bg-gray-800 dark:text-white max-w-5xl max-h-[90vh] p-0 rounded-lg shadow-2xl flex flex-col">
+					<DialogHeader className="border-b border-gray-200 dark:border-gray-700 px-6 py-4 bg-white dark:bg-gray-800 flex-shrink-0">
+						<DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
+							{initialData ? `Edit ${type}` : `Create New ${type}`}
+						</DialogTitle>
+					</DialogHeader>
+					<form onSubmit={handleSubmit} className="flex flex-col flex-1">
+						<div className="overflow-y-auto px-6 py-4 flex-1" style={{ maxHeight: 'calc(90vh - 140px)' }}>
+							{renderForm()}
+						</div>
+						<DialogFooter className="border-t border-gray-200 dark:border-gray-700 px-6 py-4 bg-white dark:bg-gray-800 flex-shrink-0">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setIsOpen(false)}
+								disabled={isLoading}
+							>
+								Cancel
+							</Button>
+							<Button
+								type="submit"
+								disabled={isLoading}
+								className="bg-blue-600 hover:bg-blue-700 text-white"
+							>
+							{isLoading ? (
+								<div className="flex items-center space-x-2">
+									<PremiumLoader variant="apple" size="small" className="text-white" />
+									<span>Submitting...</span>
+								</div>
+							) : (
+								initialData ? "Update" : "Create"
+							)}
+						</Button>
+					</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
+		);
 	}
 
 	return (
@@ -731,13 +801,41 @@ export default function FormDialog({
 					)}
 				</Button>
 			)}
-			<DialogContent className="bg-white dark:bg-gray-800 dark:text-white max-w-2xl max-h-[90vh] overflow-y-auto">
-				<DialogHeader>
-					<DialogTitle className="text-lg font-semibold">
+			<DialogContent className="bg-white dark:bg-gray-800 dark:text-white max-w-5xl max-h-[90vh] p-0 rounded-lg shadow-2xl flex flex-col">
+				<DialogHeader className="border-b border-gray-200 dark:border-gray-700 px-6 py-4 bg-white dark:bg-gray-800 flex-shrink-0">
+					<DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
 						{initialData ? `Edit ${type}` : `Create New ${type}`}
 					</DialogTitle>
 				</DialogHeader>
-				{dialogContent}
+				<form onSubmit={handleSubmit} className="flex flex-col flex-1">
+					<div className="overflow-y-auto px-6 py-4 flex-1" style={{ maxHeight: 'calc(90vh - 140px)' }}>
+						{renderForm()}
+					</div>
+					<DialogFooter className="border-t border-gray-200 dark:border-gray-700 px-6 py-4 bg-white dark:bg-gray-800 flex-shrink-0">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setIsOpen(false)}
+							disabled={isLoading}
+						>
+							Cancel
+						</Button>
+						<Button
+							type="submit"
+							disabled={isLoading}
+							className="bg-blue-600 hover:bg-blue-700 text-white"
+						>
+							{isLoading ? (
+								<div className="flex items-center space-x-2">
+									<PremiumLoader variant="apple" size="small" className="text-white" />
+									<span>Submitting...</span>
+								</div>
+							) : (
+								initialData ? "Update" : "Create"
+							)}
+						</Button>
+					</DialogFooter>
+				</form>
 			</DialogContent>
 		</Dialog>
 	);

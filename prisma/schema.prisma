@@ -36,6 +36,7 @@ model PostImage {
   imageUrl String
   publicId String
   order    Int    @default(0)
+  isCover  Boolean @default(false)
   postId   String
   post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
