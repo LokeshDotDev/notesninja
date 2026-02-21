@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/providers/SessionProvider";
 import { DynamicNavbar } from "@/components/custom/DynamicNavbar";
@@ -14,10 +14,14 @@ import { GTM_ID } from "@/lib/gtm";
 import Script from "next/script";
 import { WhatsAppChat } from "@/components/ui/WhatsAppChat";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
@@ -104,7 +108,7 @@ export default function RootLayout({
           />
         </head>
         <body
-          className={`${poppins.variable} font-sans antialiased pt-20`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased pt-20`}
         >
           <GoogleAnalytics ga_id={settings.site.analytics_ga_id} />
           <VisitorTracker ga_id={settings.site.analytics_ga_id} />

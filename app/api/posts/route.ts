@@ -15,11 +15,42 @@ export async function GET(req: NextRequest) {
 
 		const posts = await prisma.post.findMany({
 			where: category ? { categoryId: category } : subcategory ? { subcategoryId: subcategory } : {},
-			include: {
+			select: {
+				id: true,
+				title: true,
+				slug: true,
+				description: true,
+				imageUrl: true,
+				publicId: true,
+				price: true,
+				compareAtPrice: true,
+				isDigital: true,
+				createdAt: true,
+				updatedAt: true,
+				categoryId: true,
+				subcategoryId: true,
+				productTypeId: true,
 				images: {
+					select: {
+						id: true,
+						imageUrl: true,
+						publicId: true,
+						order: true,
+					},
 					orderBy: { order: "asc" },
 				},
-				digitalFiles: true,
+				digitalFiles: {
+					select: {
+						id: true,
+						fileName: true,
+						fileUrl: true,
+						publicId: true,
+						fileSize: true,
+						fileType: true,
+						postId: true,
+						createdAt: true,
+					}
+				},
 				category: {
 					select: {
 						id: true,
@@ -27,6 +58,12 @@ export async function GET(req: NextRequest) {
 					},
 				},
 				subcategory: {
+					select: {
+						id: true,
+						name: true,
+					},
+				},
+				productType: {
 					select: {
 						id: true,
 						name: true,
@@ -82,6 +119,7 @@ export async function POST(req: NextRequest) {
 
 		const title = formData.get("title") as string;
 		const description = formData.get("description") as string;
+		const slug = formData.get("slug") as string | null;
 		const categoryId = formData.get("categoryId") as string;
 		const subcategoryId = formData.get("subcategoryId") as string | null;
 		const productTypeId = formData.get("productTypeId") as string | null;
@@ -89,8 +127,16 @@ export async function POST(req: NextRequest) {
 		const compareAtPrice = formData.get("compareAtPrice") as string | null;
 		const isDigital = formData.get("isDigital") === "true";
 
+		// Auto-calculate compareAtPrice if not provided but price is given
+		let finalCompareAtPrice = compareAtPrice ? parseFloat(compareAtPrice) : null;
+		if (price && !finalCompareAtPrice) {
+			finalCompareAtPrice = Math.round((parseFloat(price) * 1.5) / 100) * 100;
+			console.log(`Auto-calculated compareAtPrice: ₹${finalCompareAtPrice} for price: ₹${price}`);
+		}
+
 		console.log("2. Extracted fields:", {
 			title: title?.substring(0, 50),
+			slug: slug || "auto-generated",
 			categoryId,
 			subcategoryId,
 			isDigital,
@@ -109,17 +155,29 @@ export async function POST(req: NextRequest) {
 		// Note: Files are optional - they can be added later via edit
 		// Digital products should have files, but we'll allow creation without them for now
 
+		// Generate slug if not provided
+		let finalSlug = slug;
+		if (!finalSlug) {
+			finalSlug = title
+				.toLowerCase()
+				.replace(/[^a-z0-9\s-]/g, '')
+				.replace(/\s+/g, '-')
+				.replace(/-+/g, '-')
+				.replace(/^-+|-+$/g, '');
+		}
+
 		console.log("3. Creating post in database...");
 		// Create the post first
 		const newPost = await prisma.post.create({
 			data: {
 				title,
+				slug: finalSlug || null,
 				description,
 				categoryId,
 				subcategoryId: subcategoryId || null,
 				productTypeId: productTypeId || null,
 				price: price ? parseFloat(price) : null,
-				compareAtPrice: compareAtPrice ? parseFloat(compareAtPrice) : null,
+				compareAtPrice: finalCompareAtPrice,
 				isDigital,
 			},
 		});
@@ -193,11 +251,42 @@ export async function POST(req: NextRequest) {
 		// Return post with its images and digital files
 		const postWithFiles = await prisma.post.findUnique({
 			where: { id: newPost.id },
-			include: {
+			select: {
+				id: true,
+				title: true,
+				slug: true,
+				description: true,
+				imageUrl: true,
+				publicId: true,
+				price: true,
+				compareAtPrice: true,
+				isDigital: true,
+				createdAt: true,
+				updatedAt: true,
+				categoryId: true,
+				subcategoryId: true,
+				productTypeId: true,
 				images: {
+					select: {
+						id: true,
+						imageUrl: true,
+						publicId: true,
+						order: true,
+					},
 					orderBy: { order: "asc" },
 				},
-				digitalFiles: true,
+				digitalFiles: {
+					select: {
+						id: true,
+						fileName: true,
+						fileUrl: true,
+						publicId: true,
+						fileSize: true,
+						fileType: true,
+						postId: true,
+						createdAt: true,
+					}
+				},
 				category: {
 					select: {
 						id: true,
@@ -205,6 +294,12 @@ export async function POST(req: NextRequest) {
 					},
 				},
 				subcategory: {
+					select: {
+						id: true,
+						name: true,
+					},
+				},
+				productType: {
 					select: {
 						id: true,
 						name: true,

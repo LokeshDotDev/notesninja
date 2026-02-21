@@ -3,77 +3,26 @@ export async function sendPurchaseConfirmationEmail(
   userEmail: string,
   productTitle: string,
   purchaseId: string,
-  downloadLinks: Array<{ fileName: string; fileUrl: string }>
+  downloadLinks: Array<{ fileName: string; fileUrl: string }>,
+  price?: number,
+  compareAtPrice?: number
 ) {
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Purchase Confirmation</title>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #10b981; color: white; padding: 20px; text-align: center; }
-        .content { padding: 30px 20px; background: #f9fafb; }
-        .product-info { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
-        .download-btn { 
-          display: inline-block; 
-          background: #10b981; 
-          color: white; 
-          padding: 12px 24px; 
-          text-decoration: none; 
-          border-radius: 6px; 
-          margin: 10px 0;
-        }
-        .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>🎉 Purchase Confirmation!</h1>
-        </div>
-        
-        <div class="content">
-          <h2>Thank you for your purchase!</h2>
-          <p>You have successfully purchased <strong>${productTitle}</strong>.</p>
-          
-          <div class="product-info">
-            <h3>Your Digital Files:</h3>
-            ${downloadLinks.map((file, index) => `
-              <div style="margin: 10px 0; padding: 10px; background: #f3f4f6; border-radius: 4px;">
-                <strong>${index + 1}. ${file.fileName}</strong>
-              </div>
-            `).join('')}
-            
-            <p><small>Purchase ID: ${purchaseId}</small></p>
-          </div>
-          
-          <p>You can download your files anytime using links above or by logging into your account.</p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="#" class="download-btn">Download Your Files</a>
-          </div>
-        </div>
-        
-        <div class="footer">
-          <p>If you have any questions, please contact our support team.</p>
-          <p>This is an automated message. Please do not reply to this email.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/email`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/send-email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         to: userEmail,
-        subject: `Purchase Confirmation: ${productTitle}`,
-        html
+        customerName: userEmail.split('@')[0], // Extract name from email
+        productName: productTitle,
+        price: price,
+        compareAtPrice: compareAtPrice,
+        downloadLinks: downloadLinks.map(link => ({
+          fileName: link.fileName,
+          fileUrl: link.fileUrl,
+          fileSize: 1000000, // Mock file size
+          fileType: 'PDF'
+        }))
       })
     });
 

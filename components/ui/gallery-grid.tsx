@@ -5,6 +5,7 @@ import { BlurFade } from "@/components/magicui/blur-fade";
 import { ImageGalleryModal } from "@/components/ui/image-gallery-modal";
 import PurchaseDialog from "@/components/custom/PurchaseDialog";
 import DownloadDialog from "@/components/custom/DownloadDialog";
+import { getPricingInfo, formatPrice, formatDiscount } from "@/lib/pricing";
 
 interface PurchaseDialogState {
   open: boolean;
@@ -328,29 +329,31 @@ images
 <div className='flex-1'>
 {/* Price Display with Scratch Pricing */}
 <div className='flex flex-col space-y-2'>
-{posts[openIdx].compareAtPrice && posts[openIdx].compareAtPrice > (posts[openIdx].price || 0) && (
+{(() => {
+  const pricingInfo = getPricingInfo(posts[openIdx].price || 0, posts[openIdx].compareAtPrice);
+  return pricingInfo.hasDiscount ? (
 <div className='flex flex-col items-start'>
 <span className='bg-red-600 text-white px-3 py-2 rounded text-sm font-bold'>
 Limited Time Deal
 </span>
 <div className='flex items-baseline gap-2'>
 <span className='text-xl font-bold text-red-600'>
--{Math.round(((posts[openIdx].compareAtPrice - (posts[openIdx].price || 0)) / posts[openIdx].compareAtPrice) * 100)}%
+{formatDiscount(pricingInfo.discountPercentage!)}
 </span>
 <span className='text-lg font-normal text-black dark:text-white'>
-₹{(posts[openIdx].price || 0).toFixed(2)}
+{formatPrice(pricingInfo.price)}
 </span>
 </div>
 <span className='text-base text-neutral-500 dark:text-neutral-400'>
-M.R.P.: <span className='line-through'>₹{posts[openIdx].compareAtPrice.toFixed(2)}</span>
+M.R.P.: <span className='line-through'>{formatPrice(pricingInfo.compareAtPrice!)}</span>
 </span>
 </div>
-)}
-{!posts[openIdx].compareAtPrice && (
+) : (
 <span className='text-xl font-normal text-black dark:text-white'>
-₹{(posts[openIdx].price || 0).toFixed(2)}
+{formatPrice(pricingInfo.price)}
 </span>
-)}
+);
+})()}
 </div>
 <div className='text-sm text-neutral-500 dark:text-neutral-400'>
 Digital Product - Instant Download
@@ -765,29 +768,31 @@ images
 <div className='flex-1'>
 {/* Price Display with Scratch Pricing */}
 <div className='flex flex-col space-y-2'>
-{posts[openIdx].compareAtPrice && posts[openIdx].compareAtPrice > (posts[openIdx].price || 0) && (
+{(() => {
+  const pricingInfo = getPricingInfo(posts[openIdx].price || 0, posts[openIdx].compareAtPrice);
+  return pricingInfo.hasDiscount ? (
 <div className='flex flex-col items-start'>
 <span className='bg-red-600 text-white px-3 py-2 rounded text-sm font-bold'>
 Limited Time Deal
 </span>
 <div className='flex items-baseline gap-2'>
 <span className='text-xl font-bold text-red-600'>
--{Math.round(((posts[openIdx].compareAtPrice - (posts[openIdx].price || 0)) / posts[openIdx].compareAtPrice) * 100)}%
+{formatDiscount(pricingInfo.discountPercentage!)}
 </span>
 <span className='text-lg font-normal text-black dark:text-white'>
-₹{(posts[openIdx].price || 0).toFixed(2)}
+{formatPrice(pricingInfo.price)}
 </span>
 </div>
 <span className='text-base text-neutral-500 dark:text-neutral-400'>
-M.R.P.: <span className='line-through'>₹{posts[openIdx].compareAtPrice.toFixed(2)}</span>
+M.R.P.: <span className='line-through'>{formatPrice(pricingInfo.compareAtPrice!)}</span>
 </span>
 </div>
-)}
-{!posts[openIdx].compareAtPrice && (
+) : (
 <span className='text-xl font-normal text-black dark:text-white'>
-₹{(posts[openIdx].price || 0).toFixed(2)}
+{formatPrice(pricingInfo.price)}
 </span>
-)}
+);
+})()}
 </div>
 <div className='text-sm text-neutral-500 dark:text-neutral-400'>
 Digital Product - Instant Download
