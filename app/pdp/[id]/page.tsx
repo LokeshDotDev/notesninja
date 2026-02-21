@@ -8,9 +8,7 @@ import { ProductInfo } from '@/components/pdp/ProductInfo';
 import { ProductHighlights } from '@/components/pdp/ProductHighlights';
 import { TrustSignals } from '@/components/pdp/TrustSignals';
 import { AccordionSection } from '@/components/pdp/AccordionSection';
-import { ProductDemo } from '@/components/pdp/ProductDemo';
-import { RatingsAndReviews } from '@/components/pdp/RatingsAndReviews';
-import SeeInActionSection from '@/components/pdp/SeeInActionSection';
+import { StudentReviews } from '@/components/pdp/StudentReviews';
 import { PremiumPageLoader } from '@/components/ui/premium-loader';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -58,7 +56,7 @@ interface ProductPageProps {
   }>;
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
+export default function ProductDetailPage({ params }: ProductPageProps) {
   const { id } = use(params);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -134,52 +132,6 @@ export default function ProductPage({ params }: ProductPageProps) {
     }
   };
 
-  // UGC Video Data - Replace with actual video URLs
-  const ugcVideos = [
-    {
-      id: '1',
-      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      thumbnail: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=600&fit=crop',
-      poster: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=600&fit=crop',
-      title: 'Sarah mastered her exam in 2 weeks!'
-    },
-    {
-      id: '2',
-      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-      thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=600&fit=crop',
-      poster: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=600&fit=crop',
-      title: 'Mike improved his grades instantly'
-    },
-    {
-      id: '3',
-      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
-      thumbnail: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&h=600&fit=crop',
-      poster: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&h=600&fit=crop',
-      title: 'Emma\'s study routine transformation'
-    },
-    {
-      id: '4',
-      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-      thumbnail: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=600&fit=crop',
-      poster: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=600&fit=crop',
-      title: 'John aced his finals with this!'
-    },
-    {
-      id: '5',
-      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
-      thumbnail: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&h=600&fit=crop',
-      poster: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&h=600&fit=crop',
-      title: 'Lisa\'s productivity boost'
-    },
-    {
-      id: '6',
-      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-      thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=600&fit=crop',
-      poster: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=600&fit=crop',
-      title: 'Tom\'s learning breakthrough'
-    }
-  ];
-
   if (loading) {
     return (
       <PremiumPageLoader 
@@ -242,9 +194,6 @@ export default function ProductPage({ params }: ProductPageProps) {
           </div>
         </div>
       </div>
-      
-      {/* See It In Action - UGC Video Reels */}
-      <SeeInActionSection videos={ugcVideos} />
 
       {/* Product Highlights */}
       <section className="bg-gray-50 py-16">
@@ -253,20 +202,19 @@ export default function ProductPage({ params }: ProductPageProps) {
         </div>
       </section>
 
-
-      {/* Ratings and Reviews */}
+      {/* Trust Signals */}
       <section className="bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <RatingsAndReviews />
+          <TrustSignals />
         </div>
       </section>
 
-      {/* Product Demo */}
-      {/* <section className="py-12">
+      {/* Student Reviews */}
+      <section className="bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ProductDemo />
+          <StudentReviews />
         </div>
-      </section> */}
+      </section>
 
       {/* FAQ Accordion */}
       <section className="py-12">

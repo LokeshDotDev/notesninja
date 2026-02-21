@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
-import { 
-  Download, 
-  ArrowRight, 
+import {
+  Download,
+  ArrowRight,
   ShoppingCart,
   CheckCircle,
   AlertCircle,
@@ -15,12 +15,17 @@ import {
   ChevronRight,
   Plus,
   Minus,
-  Search
+  Search,
 } from "lucide-react";
 import { PremiumPageLoader } from "@/components/ui/premium-loader";
+import { getPricingInfo, formatDiscount } from "@/lib/pricing";
 import Link from "next/link";
 import Image from "next/image";
-import { trackViewItem, trackCustomEvent, trackBeginCheckout } from "@/lib/analytics";
+import {
+  trackViewItem,
+  trackCustomEvent,
+  trackBeginCheckout,
+} from "@/lib/analytics";
 
 interface PostImage {
   id: string;
@@ -85,10 +90,12 @@ interface Post {
 }
 
 interface ProfessionalProductDetailProps {
-  productId: string;
+  productSlug: string;
 }
 
-export function ProfessionalProductDetail({ productId }: ProfessionalProductDetailProps) {
+export function ProfessionalProductDetail({
+  productSlug,
+}: ProfessionalProductDetailProps) {
   const [product, setProduct] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,14 +103,16 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
-  const [selectedTab, setSelectedTab] = useState('highlights');
+  const [selectedTab, setSelectedTab] = useState("highlights");
 
   useEffect(() => {
     async function fetchProduct() {
       try {
         setLoading(true);
-        const response = await fetch(`/api/posts/${productId}`);
-        
+        const response = await fetch(
+          `/api/posts/${encodeURIComponent(productSlug)}`,
+        );
+
         if (!response.ok) {
           if (response.status === 404) {
             setError("Product not found");
@@ -115,7 +124,7 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
 
         const productData = await response.json();
         setProduct(productData);
-        
+
         // Track product view when loaded
         trackViewItem({
           id: productData.id,
@@ -123,7 +132,7 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
           price: productData.price,
           category: productData.category?.name,
           subcategory: productData.subcategory?.name,
-          imageUrl: productData.imageUrl
+          imageUrl: productData.imageUrl,
         });
       } catch (err) {
         setError("Failed to load product");
@@ -134,17 +143,17 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
     }
 
     fetchProduct();
-  }, [productId]);
+  }, [productSlug]);
 
   const handleAddToCart = async () => {
     if (!product) return;
-    
+
     setIsAddingToCart(true);
     try {
       // Add to cart logic here
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
       console.log("Added to cart:", product.id, quantity);
-      
+
       // Track add to cart event
       trackBeginCheckout({
         id: product.id,
@@ -152,17 +161,16 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
         price: product.price,
         category: product.category?.name,
         subcategory: product.subcategory?.name,
-        imageUrl: product.imageUrl
+        imageUrl: product.imageUrl,
       });
-      
+
       // Track custom event
-      trackCustomEvent('add_to_cart', {
+      trackCustomEvent("add_to_cart", {
         product_id: product.id,
         product_name: product.title,
         category: product.category?.name,
-        price: product.price
+        price: product.price,
       });
-      
     } catch (error) {
       console.error("Failed to add to cart:", error);
     } finally {
@@ -172,11 +180,11 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
 
   const handlePurchase = async () => {
     if (!product) return;
-    
+
     setIsPurchasing(true);
     try {
       // Simulate processing time before redirect
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       // Redirect to checkout page
       window.location.href = `/checkout/${product.id}`;
     } catch (error) {
@@ -186,9 +194,9 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
@@ -196,7 +204,7 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
 
   if (loading) {
     return (
-      <PremiumPageLoader 
+      <PremiumPageLoader
         isLoading={true}
         text="Loading product details..."
         subtext="Preparing your study material"
@@ -216,9 +224,13 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
               {error || "Product Not Found"}
             </h1>
             <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-              The study material you&apos;re looking for doesn&apos;t exist or has been moved.
+              The study material you&apos;re looking for doesn&apos;t exist or
+              has been moved.
             </p>
-            <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+            <Button
+              asChild
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            >
               <Link href="/">
                 <ArrowRight className="w-4 h-4 mr-2" />
                 Back to Home
@@ -230,11 +242,12 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
     );
   }
 
-  const images = product.images && product.images.length > 0 
-    ? product.images.sort((a, b) => a.order - b.order)
-    : product.imageUrl 
-      ? [{ id: 'main', imageUrl: product.imageUrl, publicId: '', order: 0 }]
-      : [];
+  const images =
+    product.images && product.images.length > 0
+      ? product.images.sort((a, b) => a.order - b.order)
+      : product.imageUrl
+        ? [{ id: "main", imageUrl: product.imageUrl, publicId: "", order: 0 }]
+        : [];
 
   const currentImage = images[currentImageIndex] || null;
 
@@ -247,29 +260,43 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center space-x-2 text-sm text-neutral-500 dark:text-neutral-400"
         >
-          <Link href="/" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Home</Link>
+          <Link
+            href="/"
+            className="hover:text-neutral-900 dark:hover:text-white transition-colors"
+          >
+            Home
+          </Link>
           <span>/</span>
-          
+
           {/* Use the category path from API if available */}
           {product.category && (
             <>
               {product.category.path ? (
                 // Use full path for nested categories
-                product.category.path.split('/').filter(Boolean).map((part, index, parts) => (
-                  <React.Fragment key={part}>
-                    <Link 
-                      href={`/${parts.slice(0, index + 1).join('/')}`}
-                      className="hover:text-neutral-900 dark:hover:text-white transition-colors"
-                    >
-                      {part.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                    </Link>
-                    {index < parts.length - 1 && <span>/</span>}
-                  </React.Fragment>
-                ))
+                product.category.path
+                  .split("/")
+                  .filter(Boolean)
+                  .map((part, index, parts) => (
+                    <React.Fragment key={part}>
+                      <Link
+                        href={`/${parts.slice(0, index + 1).join("/")}`}
+                        className="hover:text-neutral-900 dark:hover:text-white transition-colors"
+                      >
+                        {part
+                          .split("-")
+                          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                          .join(" ")}
+                      </Link>
+                      {index < parts.length - 1 && <span>/</span>}
+                    </React.Fragment>
+                  ))
               ) : (
                 // Fallback for old data without path
                 <>
-                  <Link href={`/${product.category.slug}`} className="hover:text-neutral-900 dark:hover:text-white transition-colors">
+                  <Link
+                    href={`/${product.category.slug}`}
+                    className="hover:text-neutral-900 dark:hover:text-white transition-colors"
+                  >
                     {product.category.name}
                   </Link>
                   <span>/</span>
@@ -297,7 +324,10 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
             {/* Main Image with Zoom */}
             <div className="relative bg-neutral-50 dark:bg-neutral-900 rounded-3xl overflow-hidden shadow-2xl group cursor-zoom-in">
               {currentImage ? (
-                <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                <div
+                  className="relative w-full"
+                  style={{ paddingBottom: "56.25%" }}
+                >
                   <Image
                     src={currentImage.imageUrl}
                     alt={product.title}
@@ -319,20 +349,26 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
                   <FileText className="w-32 h-32 text-neutral-300 dark:text-neutral-600" />
                 </div>
               )}
-              
+
               {/* Stock & Delivery Info - REMOVED */}
 
               {/* Premium Image Navigation */}
               {images.length > 1 && (
                 <>
                   <button
-                    onClick={() => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)}
+                    onClick={() =>
+                      setCurrentImageIndex(
+                        (prev) => (prev - 1 + images.length) % images.length,
+                      )
+                    }
                     className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-xl rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800 transition-all duration-300 shadow-lg hover:shadow-xl"
                   >
                     <ChevronLeft className="w-6 h-6 text-neutral-900 dark:text-white" />
                   </button>
                   <button
-                    onClick={() => setCurrentImageIndex((prev) => (prev + 1) % images.length)}
+                    onClick={() =>
+                      setCurrentImageIndex((prev) => (prev + 1) % images.length)
+                    }
                     className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-xl rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-neutral-800 transition-all duration-300 shadow-lg hover:shadow-xl"
                   >
                     <ChevronRight className="w-6 h-6 text-neutral-900 dark:text-white" />
@@ -350,8 +386,8 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
                     onClick={() => setCurrentImageIndex(index)}
                     className={`flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all duration-300 bg-neutral-50 dark:bg-neutral-900 ${
                       index === currentImageIndex
-                        ? 'border-neutral-900 dark:border-white scale-105 shadow-lg'
-                        : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500'
+                        ? "border-neutral-900 dark:border-white scale-105 shadow-lg"
+                        : "border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500"
                     }`}
                   >
                     <Image
@@ -361,7 +397,7 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
                       className="object-contain p-1"
                       quality={95}
                       sizes="96px"
-                      style={{ objectFit: 'contain' }}
+                      style={{ objectFit: "contain" }}
                     />
                   </button>
                 ))}
@@ -381,7 +417,7 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
               <div>
                 {product.category && (
                   <Link
-                    href={`/${product.category.name.toLowerCase().replace(/\s+/g, '-')}`}
+                    href={`/${product.category.name.toLowerCase().replace(/\s+/g, "-")}`}
                     className="inline-flex items-center text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors mb-4"
                   >
                     <ChevronLeft className="w-4 h-4 mr-1" />
@@ -398,58 +434,71 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
                 )}
               </div>
 
-            {/* Amazon-style Price Section */}
-            <div className="space-y-4">
-              {product.price && (
-                <div className="flex flex-col items-start gap-3">
-                  {(() => {
-                    const pricingInfo = getPricingInfo(product.price || 0, product.compareAtPrice);
-                    return pricingInfo.hasDiscount && (
-                      <div className="flex items-baseline gap-3 mb-2">
-                        <span className="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold">
-                          Limited Time Deal
-                        </span>
-                        <span className="text-lg font-bold text-red-600">
-                          {formatDiscount(pricingInfo.discountPercentage!)}
-                        </span>
-                      </div>
-                    );
-                  })()}
-                  {(() => {
-                    const pricingInfo = getPricingInfo(product.price || 0, product.compareAtPrice);
-                    return (
-                      <>
-                        <div className="flex items-baseline gap-2">
-                          {pricingInfo.hasDiscount && (
-                            <span className="text-3xl sm:text-4xl font-bold text-red-600">
+              {/* Amazon-style Price Section */}
+              <div className="space-y-4">
+                {product.price && (
+                  <div className="flex flex-col items-start gap-3">
+                    {(() => {
+                      const pricingInfo = getPricingInfo(
+                        product.price || 0,
+                        product.compareAtPrice,
+                      );
+                      return (
+                        pricingInfo.hasDiscount && (
+                          <div className="flex items-baseline gap-3 mb-2">
+                            <span className="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold">
+                              Limited Time Deal
+                            </span>
+                            <span className="text-lg font-bold text-red-600">
                               {formatDiscount(pricingInfo.discountPercentage!)}
                             </span>
-                          )}
-                          <span className="text-xl sm:text-2xl font-normal text-black dark:text-white">
-                            {formatPrice(pricingInfo.price)}
-                          </span>
-                        </div>
-                        {pricingInfo.hasDiscount && (
-                          <div className="flex items-baseline">
-                            <span className="text-xl text-neutral-500 dark:text-neutral-400">
-                              M.R.P.: <span className="line-through">{formatPrice(pricingInfo.compareAtPrice!)}</span>
+                          </div>
+                        )
+                      );
+                    })()}
+                    {(() => {
+                      const pricingInfo = getPricingInfo(
+                        product.price || 0,
+                        product.compareAtPrice,
+                      );
+                      return (
+                        <>
+                          <div className="flex items-baseline gap-2">
+                            {pricingInfo.hasDiscount && (
+                              <span className="text-3xl sm:text-4xl font-bold text-red-600">
+                                {formatDiscount(
+                                  pricingInfo.discountPercentage!,
+                                )}
+                              </span>
+                            )}
+                            <span className="text-xl sm:text-2xl font-normal text-black dark:text-white">
+                              {formatPrice(pricingInfo.price)}
                             </span>
                           </div>
-                        )}
-                      </>
-                    );
-                  })()}
-                </div>
-              )}
-              {product.isDigital && (
-                <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                  <Download className="w-5 h-5" />
-                  <span className="font-medium">Instant Download</span>
-                </div>
-              )}
-            </div>
+                          {pricingInfo.hasDiscount && (
+                            <div className="flex items-baseline">
+                              <span className="text-xl text-neutral-500 dark:text-neutral-400">
+                                M.R.P.:{" "}
+                                <span className="line-through">
+                                  {formatPrice(pricingInfo.compareAtPrice!)}
+                                </span>
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
+                {product.isDigital && (
+                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                    <Download className="w-5 h-5" />
+                    <span className="font-medium">Instant Download</span>
+                  </div>
+                )}
+              </div>
 
-            {/* Premium Description
+              {/* Premium Description
             <div className="space-y-4">
               <h3 className="text-2xl font-semibold text-neutral-900 dark:text-white">
                 Description
@@ -461,148 +510,150 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
               </div>
             </div> */}
 
-           
+              {/* Amazon-style Product Highlights */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 border-b border-neutral-200 dark:border-neutral-800 overflow-x-auto">
+                  <button
+                    onClick={() => setSelectedTab("highlights")}
+                    className={`pb-3 px-1 font-semibold text-lg transition-all duration-200 border-b-2 ${
+                      selectedTab === "highlights"
+                        ? "text-green-500 border-green-500"
+                        : "text-neutral-500 dark:text-neutral-400 border-transparent hover:text-neutral-900 dark:hover:text-white"
+                    }`}
+                  >
+                    Highlights
+                  </button>
+                  <button
+                    onClick={() => setSelectedTab("description")}
+                    className={`pb-3 px-1 font-semibold text-lg transition-all duration-200 border-b-2 ${
+                      selectedTab === "description"
+                        ? "text-green-500 border-green-500"
+                        : "text-neutral-500 dark:text-neutral-400 border-transparent hover:text-neutral-900 dark:hover:text-white"
+                    }`}
+                  >
+                    Description
+                  </button>
+                </div>
 
-            {/* Amazon-style Product Highlights */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-4 border-b border-neutral-200 dark:border-neutral-800 overflow-x-auto">
-                <button
-                  onClick={() => setSelectedTab('highlights')}
-                  className={`pb-3 px-1 font-semibold text-lg transition-all duration-200 border-b-2 ${
-                    selectedTab === 'highlights'
-                      ? 'text-green-500 border-green-500'
-                      : 'text-neutral-500 dark:text-neutral-400 border-transparent hover:text-neutral-900 dark:hover:text-white'
-                  }`}
-                >
-                  Highlights
-                </button>
-                <button
-                  onClick={() => setSelectedTab('description')}
-                  className={`pb-3 px-1 font-semibold text-lg transition-all duration-200 border-b-2 ${
-                    selectedTab === 'description'
-                      ? 'text-green-500 border-green-500'
-                      : 'text-neutral-500 dark:text-neutral-400 border-transparent hover:text-neutral-900 dark:hover:text-white'
-                  }`}
-                >
-                  Description
-                </button>
-              </div>
-
-              {selectedTab === 'highlights' && (
-                <div className="space-y-4 py-4">
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                      <span className="text-neutral-700 dark:text-neutral-300 font-medium">
-                        Comprehensive study material covering all essential topics
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                      <span className="text-neutral-700 dark:text-neutral-300 font-medium">
-                        Expert verified content with latest curriculum updates
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                      <span className="text-neutral-700 dark:text-neutral-300 font-medium">
-                        Practice questions and exam-focused preparation
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                      <span className="text-neutral-700 dark:text-neutral-300 font-medium">
-                        Instant download access for digital products
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                      <span className="text-neutral-700 dark:text-neutral-300 font-medium">
-                        24/7 customer support and quality guarantee
-                      </span>
+                {selectedTab === "highlights" && (
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                          Comprehensive study material covering all essential
+                          topics
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                          Expert verified content with latest curriculum updates
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                          Practice questions and exam-focused preparation
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                          Instant download access for digital products
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                          24/7 customer support and quality guarantee
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {selectedTab === 'description' && (
-                <div className="py-4">
-                  <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                    {product.description}
-                  </p>
-                </div>
-              )}
-
-            </div>
-
-            {/* Premium Action Buttons */}
-            <div className="space-y-8 pt-8 border-t border-neutral-200 dark:border-neutral-800">
-              {/* Quantity Selector (for non-digital products) */}
-              {!product.isDigital && (
-                <div className="flex items-center gap-6">
-                  <span className="font-semibold text-neutral-900 dark:text-white text-lg">Quantity:</span>
-                  <div className="flex items-center border border-neutral-300 dark:border-neutral-600 rounded-2xl overflow-hidden">
-                    <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="p-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
-                    >
-                      <Minus className="w-5 h-5" />
-                    </button>
-                    <span className="w-16 text-center font-semibold text-neutral-900 dark:text-white text-lg">
-                      {quantity}
-                    </span>
-                    <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="p-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
-                    >
-                      <Plus className="w-5 h-5" />
-                    </button>
+                {selectedTab === "description" && (
+                  <div className="py-4">
+                    <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
+                      {product.description}
+                    </p>
                   </div>
-                </div>
-              )}
-
-              {/* Green CTA Button */}
-              <div className="space-y-4">
-                {product.isDigital ? (
-                  <Button
-                    onClick={handlePurchase}
-                    disabled={isPurchasing}
-                    size="lg"
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-lg font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-0"
-                  >
-                    {isPurchasing ? (
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <Download className="w-5 h-5 mr-2" />
-                    )}
-                    {isPurchasing ? 'Processing...' : 'Buy Now'}
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleAddToCart}
-                    disabled={isAddingToCart}
-                    size="lg"
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-lg font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-0"
-                  >
-                    {isAddingToCart ? (
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <ShoppingCart className="w-5 h-5 mr-2" />
-                    )}
-                    {isAddingToCart ? 'Adding...' : `Add to Cart - ${formatPrice(product.price || 0)}`}
-                  </Button>
                 )}
               </div>
 
-              {/* Trust Indicators - Simplified */}
-              <div className="space-y-4 pt-6 border-t border-neutral-200 dark:border-neutral-800">
-                <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
-                  <Shield className="w-5 h-5" />
-                  <span className="font-medium">Secure Transaction</span>
+              {/* Premium Action Buttons */}
+              <div className="space-y-8 pt-8 border-t border-neutral-200 dark:border-neutral-800">
+                {/* Quantity Selector (for non-digital products) */}
+                {!product.isDigital && (
+                  <div className="flex items-center gap-6">
+                    <span className="font-semibold text-neutral-900 dark:text-white text-lg">
+                      Quantity:
+                    </span>
+                    <div className="flex items-center border border-neutral-300 dark:border-neutral-600 rounded-2xl overflow-hidden">
+                      <button
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="p-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                      >
+                        <Minus className="w-5 h-5" />
+                      </button>
+                      <span className="w-16 text-center font-semibold text-neutral-900 dark:text-white text-lg">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() => setQuantity(quantity + 1)}
+                        className="p-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                      >
+                        <Plus className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Green CTA Button */}
+                <div className="space-y-4">
+                  {product.isDigital ? (
+                    <Button
+                      onClick={handlePurchase}
+                      disabled={isPurchasing}
+                      size="lg"
+                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-lg font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-0"
+                    >
+                      {isPurchasing ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Download className="w-5 h-5 mr-2" />
+                      )}
+                      {isPurchasing ? "Processing..." : "Buy Now"}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleAddToCart}
+                      disabled={isAddingToCart}
+                      size="lg"
+                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-lg font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-0"
+                    >
+                      {isAddingToCart ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <ShoppingCart className="w-5 h-5 mr-2" />
+                      )}
+                      {isAddingToCart
+                        ? "Adding..."
+                        : `Add to Cart - ${formatPrice(product.price || 0)}`}
+                    </Button>
+                  )}
+                </div>
+
+                {/* Trust Indicators - Simplified */}
+                <div className="space-y-4 pt-6 border-t border-neutral-200 dark:border-neutral-800">
+                  <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                    <Shield className="w-5 h-5" />
+                    <span className="font-medium">Secure Transaction</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
           </motion.div>
         </div>
 
@@ -640,27 +691,41 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
                 </h3>
                 <div className="space-y-4">
                   <div className="flex justify-between py-3 border-b border-neutral-200 dark:border-neutral-700">
-                    <span className="text-neutral-600 dark:text-neutral-400">Format</span>
+                    <span className="text-neutral-600 dark:text-neutral-400">
+                      Format
+                    </span>
                     <span className="font-semibold text-neutral-900 dark:text-white">
-                      {product.isDigital ? 'Digital Download' : 'Physical Product'}
+                      {product.isDigital
+                        ? "Digital Download"
+                        : "Physical Product"}
                     </span>
                   </div>
                   <div className="flex justify-between py-3 border-b border-neutral-200 dark:border-neutral-700">
-                    <span className="text-neutral-600 dark:text-neutral-400">Language</span>
-                    <span className="font-semibold text-neutral-900 dark:text-white">English</span>
+                    <span className="text-neutral-600 dark:text-neutral-400">
+                      Language
+                    </span>
+                    <span className="font-semibold text-neutral-900 dark:text-white">
+                      English
+                    </span>
                   </div>
                   {product.productType && (
                     <div className="flex justify-between py-3 border-b border-neutral-200 dark:border-neutral-700">
-                      <span className="text-neutral-600 dark:text-neutral-400">Type</span>
+                      <span className="text-neutral-600 dark:text-neutral-400">
+                        Type
+                      </span>
                       <span className="font-semibold text-neutral-900 dark:text-white">
                         {product.productType.name}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between py-3">
-                    <span className="text-neutral-600 dark:text-neutral-400">Last Updated</span>
+                    <span className="text-neutral-600 dark:text-neutral-400">
+                      Last Updated
+                    </span>
                     <span className="font-semibold text-neutral-900 dark:text-white">
-                      {product.updatedAt ? new Date(product.updatedAt).toLocaleDateString() : 'Recently'}
+                      {product.updatedAt
+                        ? new Date(product.updatedAt).toLocaleDateString()
+                        : "Recently"}
                     </span>
                   </div>
                 </div>
@@ -718,7 +783,9 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
                       <Headphones className="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-neutral-900 dark:text-white text-lg">24/7 Support</p>
+                      <p className="font-semibold text-neutral-900 dark:text-white text-lg">
+                        24/7 Support
+                      </p>
                       <p className="text-neutral-600 dark:text-neutral-400 mt-1">
                         Get help whenever you need it
                       </p>
@@ -729,7 +796,9 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
                       <Shield className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-neutral-900 dark:text-white text-lg">Quality Guarantee</p>
+                      <p className="font-semibold text-neutral-900 dark:text-white text-lg">
+                        Quality Guarantee
+                      </p>
                       <p className="text-neutral-600 dark:text-neutral-400 mt-1">
                         Expert verified content
                       </p>

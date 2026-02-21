@@ -4,11 +4,11 @@ import { use } from "react";
 
 interface ProductPageProps {
   params: Promise<{
-    id: string;
+    slug: string;
   }>;
 }
 
 export default function ProductPage({ params }: ProductPageProps) {
-  const { id } = use(params);
-  return <ProfessionalProductDetail productId={id} />;
+  const { slug } = use(params);
+  return <ProfessionalProductDetail productSlug={slug} />;
 }

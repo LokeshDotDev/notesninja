@@ -1,7 +1,7 @@
-import { PremiumHero } from "@/components/content/PremiumHero";
+import { GiantSlider } from "@/components/content/GiantSlider";
 import { EducationalFeatures } from "@/components/content/EducationalFeatures";
 import { SubjectShowcase } from "@/components/content/SubjectShowcase";
-import { StudentTestimonials } from "@/components/content/StudentTestimonials";
+import { RatingsAndReviews } from "@/components/pdp/RatingsAndReviews";
 import { HowItWorks } from "@/components/content/HowItWorks";
 import { UniversitiesShowcase } from "@/components/content/UniversitiesShowcase";
 import { Metadata } from "next";
@@ -17,11 +17,11 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
-      <PremiumHero />
+      <GiantSlider />
       <UniversitiesShowcase />
       <SubjectShowcase />
       <EducationalFeatures />
-      <StudentTestimonials />
+      <RatingsAndReviews />
       <HowItWorks />
       {/* <CallToAction /> */}
       <Footer />

@@ -10,11 +10,16 @@ module.exports = {
     extend: {
       animation: {
         move: "move 5s linear infinite",
+        scroll: "scroll 30s linear infinite",
       },
       keyframes: {
         move: {
           "0%": { transform: "translateX(-200px)" },
           "100%": { transform: "translateX(200px)" },
+        },
+        scroll: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
         },
       },
       colors: {
@@ -39,10 +44,13 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-geist-sans)'],
-        mono: ['var(--font-geist-mono)'],
+        sans: ['var(--font-poppins)', 'system-ui', 'sans-serif'],
       },
     },
   },
   plugins: [],
+  // Custom utilities for animation control
+  safelist: [
+    'group-hover:animation-pause',
+  ],
 }

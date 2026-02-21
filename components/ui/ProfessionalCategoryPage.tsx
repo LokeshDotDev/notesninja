@@ -5,6 +5,7 @@ import { BlurFade } from "@/components/magicui/blur-fade";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+// import { getPricingInfo, formatPrice, formatDiscount } from "@/lib/pricing";
 import {
   BookOpen,
   Download,
@@ -24,10 +25,13 @@ import {
   Target,
   Award,
   CheckCircle,
+  Filter
 } from "lucide-react";
 import { PremiumLoader } from "@/components/ui/premium-loader";
 import Image from "next/image";
 import { trackCategoryView } from "@/lib/analytics";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Function to get appropriate icon based on category name
 const getCategoryIcon = (categoryName: string) => {
@@ -118,6 +122,7 @@ interface Post {
   id: string;
   title: string;
   description?: string;
+  slug?: string;
   fileUrl?: string;
   file_type?: string;
   coverImage?: string;
@@ -162,12 +167,13 @@ export function ProfessionalCategoryPage({
 }: ProfessionalCategoryPageProps) {
   const [category, setCategory] = useState<Category | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [breadcrumbs, setBreadcrumbs] = useState<
-    { name: string; path: string }[]
-  >([]);
+  const [breadcrumbs, setBreadcrumbs] = useState<{ name: string; path: string }[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSemester, setSelectedSemester] = useState<string>("all");
 
   // Helper function to build breadcrumb trail from category path
   const buildBreadcrumbs = (categoryPath: string) => {
@@ -211,15 +217,14 @@ export function ProfessionalCategoryPage({
   // Filter posts based on search query and semester
   const filterPosts = (posts: Post[], query: string, semester: string) => {
     let filtered = posts;
-    
+
     // Filter by search query
     if (query.trim()) {
-      filtered = filtered.filter(post => 
+      filtered = filtered.filter(post =>
         post.title.toLowerCase().includes(query.toLowerCase()) ||
         (post.description && post.description.toLowerCase().includes(query.toLowerCase()))
       );
     }
-    
     // Filter by semester
     if (semester !== "all") {
       filtered = filtered.filter(post => {
@@ -228,7 +233,6 @@ export function ProfessionalCategoryPage({
         return title.includes(`semester ${semesterNum}`) || title.includes(`sem ${semesterNum}`);
       });
     }
-    
     return filtered;
   };
 
@@ -270,9 +274,9 @@ export function ProfessionalCategoryPage({
             const postsResponse = await fetch(`/api/posts?category=${data.id}`);
             if (postsResponse.ok) {
               const postsData = await postsResponse.json();
-              setPosts(
-                Array.isArray(postsData) ? postsData : postsData.posts || [],
-              );
+              const postsArray = Array.isArray(postsData) ? postsData : postsData.posts || [];
+              setPosts(postsArray);
+              setFilteredPosts(postsArray);
             }
           } catch (err) {
             console.error("Error fetching posts:", err);
@@ -438,7 +442,6 @@ export function ProfessionalCategoryPage({
                   </p>
                 </div>
               </div>
-              
               {/* Search and Filter Section */}
               <div className="flex flex-col md:flex-row gap-4 mb-8 items-stretch md:items-center">
                 {/* Search Bar */}
@@ -452,7 +455,6 @@ export function ProfessionalCategoryPage({
                     className="pl-12 pr-4 py-3 rounded-2xl border border-[rgb(229, 229, 234)] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-[rgb(28, 28, 30)] dark:text-white placeholder:text-[rgb(142, 142, 147)] dark:placeholder:text-neutral-500 focus:border-[rgb(0, 122, 255)] focus:ring-2 focus:ring-[rgb(0, 122, 255)]/20 transition-all duration-200"
                   />
                 </div>
-                
                 {/* Semester Filter */}
                 <div className="relative min-w-[180px]">
                   <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[rgb(142, 142, 147)] dark:text-neutral-500 w-5 h-5 pointer-events-none" />
@@ -477,123 +479,124 @@ export function ProfessionalCategoryPage({
             {filteredPosts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
                 {filteredPosts.map((post, index) => {
-                console.log('Post data:', JSON.stringify(post, null, 2)); // Detailed log with formatting
-                console.log('Available image fields:', {
-                  cloudinaryUrl: post.cloudinaryUrl,
-                  secure_url: post.secure_url,
-                  url: post.url,
-                  coverImage: post.coverImage,
-                  image: post.image,
-                  imageUrl: post.imageUrl,
-                  thumbnail: post.thumbnail,
-                  cover: post.cover
-                });
-                return (
-                  <BlurFade key={post.id} delay={0.25 + index * 0.1} inView>
-                    <Link href={`/${categoryName}/${post.id}`}>
-                      {/* <Link href={`/product/${post.id}`}> */}
-                      <motion.div
-                        whileHover={{
-                          y: -8,
-                          boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.15)",
-                        }}
-                        whileTap={{ scale: 0.98 }}
-                        transition={{
-                          duration: 0.5,
-                          ease: [0.25, 0.46, 0.45, 0.94],
-                        }}
-                        viewport={{ once: true }}
-                        className="group relative overflow-hidden rounded-3xl border border-neutral-200/50 dark:border-neutral-700/50 bg-white dark:bg-neutral-800/80 backdrop-blur-xl h-full"
-                      >
-                        {/* Image Section */}
-                        <div className="relative h-56 overflow-hidden rounded-t-3xl bg-neutral-100 dark:bg-neutral-900">
-                          {post.images &&
-                          post.images.length > 0 &&
-                          post.images[0].imageUrl ? (
-                            <Image
-                              src={post.images[0].imageUrl}
-                              alt={post.title}
-                              fill
-                              className="object-cover transition-transform duration-700 group-hover:scale-105"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-[rgb(0, 122, 255)]/20 to-purple-500/20 flex items-center justify-center">
-                              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[rgb(0, 122, 255)] to-[rgb(0, 94, 198)] flex items-center justify-center text-black shadow-lg">
-                                {getPostIcon(post.title)}
+                  console.log('Post data:', JSON.stringify(post, null, 2)); // Detailed log with formatting
+                  console.log('Available image fields:', {
+                    cloudinaryUrl: post.cloudinaryUrl,
+                    secure_url: post.secure_url,
+                    url: post.url,
+                    slug: post.slug,
+                    coverImage: post.coverImage,
+                    image: post.image,
+                    imageUrl: post.imageUrl,
+                    thumbnail: post.thumbnail,
+                    cover: post.cover
+                  });
+                  return (
+                    <BlurFade key={post.id} delay={0.25 + index * 0.1} inView>
+                      <Link href={`/${categoryName}/${post.slug}`}>
+                        {/* <Link href={`/product/${post.id}`}> */}
+                        <motion.div
+                          whileHover={{
+                            y: -8,
+                            boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.15)",
+                          }}
+                          whileTap={{ scale: 0.98 }}
+                          transition={{
+                            duration: 0.5,
+                            ease: [0.25, 0.46, 0.45, 0.94],
+                          }}
+                          viewport={{ once: true }}
+                          className="group relative overflow-hidden rounded-3xl border border-neutral-200/50 dark:border-neutral-700/50 bg-white dark:bg-neutral-800/80 backdrop-blur-xl h-full"
+                        >
+                          {/* Image Section */}
+                          <div className="relative h-56 overflow-hidden rounded-t-3xl bg-neutral-100 dark:bg-neutral-900">
+                            {post.images &&
+                              post.images.length > 0 &&
+                              post.images[0].imageUrl ? (
+                              <Image
+                                src={post.images[0].imageUrl}
+                                alt={post.title}
+                                fill
+                                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-[rgb(0, 122, 255)]/20 to-purple-500/20 flex items-center justify-center">
+                                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[rgb(0, 122, 255)] to-[rgb(0, 94, 198)] flex items-center justify-center text-black shadow-lg">
+                                  {getPostIcon(post.title)}
+                                </div>
                               </div>
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        </div>
-
-                        {/* Content Section */}
-                        <div className="p-8 space-y-4">
-                          <h3 className="text-2xl font-semibold text-neutral-900 dark:text-white mb-2 group-hover:text-[rgb(0, 122, 255)] dark:group-hover:text-blue-400 transition-colors duration-300 line-clamp-2 leading-tight">
-                            {post.title}
-                          </h3>
-
-                          {post.description && (
-                            <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4 line-clamp-3">
-                              {post.description}
-                            </p>
-                          )}
-
-                          {/* Price Section - Amazon Style */}
-                          {post.price !== null && post.price !== undefined && (
-                            <div className="flex flex-col gap-3 mb-6">
-                              {post.compareAtPrice &&
-                                post.compareAtPrice > post.price && (
-                                  <div className="flex flex-col items-start">
-                                    <span className="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold">
-                                      Limited Time Deal
-                                    </span>
-                                    <div className="flex items-baseline gap-2">
-                                      <span className="text-lg font-bold text-red-600">
-                                        -
-                                        {Math.round(
-                                          ((post.compareAtPrice - post.price) /
-                                            post.compareAtPrice) *
-                                            100,
-                                        )}
-                                        %
-                                      </span>
-                                      <span className="text-base font-normal text-black dark:text-white">
-                                        ₹{post.price.toFixed(2)}
-                                      </span>
-                                    </div>
-                                    <span className="text-base text-neutral-500 dark:text-neutral-400">
-                                      M.R.P.:{" "}
-                                      <span className="line-through">
-                                        ₹{post.compareAtPrice.toFixed(2)}
-                                      </span>
-                                    </span>
-                                  </div>
-                                )}
-                              {!post.compareAtPrice && (
-                                <span className="text-xl font-normal text-black dark:text-white">
-                                  ₹{post.price.toFixed(2)}
-                                </span>
-                              )}
-                            </div>
-                          )}
-
-                          <div className="flex items-center justify-between mb-6">
-                            <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
-                              <div className="w-2 h-2 bg-black rounded-full"></div>
-                              Instant download
-                            </span>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                           </div>
 
-                          <Button className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium shadow-sm hover:shadow-md transition-all duration-300 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700">
-                            View Details
-                            <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
-                          </Button>
-                        </div>
-                      </motion.div>
-                    </Link>
-                  </BlurFade>
-                );
+                          {/* Content Section */}
+                          <div className="p-8 space-y-4">
+                            <h3 className="text-2xl font-semibold text-neutral-900 dark:text-white mb-2 group-hover:text-[rgb(0, 122, 255)] dark:group-hover:text-blue-400 transition-colors duration-300 line-clamp-2 leading-tight">
+                              {post.title}
+                            </h3>
+
+                            {post.description && (
+                              <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4 line-clamp-3">
+                                {post.description}
+                              </p>
+                            )}
+
+                            {/* Price Section - Amazon Style */}
+                            {post.price !== null && post.price !== undefined && (
+                              <div className="flex flex-col gap-3 mb-6">
+                                {post.compareAtPrice &&
+                                  post.compareAtPrice > post.price && (
+                                    <div className="flex flex-col items-start">
+                                      <span className="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold">
+                                        Limited Time Deal
+                                      </span>
+                                      <div className="flex items-baseline gap-2">
+                                        <span className="text-lg font-bold text-red-600">
+                                          -
+                                          {Math.round(
+                                            ((post.compareAtPrice - post.price) /
+                                              post.compareAtPrice) *
+                                            100,
+                                          )}
+                                          %
+                                        </span>
+                                        <span className="text-base font-normal text-black dark:text-white">
+                                          ₹{post.price.toFixed(2)}
+                                        </span>
+                                      </div>
+                                      <span className="text-base text-neutral-500 dark:text-neutral-400">
+                                        M.R.P.:{" "}
+                                        <span className="line-through">
+                                          ₹{post.compareAtPrice.toFixed(2)}
+                                        </span>
+                                      </span>
+                                    </div>
+                                  )}
+                                {!post.compareAtPrice && (
+                                  <span className="text-xl font-normal text-black dark:text-white">
+                                    ₹{post.price.toFixed(2)}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            <div className="flex items-center justify-between mb-6">
+                              <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
+                                <div className="w-2 h-2 bg-black rounded-full"></div>
+                                Instant download
+                              </span>
+                            </div>
+
+                            <Button className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium shadow-sm hover:shadow-md transition-all duration-300 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700">
+                              View Details
+                              <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+                            </Button>
+                          </div>
+                        </motion.div>
+                      </Link>
+                    </BlurFade>
+                  );
                 })}
               </div>
             ) : (
@@ -613,14 +616,14 @@ export function ProfessionalCategoryPage({
                   {searchQuery && selectedSemester !== "all"
                     ? `No materials found matching "${searchQuery}" in ${selectedSemester}. Try adjusting your search or filter.`
                     : searchQuery
-                    ? `No materials found matching "${searchQuery}". Try different keywords.`
-                    : selectedSemester !== "all"
-                    ? `No materials found in ${selectedSemester}. Try selecting a different semester.`
-                    : "No materials available in this category."}
+                      ? `No materials found matching "${searchQuery}". Try different keywords.`
+                      : selectedSemester !== "all"
+                        ? `No materials found in ${selectedSemester}. Try selecting a different semester.`
+                        : "No materials available in this category."}
                 </p>
                 <div className="flex gap-4 justify-center">
                   {searchQuery && (
-                    <Button 
+                    <Button
                       onClick={() => setSearchQuery("")}
                       variant="outline"
                       className="border-[rgb(229, 229, 234)] dark:border-neutral-700 text-[rgb(28, 28, 30)] dark:text-white hover:bg-[rgb(248, 248, 248)] dark:hover:bg-neutral-800 px-6 py-3 rounded-2xl"
@@ -629,7 +632,7 @@ export function ProfessionalCategoryPage({
                     </Button>
                   )}
                   {selectedSemester !== "all" && (
-                    <Button 
+                    <Button
                       onClick={() => setSelectedSemester("all")}
                       variant="outline"
                       className="border-[rgb(229, 229, 234)] dark:border-neutral-700 text-[rgb(28, 28, 30)] dark:text-white hover:bg-[rgb(248, 248, 248)] dark:hover:bg-neutral-800 px-6 py-3 rounded-2xl"
@@ -638,7 +641,7 @@ export function ProfessionalCategoryPage({
                     </Button>
                   )}
                   {(searchQuery || selectedSemester !== "all") && (
-                    <Button 
+                    <Button
                       onClick={() => {
                         setSearchQuery("");
                         setSelectedSemester("all");

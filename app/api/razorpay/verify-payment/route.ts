@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import prisma from "@/lib/prisma";
+import { sendPurchaseConfirmationEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -78,6 +79,30 @@ export async function POST(req: NextRequest) {
       });
 
       console.log('Purchase saved successfully:', purchase);
+
+      // Send purchase confirmation email for digital products
+      if (purchase.post.isDigital && purchase.post.digitalFiles.length > 0) {
+        try {
+          const downloadLinks = purchase.post.digitalFiles.map(file => ({
+            fileName: file.fileName,
+            fileUrl: file.fileUrl
+          }));
+
+          await sendPurchaseConfirmationEmail(
+            customerEmail,
+            purchase.post.title,
+            purchase.id,
+            downloadLinks,
+            purchase.post.price || undefined,
+            purchase.post.compareAtPrice || undefined
+          );
+          
+          console.log(`Purchase confirmation email sent to ${customerEmail}`);
+        } catch (emailError) {
+          console.error("Failed to send purchase confirmation email:", emailError);
+          // Don't fail the purchase if email fails
+        }
+      }
 
     } catch (dbError) {
       console.error("Failed to save purchase:", dbError);

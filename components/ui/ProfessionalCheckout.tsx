@@ -23,14 +23,6 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { 
-  trackViewItem, 
-  trackBeginCheckout, 
-  trackPurchase, 
-  trackCheckoutPageView, 
-  trackError,
-  trackCustomEvent
-} from "@/lib/analytics";
 declare global {
   interface Window {
     Razorpay: {
@@ -134,24 +126,6 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         const productData = await response.json();
         console.log('Fetched product data:', productData);
         setProduct(productData);
-        
-        // Track product view when loaded
-        trackViewItem({
-          id: productData.id,
-          title: productData.title,
-          price: productData.price,
-          category: productData.category?.name,
-          subcategory: productData.subcategory?.name,
-          imageUrl: productData.imageUrl
-        });
-        trackCheckoutPageView('details', {
-          id: productData.id,
-          title: productData.title,
-          price: productData.price,
-          category: productData.category?.name,
-          subcategory: productData.subcategory?.name,
-          imageUrl: productData.imageUrl
-        });
       } catch (err) {
         setError("Failed to load product");
         console.error("Error fetching product:", err);
@@ -204,33 +178,13 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
   const handlePayment = async () => {
     if (!validateForm()) {
       setError("Please fill in all required fields");
-      trackError('Form validation failed', 'checkout');
       return;
     }
 
     if (!product) {
       setError("Product not available");
-      trackError('Product not available', 'checkout');
       return;
     }
-
-    // Track begin checkout event
-    trackBeginCheckout({
-      id: product.id,
-      title: product.title,
-      price: product.price,
-      category: product.category?.name,
-      subcategory: product.subcategory?.name,
-      imageUrl: product.imageUrl
-    });
-    trackCheckoutPageView('payment', {
-      id: product.id,
-      title: product.title,
-      price: product.price,
-      category: product.category?.name,
-      subcategory: product.subcategory?.name,
-      imageUrl: product.imageUrl
-    });
 
     setIsProcessing(true);
     setPaymentStep("processing");
@@ -293,33 +247,6 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
           const verifyData = await verifyResponse.json();
 
           if (verifyResponse.ok && verifyData.success) {
-            // Track successful purchase
-            trackPurchase({
-              transactionId: response.razorpay_payment_id,
-              value: product.price || 0,
-              currency: 'INR',
-              products: [{
-                id: product.id,
-                title: product.title,
-                price: product.price,
-                category: product.category?.name,
-                subcategory: product.subcategory?.name,
-                imageUrl: product.imageUrl
-              }],
-              customerEmail: formData.email,
-              customerName: `${formData.firstName} ${formData.lastName}`
-            });
-
-            // Track custom event for digital product purchase
-            trackCustomEvent('digital_product_purchase', {
-              product_id: product.id,
-              product_name: product.title,
-              category: product.category?.name,
-              price: product.price,
-              payment_method: 'razorpay',
-              customer_email: formData.email
-            });
-
             // Send confirmation email
             try {
               console.log('Product data:', product);
@@ -357,13 +284,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         },
         modal: {
           ondismiss: function() {
-            // Track payment modal dismissal
-            trackCustomEvent('checkout_modal_dismissed', {
-              product_id: product.id,
-              product_name: product.title,
-              step: 'payment'
-            });
-            // Redirect to specified page when user closes payment modal
+            // Redirect to the specified page when user closes the payment modal
             window.location.href = '/online-manipal-university/notes-and-mockpaper';
           },
           escape: true,
@@ -388,15 +309,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
       setPaymentStep("error");
       setError(error instanceof Error ? error.message : "Payment failed. Please try again.");
       
-      // Track payment failure
-      trackError(error instanceof Error ? error.message : "Payment failed", 'payment');
-      trackCustomEvent('payment_failed', {
-        product_id: product?.id,
-        product_name: product?.title,
-        error_message: error instanceof Error ? error.message : "Unknown error"
-      });
-      
-      // Redirect to specified page on payment failure
+      // Redirect to the specified page on payment failure
       setTimeout(() => {
         window.location.href = '/online-manipal-university/notes-and-mockpaper';
       }, 2000);
@@ -980,7 +893,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                     transition={{ duration: 0.6 }}
                   >
                     <div className="mb-8">
-                      <h2 className="text-3xl font-semibold text-gray-900 mb-2">Customer Information</h2>
+                      <h2 className="text-3xl font-semibold text-gray-900 mb-2">Student Information</h2>
                       <p className="text-gray-600">Enter your details for a seamless checkout experience</p>
                     </div>
                     
@@ -1120,7 +1033,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                     
                     {/* Customer Summary */}
                     <div className="bg-gray-50 rounded-xl p-6 mb-8">
-                      <h3 className="font-semibold text-gray-900 mb-4">Customer Information</h3>
+                      <h3 className="font-semibold text-gray-900 mb-4">Student Information</h3>
                       <div className="space-y-3">
                         <div className="flex justify-between py-2 border-b border-gray-200">
                           <span className="text-gray-600">Name</span>
