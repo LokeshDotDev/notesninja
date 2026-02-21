@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 
 export function ProductHighlights() {
   return (
@@ -30,11 +31,13 @@ export function ProductHighlights() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left: Image */}
           <div className="order-2 lg:order-1">
-            <div className="rounded-2xl overflow-hidden shadow-lg">
-              <img
-                src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&h=400&fit=crop&crop=center"
-                alt="Study materials transformation"
-                className="w-full h-64 lg:h-96 object-cover"
+            <div className="rounded-2xl overflow-hidden shadow-lg relative aspect-video">
+              <Image
+                src="/assets/producthighlight images/WhatsApp Image 2026-02-21 at 14.58.18.jpeg"
+                alt="Study materials transformation showing organized notes and resources"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
               />
             </div>
           </div>
@@ -100,11 +103,13 @@ export function ProductHighlights() {
 
           {/* Right: Image */}
           <div>
-            <div className="rounded-2xl overflow-hidden shadow-lg">
-              <img
-                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=400&fit=crop&crop=center"
-                alt="Expert educators creating study materials"
-                className="w-full h-64 lg:h-96 object-cover"
+            <div className="rounded-2xl overflow-hidden shadow-lg relative aspect-video">
+              <Image
+                src="/assets/producthighlight images/WhatsApp Image 2026-02-21 at 15.08.52.jpeg"
+                alt="Expert educators creating comprehensive study materials"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
               />
             </div>
           </div>
@@ -122,11 +127,13 @@ export function ProductHighlights() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left: Image */}
           <div className="order-2 lg:order-1">
-            <div className="rounded-2xl overflow-hidden shadow-lg">
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop&crop=center"
-                alt="Students achieving academic success"
-                className="w-full h-64 lg:h-96 object-cover"
+            <div className="rounded-2xl overflow-hidden shadow-lg relative aspect-video">
+              <Image
+                src="/assets/producthighlight images/WhatsApp Image 2026-02-21 at 15.11.42.jpeg"
+                alt="Students achieving academic success with study materials"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
               />
             </div>
           </div>
@@ -192,11 +199,13 @@ export function ProductHighlights() {
 
           {/* Right: Image */}
           <div>
-            <div className="rounded-2xl overflow-hidden shadow-lg">
-              <img
-                src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&h=400&fit=crop&crop=center"
-                alt="Students celebrating academic success"
-                className="w-full h-64 lg:h-96 object-cover"
+            <div className="rounded-2xl overflow-hidden shadow-lg relative aspect-video">
+              <Image
+                src="/assets/producthighlight images/WhatsApp Image 2026-02-21 at 15.16.55.jpeg"
+                alt="Students celebrating academic success and achievements"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
               />
             </div>
           </div>

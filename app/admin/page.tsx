@@ -430,9 +430,9 @@ export default function Dashboard() {
 		} catch (error) {
 			console.error("Error fetching post for edit:", error);
 			Notification({
-				title: "Error",
-				description: "Failed to load post data for editing",
-				variant: "destructive",
+				message: "Failed to load post data for editing",
+				type: "error",
+				onClose: () => {},
 			});
 			return null;
 		}
@@ -456,9 +456,9 @@ export default function Dashboard() {
 		} catch (error) {
 			console.error("Error fetching post for edit:", error);
 			Notification({
-				title: "Error",
-				description: "Failed to load post data for editing",
-				variant: "destructive",
+				message: "Failed to load post data for editing",
+				type: "error",
+				onClose: () => {},
 			});
 			setEditDialog({ open: false, type: "post", data: null, isLoading: false });
 		}

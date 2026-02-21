@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface Slide {
   id: number;
@@ -16,155 +16,170 @@ interface Slide {
 const slides: Slide[] = [
   {
     id: 1,
-    title: "WIN T20 WORLD CUP TICKETS",
-    subtitle: "Buy Any Frido Product & Stand a Chance to Watch India Live",
-    buttonText: "Shop Now",
-    backgroundImage: "/assets/stadium-bg.jpg",
-    backgroundColor: "from-blue-600 to-purple-700"
+    title: "",
+    subtitle: "",
+    buttonText: "",
+    backgroundImage: "/assets/slider/Slide 1.png",
+    backgroundColor: "from-transparent to-transparent"
   },
   {
     id: 2,
-    title: "PREMIUM STUDY MATERIALS",
-    subtitle: "Get Access to Exclusive Academic Resources & Ace Your Exams",
-    buttonText: "Explore Now",
-    backgroundImage: "/assets/study-bg.jpg",
-    backgroundColor: "from-green-600 to-teal-700"
+    title: "",
+    subtitle: "",
+    buttonText: "",
+    backgroundImage: "/assets/slider/Slide 2.png",
+    backgroundColor: "from-transparent to-transparent"
   },
   {
     id: 3,
-    title: "LIMITED TIME OFFER",
-    subtitle: "Get 50% Off on All Digital Products - Don't Miss Out!",
-    buttonText: "Grab Deal",
-    backgroundImage: "/assets/offer-bg.jpg",
-    backgroundColor: "from-orange-600 to-red-700"
+    title: "",
+    subtitle: "",
+    buttonText: "",
+    backgroundImage: "/assets/slider/Slide 3.png",
+    backgroundColor: "from-transparent to-transparent"
+  },
+  {
+    id: 4,
+    title: "",
+    subtitle: "",
+    buttonText: "",
+    backgroundImage: "/assets/slider/Slide 4.png",
+    backgroundColor: "from-transparent to-transparent"
+  },
+  {
+    id: 5,
+    title: "",
+    subtitle: "",
+    buttonText: "",
+    backgroundImage: "/assets/slider/Slide 5 option 1.png",
+    backgroundColor: "from-transparent to-transparent"
+  },
+  {
+    id: 6,
+    title: "",
+    subtitle: "",
+    buttonText: "",
+    backgroundImage: "/assets/slider/Slide 5 Option 2.png",
+    backgroundColor: "from-transparent to-transparent"
   }
 ];
 
+// Create infinite slides array by adding first and last slides to both ends
+const infiniteSlides = [slides[slides.length - 1], ...slides, slides[0]];
+
 export function GiantSlider() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [currentSlide, setCurrentSlide] = useState(1); // Start at 1 to show first real slide
+  const [isTransitioning, setIsTransitioning] = useState(true);
 
   useEffect(() => {
-    if (!isAutoPlaying) return;
-    
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
+      goToNext();
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying]);
+  }, []);
+
+  useEffect(() => {
+    // Handle infinite loop boundaries
+    if (currentSlide === 0) {
+      // Reached the cloned last slide, jump to real last slide
+      setTimeout(() => {
+        setIsTransitioning(false);
+        setCurrentSlide(slides.length);
+        setTimeout(() => setIsTransitioning(true), 50);
+      }, 700);
+    } else if (currentSlide === slides.length + 1) {
+      // Reached the cloned first slide, jump to real first slide
+      setTimeout(() => {
+        setIsTransitioning(false);
+        setCurrentSlide(1);
+        setTimeout(() => setIsTransitioning(true), 50);
+      }, 700);
+    }
+  }, [currentSlide]);
 
   const goToSlide = (index: number) => {
-    setCurrentSlide(index);
-    setIsAutoPlaying(false);
+    setCurrentSlide(index + 1); // Add 1 to account for cloned first slide
   };
 
   const goToPrevious = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-    setIsAutoPlaying(false);
+    setCurrentSlide((prev) => prev - 1);
   };
 
   const goToNext = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-    setIsAutoPlaying(false);
+    setCurrentSlide((prev) => prev + 1);
   };
 
   return (
-    <section className="relative w-full h-screen overflow-hidden bg-slate-900">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentSlide}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
-          className={cn(
-            "absolute inset-0 bg-gradient-to-br",
-            slides[currentSlide].backgroundColor
-          )}
+    <section 
+      className="relative w-full overflow-hidden bg-white aspect-[2/1] md:aspect-[16/9] lg:aspect-video"
+    >
+      <div className="relative h-full overflow-hidden">
+        <div 
+          className={`flex h-full ${isTransitioning ? 'transition-transform duration-700 ease-in-out' : ''}`}
+          style={{
+            transform: `translateX(-${currentSlide * 100}%)`
+          }}
         >
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-black/20">
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30"></div>
-          </div>
-          
-          {/* Slide Content */}
-          <div className="relative z-10 h-full flex items-center justify-center px-4">
-            <div className="text-center max-w-4xl mx-auto">
-              <motion.h1
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-6 leading-tight"
-              >
-                {slides[currentSlide].title}
-              </motion.h1>
-              
-              <motion.p
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-                className="text-xl sm:text-2xl md:text-3xl text-white/90 mb-8 max-w-3xl mx-auto"
-              >
-                {slides[currentSlide].subtitle}
-              </motion.p>
-              
-              <motion.button
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-white text-gray-900 px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transition-colors shadow-2xl"
-              >
-                {slides[currentSlide].buttonText}
-              </motion.button>
+          {infiniteSlides.map((slide, index) => (
+            <div
+              key={`${slide.id}-${index}`}
+              className="w-full h-full flex-shrink-0 relative"
+            >
+              <Image
+                src={slide.backgroundImage}
+                alt={`Slide ${index}`}
+                fill
+                className="object-cover object-center md:object-center lg:object-center"
+                priority={index === 1}
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 100vw, 100vw"
+                style={{
+                  objectFit: 'cover',
+                  objectPosition: 'center center',
+                  width: '100%',
+                  height: '100%'
+                }}
+              />
+              {/* Background Overlay - Lighter for white background */}
+              <div className="absolute inset-0 bg-black/10"></div>
             </div>
-          </div>
-        </motion.div>
-      </AnimatePresence>
+          ))}
+        </div>
+      </div>
 
       {/* Navigation Arrows */}
       <button
         onClick={goToPrevious}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-colors"
+        className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 bg-black/10 backdrop-blur-sm text-black p-2 md:p-3 rounded-full hover:bg-black/20 transition-colors"
         aria-label="Previous slide"
       >
-        <ChevronLeft className="w-6 h-6" />
+        <ChevronLeft className="w-4 h-4 md:w-6 md:h-6" />
       </button>
       
       <button
         onClick={goToNext}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/20 transition-colors"
+        className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 bg-black/10 backdrop-blur-sm text-black p-2 md:p-3 rounded-full hover:bg-black/20 transition-colors"
         aria-label="Next slide"
       >
-        <ChevronRight className="w-6 h-6" />
+        <ChevronRight className="w-4 h-4 md:w-6 md:h-6" />
       </button>
 
       {/* Pagination Dots */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
+      <div className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-20 flex space-x-1 md:space-x-2">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
             className={cn(
-              "w-3 h-3 rounded-full transition-all duration-300",
-              currentSlide === index
-                ? "bg-white w-8"
-                : "bg-white/50 hover:bg-white/70"
+              "h-2 md:h-3 rounded-full transition-all duration-300",
+              currentSlide === index + 1
+                ? "bg-black w-6 md:w-8"
+                : "bg-black/50 hover:bg-black/70 w-2 md:w-3"
             )}
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
       </div>
-
-      {/* Auto-play indicator */}
-      <button
-        onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-        className="absolute top-4 right-4 z-20 bg-white/10 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm hover:bg-white/20 transition-colors"
-      >
-        {isAutoPlaying ? "Pause" : "Play"}
-      </button>
     </section>
   );
 }

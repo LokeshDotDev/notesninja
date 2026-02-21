@@ -5,7 +5,6 @@ import { BlurFade } from "@/components/magicui/blur-fade";
 import { ImageGalleryModal } from "@/components/ui/image-gallery-modal";
 import PurchaseDialog from "@/components/custom/PurchaseDialog";
 import DownloadDialog from "@/components/custom/DownloadDialog";
-import { getPricingInfo, formatPrice, formatDiscount } from '@/lib/pricing';
 import { formatPrice as formatPriceUtil, calculateDiscountPercentage } from '@/lib/pricing-utils';
 
 interface PurchaseDialogState {
@@ -354,7 +353,7 @@ Limited Time Deal
 </span>
 </div>
 <span className='text-base text-neutral-500 dark:text-neutral-400'>
-M.R.P.: <span className='line-through'>{formatPriceUtil(posts[openIdx].compareAtPrice || 0)}</span>
+M.R.P.: <span className='line-through'>{formatPriceUtil(posts[openIdx].compareAtPrice || posts[openIdx].price || 0)}</span>
 </span>
 </div>
 ) : (
@@ -799,7 +798,7 @@ Limited Time Deal
 </span>
 </div>
 <span className='text-base text-neutral-500 dark:text-neutral-400'>
-M.R.P.: <span className='line-through'>{formatPriceUtil(posts[openIdx].compareAtPrice || 0)}</span>
+M.R.P.: <span className='line-through'>{formatPriceUtil(posts[openIdx].compareAtPrice || posts[openIdx].price || 0)}</span>
 </span>
 </div>
 ) : (

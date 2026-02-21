@@ -196,7 +196,7 @@ export function RatingsAndReviews() {
 
         {/* Reviews Grid */}
         <div className="columns-1 sm:columns-2 lg:columns-4 gap-6">
-          {reviews.map((review, index) => (
+          {reviews.map((review) => (
             <ReviewCard key={review.id} review={review} />
           ))}
         </div>

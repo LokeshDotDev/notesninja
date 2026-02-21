@@ -18,7 +18,7 @@ export function AnnouncementBar() {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-center text-center">
         <p className="text-sm font-medium">
-          🎉 Limited Time Offer: Get 20% off on all study materials! Use code: STUDY20
+          🎉Joined 2,000+ students who aced their exams this semester! Get your notes now.
         </p>
         <button
           onClick={() => setIsVisible(false)}

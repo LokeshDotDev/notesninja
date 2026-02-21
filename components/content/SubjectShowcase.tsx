@@ -58,7 +58,7 @@ const productCategories = [
     description: "Master of Arts in Economics notes, economic theories, and research papers",
     materials: 98,
     gradient: "from-indigo-500 to-purple-500",
-    image: "/assets/courses logo/maineco.png",
+    image: "/assets/courses logo/MA- Economics.webp",
     slug: "online-manipal-university/notes-and-mockpaper/maeco",
     originalPrice: "₹5,999",
     discountedPrice: "₹3,999"

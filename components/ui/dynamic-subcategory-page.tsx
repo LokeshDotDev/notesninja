@@ -19,6 +19,7 @@ interface Post {
     imageUrl: string;
     publicId: string;
     order: number;
+    isCover: boolean;
   }>;
 }
 
