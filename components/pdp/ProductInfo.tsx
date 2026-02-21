@@ -223,11 +223,14 @@ export function ProductInfo({
             </span>
           </div>
         )}
-        {product.compareAtPrice && product.compareAtPrice > (product.price || 0) && (
-          <span className="text-md text-neutral-500 line-through">
-            MRP: {formatPrice(product.compareAtPrice)}
-          </span>
-        )}
+        {(() => {
+          const pricingInfo = getPricingInfo(product.price || 0, product.compareAtPrice);
+          return pricingInfo.compareAtPrice && pricingInfo.compareAtPrice > (product.price || 0) && (
+            <span className="text-md text-neutral-500 line-through">
+              MRP: {formatPrice(pricingInfo.compareAtPrice)}
+            </span>
+          );
+        })()}
         
       </div>
 
