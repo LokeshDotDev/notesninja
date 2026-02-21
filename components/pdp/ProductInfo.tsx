@@ -6,9 +6,6 @@ import { Button } from '@/components/ui/button';
 import { 
   Download, 
   ShoppingCart,
-  CheckCircle,
-  Minus,
-  Plus,
   Shield,
   Star,
   ChevronDown,
@@ -18,8 +15,7 @@ import {
   Users,
   MessageCircle
 } from 'lucide-react';
-import { getPricingInfo, formatDiscount } from '@/lib/pricing';
-import { formatPrice, calculateDiscountPercentage } from '@/lib/pricing-utils';
+import { calculateDiscountPercentage } from '@/lib/pricing-utils';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import settings from '@/lib/settings';
@@ -101,10 +97,7 @@ export function ProductInfo({
   isPurchasing = false,
   isAddingToCart = false 
 }: ProductInfoProps) {
-  const [quantity, setQuantity] = useState(1);
-  const [selectedLength, setSelectedLength] = useState('ankle');
-  const [selectedSize, setSelectedSize] = useState('M');
-  const [selectedColor, setSelectedColor] = useState('cyan');
+  const [quantity] = useState(1);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -151,14 +144,7 @@ export function ProductInfo({
     }
   ];
 
-  const colors = [
-    { name: 'Cyan', value: 'cyan', hex: 'bg-cyan-500' },
-    { name: 'Black', value: 'black', hex: 'bg-black' },
-    { name: 'Navy', value: 'navy', hex: 'bg-blue-900' },
-    { name: 'Gray', value: 'gray', hex: 'bg-gray-500' },
-    { name: 'White', value: 'white', hex: 'bg-white border' }
-  ];
-
+  
   return (
     <motion.div
       initial={{ opacity: 0, x: 30 }}
@@ -203,7 +189,7 @@ export function ProductInfo({
       {/* notes ninja choice */}
       <span
        className="text-sm sm:text-sm font-bold text-white bg-black px-2 py-1 rounded-md dark:text-white leading-tight">
-        NotesNinja's Choice
+        NotesNinja&apos;s Choice
       </span>
 
           <hr />
@@ -231,12 +217,17 @@ export function ProductInfo({
             MRP: {formatPrice(product.compareAtPrice)}
           </span>
         )}
+        {!product.compareAtPrice && (
+          <span className="text-md text-neutral-500">
+            MRP: {formatPrice(product.price || 0)}
+          </span>
+        )}
         
       </div>
 
       {/* Product Features - 3 Column Layout - Apple Style */}
       <div className="grid grid-cols-3 gap-4 py-6">
-        {features.map((feature, index) => (
+        {features.map((feature) => (
           <div key={feature.title} className="text-center group">
             <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
               <feature.icon className="w-5 h-5 text-neutral-600 dark:text-neutral-300" strokeWidth={1.5} />

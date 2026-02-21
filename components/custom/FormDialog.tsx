@@ -39,11 +39,20 @@ interface FormDialogProps {
 		compareAtPrice?: number | string;
 		isDigital?: boolean;
 		name?: string;
-		parentId?: string;
 		slug?: string;
-		images?: Array<{id: string; imageUrl: string; publicId: string; order: number; isCover: boolean}>;
+		parentId?: string;
+		images?: Array<{
+			publicId?: string;
+			imageUrl?: string;
+			isCover?: boolean;
+		}>;
+		digitalFiles?: Array<{
+			publicId?: string;
+			fileUrl?: string;
+		}>;
 	};
-	onSave: (data: { id?: string; formData: FormData }) => void;
+	onSubmit?: (data: FormData) => Promise<void>;
+	onSave?: (data: { id?: string; formData: FormData }) => void;
 	isLoading?: boolean;
 	parentId?: string; // For creating child categories
 }
@@ -137,29 +146,29 @@ export default function FormDialog({
 			// Load existing images for editing
 			if (initialData.images && initialData.images.length > 0) {
 				// Convert existing images to File objects for display
-				const existingImages = initialData.images.map((img: any) => ({
+				const existingImages = initialData.images?.map((img) => ({
 					name: img.publicId || img.imageUrl?.split('/').pop() || 'image',
 					url: img.imageUrl,
 					publicId: img.publicId,
 					isExisting: true,
 					isCover: img.isCover || false
-				}));
-				setFiles(existingImages as any);
+				})) || [];
+				setFiles(existingImages as typeof files);
 				
 				// Set cover image index
-				const coverIndex = initialData.images.findIndex((img: any) => img.isCover);
+				const coverIndex = initialData.images?.findIndex((img) => img.isCover) ?? -1;
 				setCoverImageIndex(coverIndex >= 0 ? coverIndex : 0);
 			}
 			
 			// Load existing digital files for editing
 			if (initialData.digitalFiles && Array.isArray(initialData.digitalFiles) && initialData.digitalFiles.length > 0) {
-				const existingDigitalFiles = initialData.digitalFiles.map((file: any) => ({
+				const existingDigitalFiles = initialData.digitalFiles?.map((file) => ({
 					name: file.publicId || file.fileUrl?.split('/').pop() || 'file',
 					url: file.fileUrl,
 					publicId: file.publicId,
 					isExisting: true
-				}));
-				setDigitalFiles(existingDigitalFiles as any);
+				})) || [];
+				setDigitalFiles(existingDigitalFiles as typeof digitalFiles);
 			}
 		} else {
 			// Reset form for new item
@@ -250,7 +259,7 @@ export default function FormDialog({
 			submitData.append("id", initialData.id.toString());
 		}
 
-		await onSave({ 
+		await onSave?.({ 
 			id: initialData?.id?.toString(),
 			formData: submitData 
 		});

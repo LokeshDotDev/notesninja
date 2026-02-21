@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Search, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 
 interface PostImage {
   id: string;
@@ -24,13 +24,14 @@ export function MediaGallery({ images = [], mainImage, title }: MediaGalleryProp
   
   // Find cover image or use first image as fallback
   const coverImage = images.find(img => img.isCover);
-  const defaultImage = images.length > 0 ? images[0] : null;
   
-  const allImages = images && images.length > 0 
-    ? images.sort((a, b) => a.order - b.order)
-    : mainImage 
-      ? [{ id: 'main', imageUrl: mainImage, publicId: '', order: 0, isCover: false }]
-      : [];
+  const allImages = useMemo(() => {
+    return images && images.length > 0 
+      ? images.sort((a, b) => a.order - b.order)
+      : mainImage 
+        ? [{ id: 'main', imageUrl: mainImage, publicId: '', order: 0, isCover: false }]
+        : [];
+  }, [images, mainImage]);
 
   // Set initial image to cover image if available
   React.useEffect(() => {
