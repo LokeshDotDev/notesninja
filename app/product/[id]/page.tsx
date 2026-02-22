@@ -6,7 +6,9 @@ import { AnnouncementBar } from '@/components/pdp/AnnouncementBar';
 import { MediaGallery } from '@/components/pdp/MediaGallery';
 import { ProductInfo } from '@/components/pdp/ProductInfo';
 import { ProductHighlights } from '@/components/pdp/ProductHighlights';
+import { TrustSignals } from '@/components/pdp/TrustSignals';
 import { AccordionSection } from '@/components/pdp/AccordionSection';
+import { ProductDemo } from '@/components/pdp/ProductDemo';
 import { RatingsAndReviews } from '@/components/pdp/RatingsAndReviews';
 import SeeInActionSection from '@/components/pdp/SeeInActionSection';
 import { PremiumPageLoader } from '@/components/ui/premium-loader';
@@ -20,7 +22,6 @@ interface PostImage {
   imageUrl: string;
   publicId: string;
   order: number;
-  isCover: boolean;
 }
 
 interface Product {
@@ -133,42 +134,49 @@ export default function ProductPage({ params }: ProductPageProps) {
     }
   };
 
-  // UGC Video Data - Using actual student review videos
+  // UGC Video Data - Replace with actual video URLs
   const ugcVideos = [
     {
       id: '1',
-      src: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_1_17_FEB_2026.mp4',
-      thumbnail: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_1_17_FEB_2026.mp4',
-      poster: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_1_17_FEB_2026.mp4',
-      title: 'Student Success Story - Interview Experience'
+      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+      thumbnail: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=600&fit=crop',
+      poster: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=600&fit=crop',
+      title: 'Sarah mastered her exam in 2 weeks!'
     },
     {
       id: '2',
-      src: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_2_17_FEB_2026.mp4',
-      thumbnail: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_2_17_FEB_2026.mp4',
-      poster: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_2_17_FEB_2026.mp4',
-      title: 'Academic Achievement Journey'
+      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=600&fit=crop',
+      poster: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=600&fit=crop',
+      title: 'Mike improved his grades instantly'
     },
     {
       id: '3',
-      src: '/assets/student reviews videos/Notes_Ninja_shot_Video01.mp4',
-      thumbnail: '/assets/student reviews videos/Notes_Ninja_shot_Video01.mp4',
-      poster: '/assets/student reviews videos/Notes_Ninja_shot_Video01.mp4',
-      title: 'Study Techniques That Work'
+      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+      thumbnail: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&h=600&fit=crop',
+      poster: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&h=600&fit=crop',
+      title: 'Emma\'s study routine transformation'
     },
     {
       id: '4',
-      src: '/assets/student reviews videos/Notes_ninja_03.mp4',
-      thumbnail: '/assets/student reviews videos/Notes_ninja_03.mp4',
-      poster: '/assets/student reviews videos/Notes_ninja_03.mp4',
-      title: 'Exam Preparation Success'
+      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+      thumbnail: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=600&fit=crop',
+      poster: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=600&fit=crop',
+      title: 'John aced his finals with this!'
     },
     {
       id: '5',
-      src: '/assets/student reviews videos/Notes_ninja_shoot_video02_1.mp4',
-      thumbnail: '/assets/student reviews videos/Notes_ninja_shoot_video02_1.mp4',
-      poster: '/assets/student reviews videos/Notes_ninja_shoot_video02_1.mp4',
-      title: 'For $35. For everyone. Plus tax.'
+      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+      thumbnail: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&h=600&fit=crop',
+      poster: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&h=600&fit=crop',
+      title: 'Lisa\'s productivity boost'
+    },
+    {
+      id: '6',
+      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+      thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=600&fit=crop',
+      poster: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=600&fit=crop',
+      title: 'Tom\'s learning breakthrough'
     }
   ];
 
