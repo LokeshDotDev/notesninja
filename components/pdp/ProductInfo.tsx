@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
+import { trackBeginCheckout } from "@/lib/analytics";
 import { 
   Download, 
   ShoppingCart,
@@ -109,6 +110,14 @@ export function ProductInfo({
   };
 
   const handlePurchase = async () => {
+    trackBeginCheckout({
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      category: product.category?.name,
+      subcategory: product.subcategory?.name,
+      imageUrl: product.imageUrl,
+    });
     if (onPurchase) {
       await onPurchase();
     } else {

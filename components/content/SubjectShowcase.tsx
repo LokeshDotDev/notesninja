@@ -59,7 +59,7 @@ const productCategories = [
     materials: 98,
     gradient: "from-indigo-500 to-purple-500",
     image: "/assets/courses logo/MA- Economics.webp",
-    slug: "online-manipal-university/notes-and-mockpaper/maeco",
+    slug: "online-manipal-university/notes-and-mockpaper/ma-in-economics",
     originalPrice: "₹5,999",
     discountedPrice: "₹3,999"
   },

@@ -12,13 +12,13 @@ const Footer: React.FC = () => {
 	const currentYear = new Date().getFullYear();
 	
 	return (
-		<footer className="relative bg-gray-50 text-gray-900 overflow-hidden border-t border-gray-200 pb-44">
+		<footer className="relative bg-gray-50 text-gray-900 overflow-hidden border-t border-gray-200 pb-24 md:pb-44">
 			{/* Subtle gradient overlay */}
 			<div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-gray-50 pointer-events-none"></div>
 			
-			{/* Faded NotesNinja Background - Positioned closer to content from top */}
-			<div className="absolute top-96 left-0 right-0 flex justify-center items-end pointer-events-none">
-				<div className="text-[6rem] md:text-[8rem] lg:text-[15rem] font-bold leading-none bg-gradient-to-t from-gray-400 via-gray-200 to-white bg-clip-text text-transparent">
+			{/* Faded NotesNinja Background - Responsive placement */}
+			<div className="absolute bottom-0 md:bottom-auto md:top-96 left-0 right-0 flex justify-center items-end pointer-events-none">
+				<div className="text-[4rem] sm:text-[5rem] md:text-[8rem] lg:text-[15rem] font-bold leading-none bg-gradient-to-t from-gray-400 via-gray-200 to-white bg-clip-text text-transparent">
 					NOTESNINJA
 				</div>
 			</div>

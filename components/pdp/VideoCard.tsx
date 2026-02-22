@@ -30,30 +30,29 @@ export default function VideoCard({ video, onClick }: VideoCardProps) {
 
   return (
     <div
-      className="relative w-[160px] sm:w-[200px] md:w-[240px] h-[280px] sm:h-[360px] md:h-[420px] rounded-2xl overflow-hidden bg-black cursor-pointer hover:scale-105 transition-transform duration-300 flex-shrink-0"
+      className="relative w-[160px] sm:w-[200px] md:w-[240px] h-[280px] sm:h-[360px] md:h-[420px] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 cursor-pointer hover:scale-105 transition-transform duration-300 flex-shrink-0"
       onClick={() => onClick(video)}
     >
-      {/* Poster image as background */}
-      <img
-        src={video.poster}
-        alt={video.title}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-      
-      {/* Video overlay - cropped to center */}
+      {/* Video - autoplay and loop */}
       <video
         ref={videoRef}
-        className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-300"
-        style={{ opacity: isLoaded ? 1 : 0 }}
-        poster={video.poster}
+        className="absolute inset-0 w-full h-full object-cover"
         muted
         autoPlay
         loop
         playsInline
+        preload="metadata"
         onLoadedData={() => setIsLoaded(true)}
       >
         <source src={video.src} type="video/mp4" />
       </video>
+      
+      {/* Loading state */}
+      {!isLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-8 h-8 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+        </div>
+      )}
       
       {/* Play icon overlay */}
       <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity duration-300">
