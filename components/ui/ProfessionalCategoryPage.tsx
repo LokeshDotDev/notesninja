@@ -26,13 +26,10 @@ import {
   Award,
   CheckCircle,
   Filter
-  Filter
 } from "lucide-react";
 import { PremiumLoader } from "@/components/ui/premium-loader";
 import Image from "next/image";
 import { trackCategoryView } from "@/lib/analytics";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -146,13 +143,9 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
   const [category, setCategory] = useState<Category | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
-  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [breadcrumbs, setBreadcrumbs] = useState<{ name: string; path: string }[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSemester, setSelectedSemester] = useState<string>("all");
   const [breadcrumbs, setBreadcrumbs] = useState<{ name: string; path: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSemester, setSelectedSemester] = useState<string>("all");
@@ -256,9 +249,6 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
             const postsResponse = await fetch(`/api/posts?category=${data.id}`);
             if (postsResponse.ok) {
               const postsData = await postsResponse.json();
-              const postsArray = Array.isArray(postsData) ? postsData : postsData.posts || [];
-              setPosts(postsArray);
-              setFilteredPosts(postsArray);
               const postsArray = Array.isArray(postsData) ? postsData : postsData.posts || [];
               setPosts(postsArray);
               setFilteredPosts(postsArray);
@@ -458,7 +448,8 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
                 });
                 return (
                 <BlurFade key={post.id} delay={0.25 + index * 0.1} inView>
-                  <Link href={`/product/${post.id}`}>
+                  {/* <Link href={`/product/${post.id}`}> */}
+                  <Link href={`/${categoryName}/${post.slug}`}>
                     <motion.div
                       whileHover={{ y: -8, boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.15)" }}
                       whileTap={{ scale: 0.98 }}

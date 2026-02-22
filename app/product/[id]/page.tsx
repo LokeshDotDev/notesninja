@@ -6,9 +6,7 @@ import { AnnouncementBar } from '@/components/pdp/AnnouncementBar';
 import { MediaGallery } from '@/components/pdp/MediaGallery';
 import { ProductInfo } from '@/components/pdp/ProductInfo';
 import { ProductHighlights } from '@/components/pdp/ProductHighlights';
-import { TrustSignals } from '@/components/pdp/TrustSignals';
 import { AccordionSection } from '@/components/pdp/AccordionSection';
-import { ProductDemo } from '@/components/pdp/ProductDemo';
 import { RatingsAndReviews } from '@/components/pdp/RatingsAndReviews';
 import SeeInActionSection from '@/components/pdp/SeeInActionSection';
 import { PremiumPageLoader } from '@/components/ui/premium-loader';
@@ -22,6 +20,7 @@ interface PostImage {
   imageUrl: string;
   publicId: string;
   order: number;
+  isCover: boolean;
 }
 
 interface Product {
