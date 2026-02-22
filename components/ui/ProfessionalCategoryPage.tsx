@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { PremiumLoader } from "@/components/ui/premium-loader";
 import Image from "next/image";
-import { trackCategoryView } from "@/lib/analytics";
+import { trackCategoryView, trackError, trackSearch } from "@/lib/analytics";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -218,6 +218,14 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
   }, [posts, searchQuery, selectedSemester]);
 
   useEffect(() => {
+    if (!searchQuery.trim()) return;
+    const timeoutId = setTimeout(() => {
+      trackSearch(searchQuery.trim());
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  useEffect(() => {
     async function fetchCategory() {
       try {
         setLoading(true);
@@ -228,8 +236,10 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
         if (!response.ok) {
           if (response.status === 404) {
             setError("Category not found");
+            trackError("Category not found", "category_view");
           } else {
             setError("Failed to load category");
+            trackError("Failed to load category", "category_view");
           }
           return;
         }
@@ -260,6 +270,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
       } catch (err) {
         setError("Failed to load category");
         console.error("Error fetching category:", err);
+        trackError("Failed to load category", "category_view");
       } finally {
         setLoading(false);
       }

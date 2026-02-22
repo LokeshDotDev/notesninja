@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { PageHero } from "@/components/ui/page-hero";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import Link from "next/link";
+import { trackCategoryView, trackError } from "@/lib/analytics";
 
 interface Subcategory {
   id: string;
@@ -39,17 +40,21 @@ export function DynamicCategoryPage({ categoryName }: DynamicCategoryPageProps) 
         if (!response.ok) {
           if (response.status === 404) {
             setError("Category not found");
+            trackError("Category not found", "category_view");
           } else {
             setError("Failed to load category");
+            trackError("Failed to load category", "category_view");
           }
           return;
         }
 
         const data = await response.json();
         setCategory(data);
+        trackCategoryView(data.name || categoryName);
       } catch (err) {
         setError("Failed to load category");
         console.error("Error fetching category:", err);
+        trackError("Failed to load category", "category_view");
       } finally {
         setLoading(false);
       }

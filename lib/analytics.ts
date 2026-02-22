@@ -1,5 +1,16 @@
 // Analytics tracking utilities for GA4 and Meta Pixel
 
+// SHA-256 hashing utility for user data (Enhanced Conversions)
+async function sha256Hash(value: string): Promise<string> {
+  const normalizedValue = value.toLowerCase().trim();
+  const encoder = new TextEncoder();
+  const data = encoder.encode(normalizedValue);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+}
+
 interface Product {
   id: string;
   title: string;
@@ -226,30 +237,70 @@ export const trackDownload = (fileName: string, productId: string) => {
 };
 
 // 9. Login/Register Events
-export const trackLogin = (method: string = 'email') => {
-  // GA4
-  trackGA4Event('login', {
-    method: method
-  });
-
-  // Meta Pixel
-  trackMetaEvent('CompleteRegistration', {
+export const trackLogin = async (method: string = 'email', userData?: { email?: string; name?: string }) => {
+  const params: Record<string, unknown> = { method };
+  const metaParams: Record<string, unknown> = {
     content_name: 'Login',
     status: 'completed'
-  });
-};
+  };
 
-export const trackSignUp = (method: string = 'email') => {
+  // Enhanced Conversions - Hash user data if provided
+  if (userData?.email) {
+    const hashedEmail = await sha256Hash(userData.email);
+    params.user_data = {
+      email_address: hashedEmail
+    };
+    // Meta Pixel Advanced Matching
+    metaParams.em = hashedEmail; // hashed email
+  }
+
+  if (userData?.name) {
+    const hashedName = await sha256Hash(userData.name);
+    if (params.user_data) {
+      (params.user_data as Record<string, unknown>).name = hashedName;
+    }
+    // Meta Pixel Advanced Matching
+    metaParams.fn = hashedName; // hashed first name
+  }
+
   // GA4
-  trackGA4Event('sign_up', {
-    method: method
-  });
+  trackGA4Event('login', params);
 
   // Meta Pixel
-  trackMetaEvent('CompleteRegistration', {
+  trackMetaEvent('CompleteRegistration', metaParams);
+};
+
+export const trackSignUp = async (method: string = 'email', userData?: { email?: string; name?: string }) => {
+  const params: Record<string, unknown> = { method };
+  const metaParams: Record<string, unknown> = {
     content_name: 'Registration',
     status: 'completed'
-  });
+  };
+
+  // Enhanced Conversions - Hash user data if provided
+  if (userData?.email) {
+    const hashedEmail = await sha256Hash(userData.email);
+    params.user_data = {
+      email_address: hashedEmail
+    };
+    // Meta Pixel Advanced Matching
+    metaParams.em = hashedEmail; // hashed email
+  }
+
+  if (userData?.name) {
+    const hashedName = await sha256Hash(userData.name);
+    if (params.user_data) {
+      (params.user_data as Record<string, unknown>).name = hashedName;
+    }
+    // Meta Pixel Advanced Matching
+    metaParams.fn = hashedName; // hashed first name
+  }
+
+  // GA4
+  trackGA4Event('sign_up', params);
+
+  // Meta Pixel
+  trackMetaEvent('CompleteRegistration', metaParams);
 };
 
 // 10. Error Tracking

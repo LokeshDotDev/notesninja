@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { trackError, trackSignUp } from "@/lib/analytics";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -17,11 +18,13 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     if (password !== confirmPassword) {
+      trackError("Passwords do not match", "signup_validation");
       setIsLoading(false);
       return;
     }
 
     if (password.length < 6) {
+      trackError("Password too short", "signup_validation");
       setIsLoading(false);
       return;
     }
@@ -40,12 +43,18 @@ export default function RegisterPage() {
       });
 
       if (!response.ok) {
+        trackError("Registration failed", "signup");
         router.push("/login?message=Registration failed");
       } else {
+        await trackSignUp("email", {
+          email: email,
+          name: name
+        });
         router.push("/login?message=Registration successful. Please sign in.");
       }
     } catch (error) {
       console.error("Registration error:", error);
+      trackError(error instanceof Error ? error.message : "Registration error", "signup");
     } finally {
       setIsLoading(false);
     }

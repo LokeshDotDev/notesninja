@@ -7,6 +7,7 @@ import JsonLd from "@/components/custom/JsonLd";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import VisitorTracker from "@/components/analytics/GoogleAnalytics";
 import MetaPixel from "@/components/analytics/MetaPixel";
+import RouteChangeTracker from "@/components/analytics/RouteChangeTracker";
 import PerformanceMonitor from "@/components/custom/PerformanceMonitor";
 import NavigationLoader from "@/components/custom/NavigationLoader";
 import settings from "@/lib/settings";
@@ -109,6 +110,7 @@ export default function RootLayout({
           <GoogleAnalytics ga_id={settings.site.analytics_ga_id} />
           <VisitorTracker ga_id={settings.site.analytics_ga_id} />
           <MetaPixel />
+          <RouteChangeTracker />
           <JsonLd />
           <PerformanceMonitor />
           <NavigationLoader />

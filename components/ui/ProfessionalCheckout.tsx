@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,14 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { trackDownload } from "@/lib/analytics";
+import {
+  trackAddPaymentInfo,
+  trackBeginCheckout,
+  trackCheckoutPageView,
+  trackDownload,
+  trackError,
+  trackPurchase,
+} from "@/lib/analytics";
 declare global {
   interface Window {
     Razorpay: {
@@ -112,6 +119,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const hasTrackedBeginCheckout = useRef(false);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -121,6 +129,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         
         if (!response.ok) {
           setError("Product not found");
+          trackError("Product not found", "checkout_product_fetch");
           return;
         }
 
@@ -130,6 +139,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
       } catch (err) {
         setError("Failed to load product");
         console.error("Error fetching product:", err);
+        trackError("Failed to load product", "checkout_product_fetch");
       } finally {
         setLoading(false);
       }
@@ -137,6 +147,33 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
 
     fetchProduct();
   }, [productId]);
+
+  useEffect(() => {
+    if (!product) return;
+    if (!hasTrackedBeginCheckout.current) {
+      trackBeginCheckout({
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        category: product.category?.name,
+        subcategory: product.subcategory?.name,
+        imageUrl: product.imageUrl,
+      });
+      hasTrackedBeginCheckout.current = true;
+    }
+  }, [product]);
+
+  useEffect(() => {
+    if (!product) return;
+    trackCheckoutPageView(paymentStep, {
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      category: product.category?.name,
+      subcategory: product.subcategory?.name,
+      imageUrl: product.imageUrl,
+    });
+  }, [paymentStep, product]);
 
   // Pre-fill form data for authenticated users
   useEffect(() => {
@@ -179,11 +216,13 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
   const handlePayment = async () => {
     if (!validateForm()) {
       setError("Please fill in all required fields");
+      trackError("Missing required fields", "checkout_validation");
       return;
     }
 
     if (!product) {
       setError("Product not available");
+      trackError("Product not available", "checkout_validation");
       return;
     }
 
@@ -191,6 +230,14 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
     setPaymentStep("processing");
 
     try {
+      trackAddPaymentInfo({
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        category: product.category?.name,
+        subcategory: product.subcategory?.name,
+        imageUrl: product.imageUrl,
+      });
       // Create Razorpay order
       const orderResponse = await fetch('/api/razorpay/create-order', {
         method: 'POST',
@@ -248,6 +295,23 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
           const verifyData = await verifyResponse.json();
 
           if (verifyResponse.ok && verifyData.success) {
+            trackPurchase({
+              transactionId: response.razorpay_payment_id,
+              value: product.price || 0,
+              currency: "INR",
+              products: [
+                {
+                  id: product.id,
+                  title: product.title,
+                  price: product.price,
+                  category: product.category?.name,
+                  subcategory: product.subcategory?.name,
+                  imageUrl: product.imageUrl,
+                },
+              ],
+              customerEmail: formData.email,
+              customerName: `${formData.firstName} ${formData.lastName}`,
+            });
             // Send confirmation email
             try {
               console.log('Product data:', product);
@@ -309,6 +373,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
       console.error('Payment error:', error);
       setPaymentStep("error");
       setError(error instanceof Error ? error.message : "Payment failed. Please try again.");
+      trackError(error instanceof Error ? error.message : "Payment failed", "checkout_payment");
       
       // Redirect to the specified page on payment failure
       setTimeout(() => {
@@ -367,6 +432,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
       
     } catch (error) {
       console.error('Download failed:', error);
+      trackError(error instanceof Error ? error.message : "Download failed", "download");
       
       // Remove from downloading set on error
       setDownloadingFiles(prev => {

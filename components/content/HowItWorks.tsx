@@ -321,8 +321,8 @@ export function HowItWorks() {
           ))}
         </div>
 
-        {/* Premium Why Choose Section */}
-         <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-3xl p-16 md:p-24 relative overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
+         {/* Premium Why Choose Section */}
+         <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-3xl p-6 sm:p-10 md:p-16 lg:p-24 relative overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
           
             
             <div className="relative z-10 max-w-4xl mx-auto">
@@ -334,16 +334,16 @@ export function HowItWorks() {
               </div>
               
               {/* Clean typography */}
-              <h3 className="text-4xl text-center md:text-6xl font-bold text-slate-900 dark:text-white mb-8 leading-tight">
+              <h3 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl text-center font-bold text-slate-900 dark:text-white mb-6 sm:mb-8 leading-tight">
                 Can&apos;t find what you&apos;re looking for?
               </h3>
               
-              <p className="text-xl text-center text-slate-600 dark:text-slate-400 mb-12 leading-relaxed">
+              <p className="text-base sm:text-lg md:text-xl text-center text-slate-600 dark:text-slate-400 mb-8 sm:mb-12 leading-relaxed">
                 We&apos;re constantly adding new study materials for different courses. Request specific materials and we&apos;ll prioritize them for our next update!
               </p>
               
               {/* Clean button layout */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10 sm:mb-16">
                 <Button size="lg" className="bg-slate-900 hover:bg-slate-800 text-white font-medium px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
                   <a
                     href="https://wa.me/6378990158"
@@ -367,7 +367,7 @@ export function HowItWorks() {
               </div>
               
               {/* Clean feature indicators */}
-              <div className="flex justify-center items-center gap-12 text-sm text-slate-500 dark:text-slate-400">
+              <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-8 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                     <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />

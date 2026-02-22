@@ -104,8 +104,11 @@ export function AuthModal({ isOpen, onClose, initialView = "signin", onSuccess }
       setSuccess("Account created successfully! Please sign in.");
       setView("signin");
       
-      // Track successful signup
-      trackSignUp('email');
+      // Track successful signup with hashed user data
+      await trackSignUp('email', {
+        email: formData.email,
+        name: formData.name
+      });
       
       // Clear form except email
       setFormData(prev => ({
@@ -147,8 +150,10 @@ export function AuthModal({ isOpen, onClose, initialView = "signin", onSuccess }
       if (result?.ok) {
         setSuccess("Signed in successfully!");
         
-        // Track successful login
-        trackLogin('email');
+        // Track successful login with hashed user data
+        await trackLogin('email', {
+          email: formData.email
+        });
         
         setTimeout(() => {
           onSuccess?.();
