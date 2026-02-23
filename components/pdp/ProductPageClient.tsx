@@ -109,7 +109,29 @@ export function ProductPageClient({ productId }: { productId: string }) {
     async function fetchProduct() {
       try {
         setLoading(true);
-        const startTime = Date.now();
+        
+        // Check cache first for instant loading
+        const cachedData = sessionStorage.getItem(`product_${productId}`);
+        const cacheTimestamp = sessionStorage.getItem(`product_${productId}_timestamp`);
+        const now = Date.now();
+        
+        // Use cache if less than 5 minutes old
+        if (cachedData && cacheTimestamp && (now - parseInt(cacheTimestamp)) < 300000) {
+          const productData = JSON.parse(cachedData);
+          setProduct(productData);
+          setLoading(false);
+          
+          // Track product view from cache
+          trackViewItem({
+            id: productData.id,
+            title: productData.title,
+            price: productData.price,
+            category: productData.category?.name,
+            subcategory: productData.subcategory?.name,
+            imageUrl: productData.imageUrl
+          });
+          return;
+        }
         
         const response = await fetch(`/api/posts/${productId}`);
         
@@ -135,12 +157,12 @@ export function ProductPageClient({ productId }: { productId: string }) {
           imageUrl: productData.imageUrl
         });
         
-        // Ensure minimum loading time of 500ms for better UX
-        const elapsedTime = Date.now() - startTime;
-        const remainingTime = Math.max(0, 500 - elapsedTime);
-        
-        if (remainingTime > 0) {
-          await new Promise(resolve => setTimeout(resolve, remainingTime));
+        // Cache product data for faster subsequent loads
+        try {
+          sessionStorage.setItem(`product_${productId}`, JSON.stringify(productData));
+          sessionStorage.setItem(`product_${productId}_timestamp`, Date.now().toString());
+        } catch {
+          // SessionStorage might be full, ignore error
         }
       } catch (err) {
         setError("Failed to load product");

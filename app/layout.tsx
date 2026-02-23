@@ -10,16 +10,24 @@ import MetaPixel from "@/components/analytics/MetaPixel";
 import RouteChangeTracker from "@/components/analytics/RouteChangeTracker";
 import PerformanceMonitor from "@/components/custom/PerformanceMonitor";
 import NavigationLoader from "@/components/custom/NavigationLoader";
-import Footer from "@/components/content/Footer";
 import settings from "@/lib/settings";
 import { GTM_ID } from "@/lib/gtm";
 import Script from "next/script";
-import { WhatsAppChat } from "@/components/ui/WhatsAppChat";
+import dynamic from "next/dynamic";
+
+// Lazy load Footer (it's at the bottom of the page)
+const Footer = dynamic(() => import("@/components/content/Footer"), {
+  ssr: true
+});
+
+// Lazy load WhatsApp chat widget - it's a client component so this is fine
+const WhatsAppChat = dynamic(() => import("@/components/ui/WhatsAppChat").then(mod => ({ default: mod.WhatsAppChat })));
 
 const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  display: "swap", // Add font-display swap for better performance
 });
 
 export const metadata: Metadata = {
@@ -81,6 +89,12 @@ export default function RootLayout({
     <Providers>
       <html lang="en">
         <head>
+          {/* Preconnect to critical domains */}
+          <link rel="preconnect" href="https://www.googletagmanager.com" />
+          <link rel="preconnect" href="https://www.google-analytics.com" />
+          <link rel="preconnect" href="https://connect.facebook.net" />
+          <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
+          
           <link rel="canonical" href={settings.site.url} />
           <link rel="icon" type="image/png" href="/assets/Notes ninja Logo.png" />
           <meta name="geo.region" content={settings.site.geo.region} />
@@ -99,10 +113,10 @@ export default function RootLayout({
             `}
           </Script>
 
-          {/* Razorpay Script */}
+          {/* Razorpay Script - lazy load only when needed */}
           <Script 
             src="https://checkout.razorpay.com/v1/checkout.js" 
-            strategy="afterInteractive"
+            strategy="lazyOnload"
           />
         </head>
         <body

@@ -17,38 +17,70 @@ interface VideoCardProps {
 
 export default function VideoCard({ video, onClick }: VideoCardProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isInView, setIsInView] = useState(false)
 
+  // Lazy load video when in viewport
   useEffect(() => {
-    const video = videoRef.current
-    if (video) {
-      video.play().catch(() => {
-        // Autoplay blocked, that's ok
-      })
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsInView(true)
+          }
+        })
+      },
+      {
+        rootMargin: '50px', // Start loading slightly before entering viewport
+        threshold: 0.1
+      }
+    )
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current)
+    }
+
+    return () => {
+      if (containerRef.current) {
+        observer.unobserve(containerRef.current)
+      }
     }
   }, [])
 
   return (
     <div
+      ref={containerRef}
       className="relative w-[160px] sm:w-[200px] md:w-[240px] h-[280px] sm:h-[360px] md:h-[420px] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 cursor-pointer hover:scale-105 transition-transform duration-300 flex-shrink-0"
       onClick={() => onClick(video)}
     >
-      {/* Video - autoplay and loop */}
-      <video
-        ref={videoRef}
-        className="absolute inset-0 w-full h-full object-cover"
-        muted
-        autoPlay
-        loop
-        playsInline
-        preload="metadata"
-        onLoadedData={() => setIsLoaded(true)}
-      >
-        <source src={video.src} type="video/mp4" />
-      </video>
+      {/* Video - paused by default, lazy loaded */}
+      {isInView && (
+        <video
+          ref={videoRef}
+          className="absolute inset-0 w-full h-full object-cover"
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster={video.poster || video.thumbnail}
+          onLoadedData={() => setIsLoaded(true)}
+        >
+          <source src={video.src} type="video/mp4" />
+        </video>
+      )}
+      
+      {/* Poster/Thumbnail when not loaded */}
+      {!isInView && video.poster && (
+        <img
+          src={video.poster}
+          alt={video.title}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
       
       {/* Loading state */}
-      {!isLoaded && (
+      {isInView && !isLoaded && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-8 h-8 border-3 border-white/30 border-t-white rounded-full animate-spin" />
         </div>

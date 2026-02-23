@@ -239,6 +239,25 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
       try {
         setLoading(true);
         
+        // Check sessionStorage cache first
+        const cachedCategory = sessionStorage.getItem(`category_${categoryName}`);
+        const cacheTimestamp = sessionStorage.getItem(`category_${categoryName}_timestamp`);
+        const now = Date.now();
+        
+        // Use cache if less than 5 minutes old
+        if (cachedCategory && cacheTimestamp && (now - parseInt(cacheTimestamp)) < 300000) {
+          const categoryData = JSON.parse(cachedCategory);
+          setCategory(categoryData);
+          setPosts(categoryData.posts || []);
+          setFilteredPosts(categoryData.posts || []);
+          setBreadcrumbs(buildBreadcrumbs(categoryName));
+          setLoading(false);
+          
+          // Track category view from cache
+          trackCategoryView(categoryData.name);
+          return;
+        }
+        
         // Try to find category by path (for nested categories) or by slug/name (for backwards compatibility)
         const response = await fetch(`/api/categories/${encodeURIComponent(categoryName)}`);
         
@@ -275,6 +294,15 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
               const postsArray = Array.isArray(postsData) ? postsData : postsData.posts || [];
               setPosts(postsArray);
               setFilteredPosts(postsArray);
+              
+              // Cache category with posts for faster subsequent loads
+              try {
+                const cacheData = { ...data, posts: postsArray };
+                sessionStorage.setItem(`category_${categoryName}`, JSON.stringify(cacheData));
+                sessionStorage.setItem(`category_${categoryName}_timestamp`, Date.now().toString());
+              } catch {
+                // SessionStorage might be full, ignore
+              }
             }
           } catch (err) {
             console.error("Error fetching posts:", err);

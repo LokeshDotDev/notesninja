@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const productCategories = [
   {
@@ -169,7 +169,6 @@ const testimonials = [
 
 export function SubjectShowcase() {
   const [, setCurrentTestimonial] = useState(0);
-  const router = useRouter();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -178,10 +177,6 @@ export function SubjectShowcase() {
 
     return () => clearInterval(interval);
   }, []);
-
-  const handleCardClick = (slug: string) => {
-    router.push(`/${slug}`);
-  };
 
   return (
     <section className="py-20 px-4 bg-gradient-to-b from-white via-neutral-50 to-white dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
@@ -233,20 +228,20 @@ export function SubjectShowcase() {
               transition={{ duration: 0.6, delay: index * 0.08 }}
               viewport={{ once: true }}
             >
-              <Card 
-                className="h-full group hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] transition-all duration-500 border border-neutral-200/50 dark:border-neutral-700/50 bg-white dark:bg-neutral-800/80 backdrop-blur-xl relative overflow-hidden rounded-3xl p-0 cursor-pointer"
-                onClick={() => handleCardClick(category.slug)}
-              >  
-                {/* Image Section */}
-                <div className="relative h-56 overflow-hidden rounded-t-3xl bg-neutral-100 dark:bg-neutral-900">
-                  <Image 
-                    src={category.image} 
-                    alt={category.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+              <Link href={`/${category.slug}`} prefetch={true}>
+                <Card 
+                  className="h-full group hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] transition-all duration-500 border border-neutral-200/50 dark:border-neutral-700/50 bg-white dark:bg-neutral-800/80 backdrop-blur-xl relative overflow-hidden rounded-3xl p-0 cursor-pointer"
+                >  
+                  {/* Image Section */}
+                  <div className="relative h-56 overflow-hidden rounded-t-3xl bg-neutral-100 dark:bg-neutral-900">
+                    <Image 
+                      src={category.image} 
+                      alt={category.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                   
                                     
                 </div>
@@ -270,6 +265,7 @@ export function SubjectShowcase() {
                   </Button>
                 </CardContent>
               </Card>
+              </Link>
             </motion.div>
           ))}
         </div>

@@ -123,8 +123,10 @@ export function GiantSlider() {
                 alt={`Slide ${index}`}
                 fill
                 className="object-cover object-center md:object-center lg:object-center"
-                priority={index === 1}
-                sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 100vw, 100vw"
+                priority={index === 1} // Prioritize first real slide
+                loading={index === 1 ? "eager" : "lazy"}
+                sizes="100vw"
+                quality={90}
                 style={{
                   objectFit: 'cover',
                   objectPosition: 'center center',
