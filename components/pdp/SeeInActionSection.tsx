@@ -42,8 +42,8 @@ export default function SeeInActionSection({ videos }: SeeInActionSectionProps) 
     setSelectedVideo(videos[prevIndex])
   }
 
-  // Triple videos for smoother infinite scroll (needs enough content to fill screen + buffer)
-  const duplicatedVideos = [...videos, ...videos, ...videos]
+  // Double videos for smooth infinite scroll effect
+  const duplicatedVideos = [...videos, ...videos]
 
   return (
     <>
@@ -59,12 +59,29 @@ export default function SeeInActionSection({ videos }: SeeInActionSectionProps) 
             </p>
           </div>
 
-          {/* Horizontal Auto-Scrolling Video Row */}
+          {/* Horizontal Auto-Scrolling Video Row - Smooth Infinite Scroll */}
           <div className="overflow-hidden relative group w-full">
+            <style jsx>{`
+              @keyframes smoothVideoScroll {
+                0% {
+                  transform: translateX(0);
+                }
+                100% {
+                  transform: translateX(calc(-50% - 24px));
+                }
+              }
+              .video-scroll-animate {
+                animation: smoothVideoScroll 20s linear infinite;
+              }
+              .video-scroll-animate:hover {
+                animation-play-state: paused;
+              }
+            `}</style>
+            
             {/* Left/Right fade overlays */}
             <div className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-24 bg-gradient-to-r from-[#f8f8f8] to-transparent z-10" />
             <div className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-24 bg-gradient-to-l from-[#f8f8f8] to-transparent z-10" />
-            <div className="flex gap-4 sm:gap-6 animate-scroll group-hover:[animation-play-state:paused] will-change-transform">
+            <div className="flex gap-4 sm:gap-6 will-change-transform video-scroll-animate">
               {duplicatedVideos.map((video, index) => (
                 <VideoCard
                   key={`${video.id}-${index}`}

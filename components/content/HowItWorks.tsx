@@ -273,7 +273,7 @@ export function HowItWorks() {
             <span className="text-xs font-medium text-gray-600 dark:text-gray-400 tracking-wide uppercase">Simple Process</span>
           </div>
           
-          <h2 className="text-6xl md:text-8xl font-semibold text-gray-900 dark:text-white mb-8 leading-tight tracking-tight">
+          <h2 className="text-4xl md:text-8xl font-semibold text-gray-900 dark:text-white mb-8 leading-tight tracking-tight">
             How It Works
           </h2>
           

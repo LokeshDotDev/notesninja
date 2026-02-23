@@ -22,6 +22,7 @@ import { getPricingInfo, formatDiscount } from "@/lib/pricing";
 import Link from "next/link";
 import Image from "next/image";
 import { trackViewItem, trackCustomEvent, trackBeginCheckout } from "@/lib/analytics";
+import { DescriptionRenderer } from "@/components/ui/DescriptionRenderer";
 
 interface PostImage {
   id: string;
@@ -528,9 +529,7 @@ export function ProfessionalProductDetail({ productId }: ProfessionalProductDeta
 
               {selectedTab === 'description' && (
                 <div className="py-4">
-                  <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                    {product.description}
-                  </p>
+                  <DescriptionRenderer description={product.description} />
                 </div>
               )}
 

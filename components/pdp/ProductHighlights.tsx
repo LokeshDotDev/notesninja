@@ -47,9 +47,6 @@ export function ProductHighlights() {
             <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 leading-tight">
               Transform Your Study Experience
             </h2>
-            <p className="text-gray-600 text-lg leading-relaxed max-w-md">
-              Watch your academic performance soar with our comprehensive study materials. From confusion to clarity, our resources bridge the gap between struggle and success.
-            </p>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -82,9 +79,6 @@ export function ProductHighlights() {
             <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 leading-tight">
               Expert-Verified Content You Can Trust
             </h2>
-            <p className="text-gray-600 text-lg leading-relaxed max-w-md">
-              Our study materials are crafted by subject matter experts and experienced educators, ensuring accuracy, relevance, and educational effectiveness.
-            </p>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
@@ -143,9 +137,6 @@ export function ProductHighlights() {
             <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 leading-tight">
               Achieve Your Academic Goals
             </h2>
-            <p className="text-gray-600 text-lg leading-relaxed max-w-md">
-              Join thousands of successful students who have transformed their academic journey with our comprehensive study materials and expert guidance.
-            </p>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
@@ -178,9 +169,6 @@ export function ProductHighlights() {
             <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 leading-tight">
               Start Your Success Journey Today
             </h2>
-            <p className="text-gray-600 text-lg leading-relaxed max-w-md">
-              Take the first step towards academic excellence. Our comprehensive study materials are designed to help you achieve your goals with confidence.
-            </p>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 bg-orange-500 rounded-full"></div>

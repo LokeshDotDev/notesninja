@@ -20,6 +20,7 @@ import { calculateDiscountPercentage } from '@/lib/pricing-utils';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import settings from '@/lib/settings';
+import { DescriptionRenderer } from '@/components/ui/DescriptionRenderer';
 
 interface Product {
   id: string;
@@ -341,9 +342,7 @@ export function ProductInfo({
       {/* Collapsible Sections */}
       <div className="mt-8 space-y-4">
         <CollapsibleSection title="Description" defaultOpen={true}>
-          <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-            {product.description}
-          </p>
+          <DescriptionRenderer description={product.description} />
         </CollapsibleSection>
         
         <CollapsibleSection title="Product Details">

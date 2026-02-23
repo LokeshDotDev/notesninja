@@ -1,12 +1,13 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, X, User, LogOut, ChevronDown as ChevronDownIcon } from "lucide-react";
+import { ChevronDown, Menu, X, User, LogOut, ChevronDown as ChevronDownIcon, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { isAdmin } from "@/lib/admin";
+import settings from "@/lib/settings";
 
 // Apple-inspired design system for navbar
 const appleNavbar = {
@@ -122,16 +123,28 @@ export function DynamicNavbar() {
 			<nav className={`fixed top-0 left-0 right-0 z-50 w-full ${appleNavbar.border} ${appleNavbar.background} backdrop-blur-xl shadow-sm`}>
 			<div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
 				<div className="flex h-20 items-center justify-between">
+					{/* Mobile Hamburger Menu - Left Side */}
+					<div className="lg:hidden order-first">
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+							className={`${appleNavbar.text.primary} p-2 rounded-xl hover:bg-[rgb(248, 248, 248)] dark:hover:bg-neutral-800 transition-all duration-200`}
+						>
+							{isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+						</Button>
+					</div>
+
 					{/* Logo */}
-					<div className="flex items-center">
+					<div className="flex items-center flex-1 lg:flex-none justify-center lg:justify-start">
 						<Link href="/" className="flex items-center space-x-3 group">
 							<Image 
 								src="/assets/Notes ninja Logo copy.png" 
 								alt="NotesNinja" 
-								width={180}
+								width={150}
 								height={48}
 								priority
-								className="h-14 w-auto transition-transform duration-300 group-hover:scale-105"
+								className="h-10 lg:h-14 w-auto"
 							/>
 						</Link>
 					</div>
@@ -246,16 +259,16 @@ export function DynamicNavbar() {
 						)}
 					</div>
 
-					{/* Mobile Menu Toggle */}
-					<div className="lg:hidden">
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-							className={`${appleNavbar.text.primary} p-2 rounded-xl hover:bg-[rgb(248, 248, 248)] dark:hover:bg-neutral-800 transition-all duration-200`}
+					{/* Mobile Right Section - Call Icon & Auth */}
+					<div className="lg:hidden flex items-center gap-2">
+						{/* Direct Call Icon - Mobile Only */}
+						<a
+							href={`tel:${settings.whatsapp.number}`}
+							className={`p-2 rounded-xl ${appleNavbar.text.primary} hover:bg-[rgb(248, 248, 248)] dark:hover:bg-neutral-800 transition-all duration-200`}
+							title="Call us"
 						>
-							{isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-						</Button>
+							<Phone className="w-5 h-5" />
+						</a>
 					</div>
 				</div>
 

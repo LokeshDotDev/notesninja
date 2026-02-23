@@ -226,7 +226,7 @@ const ReviewCard = ({ review }: { review: Review }) => (
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
     transition={{ duration: 0.7, ease: "easeOut" }}
-    className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition duration-300 mb-6 break-inside-avoid w-full inline-block"
+    className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition duration-300 h-full"
   >
     {/* Header */}
     <div className="flex items-start justify-between mb-3">
@@ -297,16 +297,48 @@ export function RatingsAndReviews() {
                 ))}
               </div>
               <span className="text-lg font-semibold text-gray-900">{averageRating}</span>
-              <span className="text-gray-600">| {totalReviews} Reviews</span>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span className="text-xs font-medium text-gray-700">
+              {totalReviews}+ Reviews
+            </span>
+          </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Reviews Grid */}
-        <div className="columns-1 sm:columns-2 lg:columns-4 gap-6">
-          {reviews.map((review) => (
-            <ReviewCard key={review.id} review={review} />
-          ))}
+        {/* Reviews Horizontal Scrolling Carousel */}
+        <div className="overflow-hidden relative group w-full mt-8">
+          <style jsx>{`
+            @keyframes smoothReviewScroll {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(calc(-50% - 24px));
+              }
+            }
+            .review-scroll-animate {
+              animation: smoothReviewScroll 10s linear infinite;
+            }
+            .review-scroll-animate:hover {
+              animation-play-state: paused;
+            }
+          `}</style>
+          
+          {/* Left fade overlay */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-gray-50 to-transparent z-10" />
+          {/* Right fade overlay */}
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-gray-50 to-transparent z-10" />
+          
+          <div className="flex gap-6 will-change-transform review-scroll-animate">
+            {/* Triple the reviews for truly seamless infinite scroll */}
+            {[...reviews, ...reviews, ...reviews].map((review, index) => (
+              <div key={`${review.id}-${index}`} className="flex-shrink-0 w-80">
+                <ReviewCard review={review} />
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Subtle More Reviews Hint */}
@@ -317,14 +349,9 @@ export function RatingsAndReviews() {
           transition={{ duration: 0.7, ease: "easeOut", delay: 0.3 }}
           className="mt-16 text-center"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-xs font-medium text-gray-700">
-              {totalReviews}+ Verified Reviews
-            </span>
-          </div>
+          
           <p className="text-xs text-gray-500 mt-3">
-            Trusted by students worldwide
+            Trusted by Students from Top Universities
           </p>
         </motion.div>
       </div>

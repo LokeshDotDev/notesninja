@@ -47,7 +47,7 @@ export function UniversitiesShowcase() {
                   <stat.icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+              <div className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1">
                 {stat.value}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">

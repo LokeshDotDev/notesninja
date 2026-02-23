@@ -202,20 +202,9 @@ export function SubjectShowcase() {
             <br />
             Online Manipal University 
           </h2>
-          <p className="text-xl text-neutral-600 dark:text-neutral-400 max-w-4xl mx-auto mb-8 leading-relaxed">
+          <p className="text-xl text-neutral-600 dark:text-neutral-400 max-w-5xl mx-auto mb-8 leading-relaxed">
             Access high-quality study materials for MBA, BBA, MCA, BCA, MAECO, BCOM, MCOM, and MAJMC
           </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <span className="text-sm font-semibold text-primary bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
-              8 Courses
-            </span>
-            <span className="text-sm font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-full border border-emerald-200 dark:border-emerald-700">
-              Instant Downloads
-            </span>
-            <span className="text-sm font-semibold text-purple-600 bg-purple-50 dark:bg-purple-900/20 px-4 py-2 rounded-full border border-purple-200 dark:border-purple-700">
-              Expert Verified
-            </span>
-          </div>
         </motion.div>
 
         {/* Product Grid */}
