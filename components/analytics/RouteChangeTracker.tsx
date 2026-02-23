@@ -3,8 +3,9 @@
 import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { trackGA4Event, trackMetaEvent } from "@/lib/analytics";
+import { Suspense } from "react";
 
-export default function RouteChangeTracker() {
+function RouteChangeTrackerContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -23,4 +24,12 @@ export default function RouteChangeTracker() {
   }, [pathname, searchParams]);
 
   return null;
+}
+
+export default function RouteChangeTracker() {
+  return (
+    <Suspense fallback={null}>
+      <RouteChangeTrackerContent />
+    </Suspense>
+  );
 }

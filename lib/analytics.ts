@@ -308,10 +308,11 @@ export const trackError = (error: string, context?: string) => {
   // GA4
   trackGA4Event('exception', {
     description: error,
-    fatal: false
+    fatal: false,
+    ...(context && { context })
   });
 
-  console.error(`🚨 Analytics Error: ${error}`, context);
+  console.error(`🚨 Analytics Error: ${error}${context ? ` | Context: ${context}` : ''}`);
 };
 
 // 11. Custom Events

@@ -212,6 +212,15 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
     return filtered;
   };
 
+  // Scroll to top when category changes
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+      left: 0
+    });
+  }, [categoryName]);
+
   // Update filtered posts when posts, search query, or semester changes
   useEffect(() => {
     setFilteredPosts(filterPosts(posts, searchQuery, selectedSemester));
@@ -252,6 +261,11 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
         // This ensures we always have the correct full path, even for nested categories
         setBreadcrumbs(buildBreadcrumbs(data.path || categoryName));
 
+        // Update page title dynamically
+        if (data.name) {
+          document.title = `${data.name.toUpperCase()} | Notes & Mock Papers | NotesNinja`;
+        }
+
         // Fetch posts for this category
         if (data.id) {
           try {
@@ -287,7 +301,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
           <div className="text-center">
             <PremiumLoader variant="apple" size="large" />
             <p className="mt-6 text-lg font-medium text-neutral-700 dark:text-neutral-300">
-              Loading {categoryName} materials...
+              Loading study materials...
             </p>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
               Preparing your study resources

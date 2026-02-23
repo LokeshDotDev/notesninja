@@ -10,6 +10,7 @@ import MetaPixel from "@/components/analytics/MetaPixel";
 import RouteChangeTracker from "@/components/analytics/RouteChangeTracker";
 import PerformanceMonitor from "@/components/custom/PerformanceMonitor";
 import NavigationLoader from "@/components/custom/NavigationLoader";
+import Footer from "@/components/content/Footer";
 import settings from "@/lib/settings";
 import { GTM_ID } from "@/lib/gtm";
 import Script from "next/script";
@@ -116,6 +117,7 @@ export default function RootLayout({
           <NavigationLoader />
           <DynamicNavbar />
           {children}
+          <Footer />
           <WhatsAppChat />
 
           {/* Google Tag Manager (noscript) */}
