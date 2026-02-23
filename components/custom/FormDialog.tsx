@@ -520,6 +520,7 @@ export default function FormDialog({
 											<div className="flex-1 flex items-center space-x-3 min-w-0">
 												{/* Image preview */}
 												{file && 'url' in file ? (
+													// eslint-disable-next-line @next/next/no-img-element
 													<img 
 														src={file.url} 
 														alt={file.name}
@@ -527,7 +528,7 @@ export default function FormDialog({
 													/>
 												) : (
 													<div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-														<Image className="w-6 h-6 text-gray-400" />
+														<Image className="w-6 h-6 text-gray-400" aria-label="file icon" />
 													</div>
 												)}
 												<div className="flex-1 min-w-0">

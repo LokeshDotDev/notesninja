@@ -17,78 +17,183 @@ interface Review {
 const reviews: Review[] = [
   {
     id: 1,
-    name: "Sarah Johnson",
+    name: "Rahul Sharma",
     rating: 5,
-    date: "2 weeks ago",
-    review: "Absolutely comprehensive study materials! The notes are well-structured and cover everything I needed for my exams. Worth every penny.",
+    date: "1 week ago",
+    review: "Best for last-minute revision, honestly.",
     verified: true,
-    itemType: "Complete Course Pack"
+    itemType: "Study Notes"
   },
   {
     id: 2,
-    name: "Michael Chen",
+    name: "Priya Singh",
     rating: 5,
-    date: "1 month ago",
-    review: "Perfect for last-minute preparation. The digital format is convenient and the quality is exceptional. Helped me score 92%!",
+    date: "2 weeks ago",
+    review: "So simple and clear — loved it. 🤩",
     verified: true,
-    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=200&h=200&fit=crop&crop=center",
     itemType: "Digital Notes"
   },
   {
     id: 3,
-    name: "Emily Rodriguez",
-    rating: 4,
-    date: "3 weeks ago",
-    review: "Great content and easy to understand. The diagrams and explanations made complex topics so much simpler. Would definitely recommend!",
+    name: "Arjun Patel",
+    rating: 5,
+    date: "3 days ago",
+    review: "Amazing notes — super easy to follow.",
+    verified: true,
+    itemType: "Course Pack"
+  },
+  {
+    id: 4,
+    name: "Sneha Gupta",
+    rating: 5,
+    date: "1 month ago",
+    review: "Helpful for quick concept revision.",
     verified: true,
     itemType: "Study Guide"
   },
   {
-    id: 4,
-    name: "James Wilson",
-    rating: 5,
-    date: "2 months ago",
-    review: "Life-saving materials! The problem-solving approaches and examples are exactly what I needed. Instant download was a huge plus.",
-    verified: true,
-    itemType: "Practice Papers"
-  },
-  {
     id: 5,
-    name: "Priya Patel",
+    name: "Vikram Reddy",
     rating: 5,
-    date: "1 week ago",
-    review: "Outstanding quality! The materials are expert-verified and aligned with the latest curriculum. Helped me secure an internship.",
+    date: "2 days ago",
+    review: "Really helpful, saved me a lot of time.",
     verified: true,
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=200&h=200&fit=crop&crop=center",
-    itemType: "Premium Bundle"
+    itemType: "Exam Prep"
   },
   {
     id: 6,
-    name: "David Kim",
-    rating: 4,
-    date: "3 weeks ago",
-    review: "Excellent study materials! The comprehensive coverage and clear explanations made all the difference in my understanding.",
+    name: "Anjali Mehta",
+    rating: 5,
+    date: "5 days ago",
+    review: "Great for quick studying before exams.",
     verified: true,
-    itemType: "Subject Notes"
+    itemType: "Notes Pack"
   },
   {
     id: 7,
-    name: "Lisa Thompson",
+    name: "Rohan Kumar",
     rating: 5,
-    date: "1 month ago",
-    review: "Best investment in my education! The materials are detailed yet easy to follow. No subscription needed - one-time payment is perfect.",
+    date: "1 week ago",
+    review: "Important topics were nicely covered. 👍",
     verified: true,
-    itemType: "Complete Package"
+    itemType: "Study Material"
   },
   {
     id: 8,
-    name: "Alex Martinez",
+    name: "Divya Joshi",
+    rating: 5,
+    date: "3 weeks ago",
+    review: "Very organized and easy to read.",
+    verified: true,
+    itemType: "Digital Pack"
+  },
+  {
+    id: 9,
+    name: "Karan Singh",
+    rating: 5,
+    date: "4 days ago",
+    review: "Perfect for late starters like me. 😂",
+    verified: true,
+    itemType: "Revision Notes"
+  },
+  {
+    id: 10,
+    name: "Neha Verma",
     rating: 5,
     date: "2 weeks ago",
-    review: "Transformed my study routine! The quality is exceptional and the instant access feature is amazing. Highly recommend to all students.",
+    review: "Worth it for exam preparation.",
     verified: true,
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=center",
-    itemType: "Digital Access"
+    itemType: "Study Pack"
+  },
+  {
+    id: 11,
+    name: "Aditya Rao",
+    rating: 5,
+    date: "6 days ago",
+    review: "Very easy to understand, no confusion.",
+    verified: true,
+    itemType: "Course Notes"
+  },
+  {
+    id: 12,
+    name: "Pooja Desai",
+    rating: 5,
+    date: "1 month ago",
+    review: "Really useful during exam pressure.",
+    verified: true,
+    itemType: "Exam Notes"
+  },
+  {
+    id: 13,
+    name: "Siddharth Shah",
+    rating: 5,
+    date: "3 days ago",
+    review: "Really satisfied — everything was clear.",
+    verified: true,
+    itemType: "Study Bundle"
+  },
+  {
+    id: 14,
+    name: "Riya Kapoor",
+    rating: 5,
+    date: "1 week ago",
+    review: "Very satisfied with the content quality.",
+    verified: true,
+    itemType: "Notes Collection"
+  },
+  {
+    id: 15,
+    name: "Manish Agarwal",
+    rating: 5,
+    date: "2 days ago",
+    review: "Super happy with how organized it is.",
+    verified: true,
+    itemType: "Digital Study Pack"
+  },
+  {
+    id: 16,
+    name: "Kavya Iyer",
+    rating: 5,
+    date: "5 days ago",
+    review: "Worth it.",
+    verified: true,
+    itemType: "Study Notes"
+  },
+  {
+    id: 17,
+    name: "Harsh Malhotra",
+    rating: 5,
+    date: "4 weeks ago",
+    review: "Good for last-minute prep.",
+    verified: true,
+    itemType: "Revision Pack"
+  },
+  {
+    id: 18,
+    name: "Ishita Bansal",
+    rating: 5,
+    date: "1 week ago",
+    review: "Last-minute lifesaver.",
+    verified: true,
+    itemType: "Quick Notes"
+  },
+  {
+    id: 19,
+    name: "Tarun Nair",
+    rating: 5,
+    date: "3 days ago",
+    review: "Simple and effective.",
+    verified: true,
+    itemType: "Study Material"
+  },
+  {
+    id: 20,
+    name: "Simran Kaur",
+    rating: 5,
+    date: "2 weeks ago",
+    review: "Very helpful.",
+    verified: true,
+    itemType: "Exam Prep Notes"
   }
 ];
 
@@ -148,11 +253,14 @@ const ReviewCard = ({ review }: { review: Review }) => (
 
     {/* Review Image (if present) */}
     {review.image && (
-      <img
-        src={review.image}
-        alt="Review image"
-        className="w-full rounded-lg object-cover mt-3"
-      />
+      <>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={review.image}
+          alt="Review image"
+          className="w-full rounded-lg object-cover mt-3"
+        />
+      </>
     )}
 
     {/* Item Type */}
