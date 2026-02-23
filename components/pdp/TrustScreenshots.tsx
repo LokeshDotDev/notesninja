@@ -13,38 +13,23 @@ interface Screenshot {
 const screenshots: Screenshot[] = [
   {
     id: 1,
-    image: '/assets/trustscreenshoots/Screenshot 1 .jpeg',
-    title: 'Helped a confused student turn preparation into top performance — with exam-focused notes that actually worked.'
+    image: '/assets/trustscreenshoots/WhatsApp Image 2026-02-23 at 10.43.47 AM.jpeg',
+    title: 'Your notes were really helpful. I just came from my exam and I think I will score pretty good. Thank you so much!'
   },
   {
     id: 2,
-    image: '/assets/trustscreenshoots/Screenshot 2.jpeg',
-    title: 'Confidence right after the exam — that\'s the impact of studying the right material.'
+    image: '/assets/trustscreenshoots/WhatsApp Image 2026-02-23 at 10.43.47 AM (1).jpeg',
+    title: 'Complete guidance for project submission. All details filled carefully with instant support and PDF access.'
   },
   {
     id: 3,
-    image: '/assets/trustscreenshoots/Screenshot 3.jpeg',
-    title: 'From one semester to the next — students keep coming back because the results speak for themselves.'
+    image: '/assets/trustscreenshoots/WhatsApp Image 2026-02-23 at 10.43.47 AM (2).jpeg',
+    title: 'Your notes are really helpful. I would like to have notes for other marked subjects too.'
   },
   {
     id: 4,
-    image: '/assets/trustscreenshoots/Screenshot 4.jpeg',
-    title: 'Multiple subjects. One reliable source. Organized notes delivered on time, every time.'
-  },
-  {
-    id: 5,
-    image: '/assets/trustscreenshoots/Screenshot 5.jpeg',
-    title: 'Consistent results, semester after semester — because our notes are built exactly for exam success.'
-  },
-  {
-    id: 6,
-    image: '/assets/trustscreenshoots/Screenshot 6.jpeg',
-    title: 'Not just notes — complete guidance, reassurance, and clarity throughout the process.'
-  },
-  {
-    id: 7,
-    image: '/assets/trustscreenshoots/Screenshot 7.jpeg',
-    title: 'Trusted by students for last-minute revision and strong exam performance.'
+    image: '/assets/trustscreenshoots/WhatsApp Image 2026-02-23 at 10.43.47 AM (3).jpeg',
+    title: 'I visited your website and purchased notes. You gave instant reply to my message and instant PDF access. Thank you so much!'
   }
 ];
 
@@ -156,12 +141,12 @@ export function TrustScreenshots() {
                     </div>
 
                     {/* Image */}
-                    <div className="relative aspect-[9/16] bg-gray-100 rounded-2xl overflow-hidden mb-6">
+                    <div className="relative aspect-[9/16] bg-white rounded-2xl overflow-hidden mb-6">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={screenshot.image}
                         alt={`Student testimonial ${screenshot.id}`}
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-cover "
                         loading="lazy"
                       />
                     </div>
