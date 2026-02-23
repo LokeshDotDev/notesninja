@@ -4,13 +4,16 @@ import { ProductPageClient } from '@/components/pdp/ProductPageClient';
 
 interface ProductPageProps {
   params: Promise<{
-    id: string;
+    category: string;
+    subcategory: string;
+    subsubcategory: string;
+    slug: string;
   }>;
 }
 
 // Metadata generation - simplified to avoid build-time fetch errors
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const { id } = await params;
+  const { slug } = await params;
   
   // Use generic but SEO-friendly metadata since fetching during build causes issues
   const title = `Premium Study Material | Notes & Mock Papers | ${settings.site.name}`;
@@ -23,7 +26,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     openGraph: {
       title,
       description,
-      url: `${settings.site.url}/product/${id}`,
+      url: `${settings.site.url}/product/${slug}`,
       siteName: settings.site.name,
       type: 'website',
     },
@@ -33,12 +36,12 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       description,
     },
     alternates: {
-      canonical: `/product/${id}`,
+      canonical: `/product/${slug}`,
     },
   };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { id } = await params;
-  return <ProductPageClient productId={id} />;
+  const { slug } = await params;
+  return <ProductPageClient productId={slug} />;
 }

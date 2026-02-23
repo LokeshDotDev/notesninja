@@ -99,6 +99,7 @@ interface Post {
   id: string;
   title: string;
   description?: string;
+  slug?: string;
   fileUrl?: string;
   file_type?: string;
   coverImage?: string;
@@ -500,7 +501,8 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
                 });
                 return (
                 <BlurFade key={post.id} delay={0.25 + index * 0.1} inView>
-                  <Link href={`/product/${post.id}`}>
+                  {/* <Link href={`/product/${post.id}`}> */}
+                  <Link href={`/${categoryName}/${post.slug}`}>
                     <motion.div
                       whileHover={{ y: -8, boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.15)" }}
                       whileTap={{ scale: 0.98 }}
