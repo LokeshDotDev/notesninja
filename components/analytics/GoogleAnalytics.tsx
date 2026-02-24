@@ -3,12 +3,16 @@
 import Script from "next/script";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { initializeCampaignTracking } from "@/lib/analytics";
 
 export default function GoogleAnalytics({ ga_id }: { ga_id: string }) {
   const pathname = usePathname();
 
   useEffect(() => {
     if (!ga_id || typeof window.gtag !== "function") return;
+
+    // Initialize campaign tracking
+    initializeCampaignTracking();
 
     window.gtag("config", ga_id, {
       page_path: pathname,

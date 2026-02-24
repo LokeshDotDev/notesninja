@@ -132,11 +132,19 @@ export const trackAddPaymentInfo = (product: Product) => {
 
 // 4. Purchase - When payment is successful
 export const trackPurchase = (purchaseData: PurchaseData) => {
-  // GA4
-  trackGA4Event('purchase', {
+  // Get UTM and traffic source data
+  const utmData = getUTMParameters();
+  const trafficSource = getTrafficSource();
+  
+  const fullEventData = {
     transaction_id: purchaseData.transactionId,
     value: purchaseData.value,
     currency: purchaseData.currency,
+    // Campaign attribution data
+    utm_source: utmData?.utm_source || trafficSource?.source,
+    utm_medium: utmData?.utm_medium || trafficSource?.medium,
+    utm_campaign: utmData?.utm_campaign,
+    traffic_source: trafficSource?.source,
     items: purchaseData.products.map(product => ({
       item_id: product.id,
       item_name: product.title,
@@ -145,7 +153,10 @@ export const trackPurchase = (purchaseData: PurchaseData) => {
       price: product.price,
       quantity: 1
     }))
-  });
+  };
+  
+  // GA4
+  trackGA4Event('purchase', fullEventData);
 
   // Meta Pixel
   trackMetaEvent('Purchase', {
@@ -167,6 +178,8 @@ export const trackPurchase = (purchaseData: PurchaseData) => {
       status: 'completed'
     });
   }
+  
+  console.log('🎯 Purchase tracked with attribution:', fullEventData);
 };
 
 // 5. Page View - For checkout pages
@@ -328,6 +341,117 @@ export const trackCustomEvent = (eventName: string, parameters?: Record<string, 
   
   if (standardMetaEvents.includes(eventName)) {
     trackMetaEvent(eventName, parameters);
+  }
+};
+
+// ============================================
+// CAMPAIGN & TRAFFIC SOURCE TRACKING
+// ============================================
+
+// Capture UTM parameters from URL
+export const captureUTMParameters = () => {
+  if (typeof window === 'undefined') return null;
+  
+  const params = new URLSearchParams(window.location.search);
+  
+  const utmData = {
+    utm_source: params.get('utm_source'),      // facebook, google, instagram, etc
+    utm_medium: params.get('utm_medium'),      // paid_ad, organic, email, etc
+    utm_campaign: params.get('utm_campaign'),  // spring_sale, black_friday, etc
+    utm_content: params.get('utm_content'),    // ad variation
+    utm_term: params.get('utm_term'),          // keyword
+  };
+  
+  // Remove null values
+  const cleanData = Object.fromEntries(
+    Object.entries(utmData).filter(([, v]) => v !== null)
+  );
+  
+  // Store in sessionStorage so it persists during user journey
+  if (Object.keys(cleanData).length > 0) {
+    sessionStorage.setItem('utm_data', JSON.stringify(cleanData));
+    console.log('📍 UTM Data Captured:', cleanData);
+  }
+  
+  return cleanData;
+};
+
+// Get stored UTM data
+export const getUTMParameters = () => {
+  if (typeof window === 'undefined') return null;
+  
+  const stored = sessionStorage.getItem('utm_data');
+  return stored ? JSON.parse(stored) : null;
+};
+
+// Detect traffic source from referrer
+export const getTrafficSource = () => {
+  if (typeof window === 'undefined') return null;
+  
+  const referrer = document.referrer;
+  const hostname = window.location.hostname;
+  
+  let source = 'direct';
+  let medium = 'direct';
+  
+  if (referrer) {
+    try {
+      const referrerURL = new URL(referrer);
+      const referrerHost = referrerURL.hostname;
+      
+      if (referrerHost.includes('facebook.com')) {
+        source = 'facebook';
+        medium = 'social';
+      } else if (referrerHost.includes('instagram.com')) {
+        source = 'instagram';
+        medium = 'social';
+      } else if (referrerHost.includes('twitter.com') || referrerHost.includes('x.com')) {
+        source = 'twitter';
+        medium = 'social';
+      } else if (referrerHost.includes('linkedin.com')) {
+        source = 'linkedin';
+        medium = 'social';
+      } else if (referrerHost.includes('google.com')) {
+        source = 'google';
+        medium = 'organic';
+      } else if (referrerHost.includes('youtube.com')) {
+        source = 'youtube';
+        medium = 'social';
+      } else if (referrerHost.includes('whatsapp.com')) {
+        source = 'whatsapp';
+        medium = 'social';
+      } else if (referrerHost === hostname) {
+        source = 'internal';
+        medium = 'internal';
+      } else {
+        source = referrerHost || 'referral';
+        medium = 'referral';
+      }
+    } catch (e) {
+      console.error('Error parsing referrer:', e);
+    }
+  }
+  
+  return { source, medium, referrer };
+};
+
+// Initialize campaign tracking on page load
+export const initializeCampaignTracking = () => {
+  if (typeof window === 'undefined') return;
+  
+  // Capture UTM parameters
+  const utmData = captureUTMParameters();
+  const trafficSource = getTrafficSource();
+  
+  // Send initial session data to GA4
+  if (utmData || trafficSource) {
+    trackGA4Event('page_view', {
+      utm_source: utmData?.utm_source || trafficSource?.source,
+      utm_medium: utmData?.utm_medium || trafficSource?.medium,
+      utm_campaign: utmData?.utm_campaign,
+      traffic_source: trafficSource?.source,
+      referrer: trafficSource?.referrer,
+    });
   }
 };
 
