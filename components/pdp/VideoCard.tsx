@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useRef, useEffect, useState } from 'react'
+import Image from 'next/image'
 
 interface Video {
   id: string
@@ -37,13 +38,15 @@ export default function VideoCard({ video, onClick }: VideoCardProps) {
       }
     )
 
-    if (containerRef.current) {
-      observer.observe(containerRef.current)
+    const currentContainer = containerRef.current
+
+    if (currentContainer) {
+      observer.observe(currentContainer)
     }
 
     return () => {
-      if (containerRef.current) {
-        observer.unobserve(containerRef.current)
+      if (currentContainer) {
+        observer.unobserve(currentContainer)
       }
     }
   }, [])
@@ -72,9 +75,10 @@ export default function VideoCard({ video, onClick }: VideoCardProps) {
       
       {/* Poster/Thumbnail when not loaded */}
       {!isInView && video.poster && (
-        <img
+        <Image
           src={video.poster}
           alt={video.title}
+          fill
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}
