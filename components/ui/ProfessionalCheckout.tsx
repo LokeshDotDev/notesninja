@@ -212,8 +212,6 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
     );
   };
 
-  const isRazorpayDisabled = true;
-
 
   const handlePayment = async () => {
     if (!validateForm()) {
@@ -241,75 +239,6 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         imageUrl: product.imageUrl,
       });
 
-      if (isRazorpayDisabled) {
-        const transactionId = `test_${Date.now()}`;
-
-        trackPurchase({
-          transactionId,
-          value: product.price || 0,
-          currency: "INR",
-          products: [
-            {
-              id: product.id,
-              title: product.title,
-              price: product.price,
-              category: product.category?.name,
-              subcategory: product.subcategory?.name,
-              imageUrl: product.imageUrl,
-            },
-          ],
-          customerEmail: formData.email,
-          customerName: `${formData.firstName} ${formData.lastName}`,
-        });
-
-        const purchaseResponse = await fetch("/api/purchases", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            postId: product.id,
-            userEmail: formData.email,
-            amount: product.price || 0,
-            paymentId: transactionId,
-          }),
-        });
-
-        const purchaseData = await purchaseResponse.json();
-
-        if (!purchaseResponse.ok) {
-          throw new Error(purchaseData.error || "Failed to create purchase");
-        }
-
-        try {
-          const emailResponse = await fetch('/api/send-email', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              to: formData.email,
-              customerName: `${formData.firstName} ${formData.lastName}`,
-              productName: product.title,
-              downloadLinks: product.digitalFiles || [],
-            }),
-          });
-
-          const emailResult = await emailResponse.json();
-
-          if (!emailResponse.ok) {
-            console.error('Failed to send email:', emailResult.error);
-          } else {
-            console.log('Email sent successfully:', emailResult);
-          }
-        } catch (emailError) {
-          console.error('Email error:', emailError);
-        }
-
-        setOrderComplete(true);
-        setPaymentStep("success");
-        return;
-      }
       // Create Razorpay order
       const orderResponse = await fetch('/api/razorpay/create-order', {
         method: 'POST',

@@ -94,7 +94,6 @@ export function ProductPageClient({ productId }: { productId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPurchasing, setIsPurchasing] = useState(false);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   // Scroll to top on page load
   useEffect(() => {
@@ -180,12 +179,6 @@ export function ProductPageClient({ productId }: { productId: string }) {
     window.location.href = `/checkout/${productId}`;
   };
 
-  const handleAddToCart = () => {
-    setIsAddingToCart(true);
-    // Add to cart logic here
-    setTimeout(() => setIsAddingToCart(false), 2000);
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-white">
@@ -252,9 +245,7 @@ export function ProductPageClient({ productId }: { productId: string }) {
             <ProductInfo 
               product={product}
               onPurchase={handlePurchase}
-              onAddToCart={handleAddToCart}
               isPurchasing={isPurchasing}
-              isAddingToCart={isAddingToCart}
             />
           </div>
         </div>

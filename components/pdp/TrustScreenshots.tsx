@@ -19,12 +19,12 @@ const screenshots: Screenshot[] = [
   {
     id: 2,
     image: '/assets/trustscreenshoots/WhatsApp Image 2026-02-23 at 10.43.47 AM (1).webp',
-    title: 'Complete guidance for project submission. All details filled carefully with instant support and PDF access.'
+    title: 'Your notes are really helpful. I would like to have notes for other marked subjects too.'
   },
   {
     id: 3,
     image: '/assets/trustscreenshoots/WhatsApp Image 2026-02-23 at 10.43.47 AM (2).webp',
-    title: 'Your notes are really helpful. I would like to have notes for other marked subjects too.'
+    title: 'Complete guidance for project submission. All details filled carefully with instant support and PDF access.'
   },
   {
     id: 4,
@@ -50,6 +50,11 @@ const screenshots: Screenshot[] = [
     id: 8,
     image: '/assets/trustscreenshoots/Screenshot 11.webp',
     title: 'When time is limited, structured Notes Ninja bundles make the difference.'
+  },
+  {
+    id: 9,
+    image: '/assets/trustscreenshoots/Screenshot 12.webp',
+    title: 'When structured notes make exam questions feel familiar.'
   }
 ];
 

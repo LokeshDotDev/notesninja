@@ -4,9 +4,8 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { trackBeginCheckout } from "@/lib/analytics";
-import { 
-  Download, 
-  ShoppingCart,
+import {
+  Download,
   Shield,
   Star,
   ChevronDown,
@@ -14,11 +13,11 @@ import {
   Zap,
   ClipboardCheck,
   Users,
-  MessageCircle
+  MessageCircle,
+  ChevronLeft
 } from 'lucide-react';
 import { calculateDiscountPercentage } from '@/lib/pricing-utils';
 import Link from 'next/link';
-import { ChevronLeft } from 'lucide-react';
 import settings from '@/lib/settings';
 import { DescriptionRenderer } from '@/components/ui/DescriptionRenderer';
 
@@ -46,9 +45,7 @@ interface Product {
 interface ProductInfoProps {
   product: Product;
   onPurchase?: () => void;
-  onAddToCart?: () => void;
   isPurchasing?: boolean;
-  isAddingToCart?: boolean;
 }
 
 interface CollapsibleSectionProps {
@@ -96,12 +93,8 @@ function CollapsibleSection({ title, children, defaultOpen = false }: Collapsibl
 export function ProductInfo({ 
   product, 
   onPurchase, 
-  onAddToCart,
-  isPurchasing = false,
-  isAddingToCart = false 
+  isPurchasing = false
 }: ProductInfoProps) {
-  const [quantity] = useState(1);
-
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -128,14 +121,6 @@ export function ProductInfo({
     }
   };
 
-  const handleAddToCart = async () => {
-    if (onAddToCart) {
-      await onAddToCart();
-    } else {
-      // Default add to cart logic
-      console.log("Added to cart:", product.id, quantity);
-    }
-  };
 
   const features = [
     {
@@ -256,35 +241,19 @@ export function ProductInfo({
       {/* Action Buttons */}
       <div className="space-y-4 pt-6 border-t border-neutral-200 dark:border-neutral-800">
         <div className="flex flex-col gap-3">
-          {product.isDigital ? (
-            <Button
-              onClick={handlePurchase}
-              disabled={isPurchasing}
-              size="lg"
-              className="w-full bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 py-4 rounded-xl font-medium text-base transition-all duration-200 border-0"
-            >
-              {isPurchasing ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <Download className="w-5 h-5 mr-2" />
-              )}
-              {isPurchasing ? 'Processing...' : 'Buy Now'}
-            </Button>
-          ) : (
-            <Button
-              onClick={handleAddToCart}
-              disabled={isAddingToCart}
-              size="lg"
-              className="w-full bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 py-4 rounded-xl font-medium text-base transition-all duration-200 border-0"
-            >
-              {isAddingToCart ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <ShoppingCart className="w-5 h-5 mr-2" />
-              )}
-              {isAddingToCart ? 'Adding...' : 'Add to Cart'}
-            </Button>
-          )}
+          <Button
+            onClick={handlePurchase}
+            disabled={isPurchasing}
+            size="lg"
+            className="w-full bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 py-4 rounded-xl font-medium text-base transition-all duration-200 border-0"
+          >
+            {isPurchasing ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Download className="w-5 h-5 mr-2" />
+            )}
+            {isPurchasing ? 'Processing...' : 'Buy Now'}
+          </Button>
           
           {/* WhatsApp Button */}
           <a

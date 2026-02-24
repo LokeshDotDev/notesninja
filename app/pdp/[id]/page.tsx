@@ -64,7 +64,6 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPurchasing, setIsPurchasing] = useState(false);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   // UGC Video Data - Using actual student review videos
   const ugcVideos = [
@@ -158,20 +157,6 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
     }
   };
 
-  const handleAddToCart = async () => {
-    if (!product) return;
-    
-    setIsAddingToCart(true);
-    try {
-      // Add to cart logic here
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log("Added to cart:", product.id);
-    } catch (error) {
-      console.error("Failed to add to cart:", error);
-    } finally {
-      setIsAddingToCart(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -228,9 +213,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
             <ProductInfo 
               product={product}
               onPurchase={handlePurchase}
-              onAddToCart={handleAddToCart}
               isPurchasing={isPurchasing}
-              isAddingToCart={isAddingToCart}
             />
           </div>
         </div>
