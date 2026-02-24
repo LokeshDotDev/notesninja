@@ -35,18 +35,12 @@ export function AccordionSection() {
     },
     {
       id: 'faq4',
-      question: "Is there a money-back guarantee?",
-      answer: "Yes! We offer a 7-day money-back guarantee if you&apos;re not satisfied with the quality of our study materials. Contact our support team and we&apos;ll process your refund within 24 hours.",
-      icon: Shield
-    },
-    {
-      id: 'faq5',
       question: "Are the materials updated regularly?",
       answer: "Absolutely! Our team of experts regularly updates all study materials to reflect the latest curriculum changes and exam patterns. You&apos;ll get free updates for 1 year from your purchase date.",
       icon: HelpCircle
     },
     {
-      id: 'faq6',
+      id: 'faq5',
       question: "Can I share the materials with my friends?",
       answer: "Our study materials are licensed for individual use only. Sharing or distributing the materials violates our terms of service. However, we do offer group discounts for multiple purchases.",
       icon: HelpCircle
