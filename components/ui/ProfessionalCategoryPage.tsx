@@ -702,7 +702,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
             <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" : "space-y-4"}>
               {category.children.map((subcategory, index) => (
                 <BlurFade key={subcategory.id} delay={0.25 + index * 0.1} inView>
-                  <Link href={`/${encodeURIComponent(subcategory.path || subcategory.slug)}`}>
+                  <Link href={`/${subcategory.path || subcategory.slug}`}>
                     {viewMode === "grid" ? (
                       /* Apple-style Grid View */
                       <motion.div

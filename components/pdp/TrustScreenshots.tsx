@@ -13,23 +13,43 @@ interface Screenshot {
 const screenshots: Screenshot[] = [
   {
     id: 1,
-    image: '/assets/trustscreenshoots/WhatsApp Image 2026-02-23 at 10.43.47 AM.jpeg',
+    image: '/assets/trustscreenshoots/WhatsApp Image 2026-02-23 at 10.43.47 AM.webp',
     title: 'Your notes were really helpful. I just came from my exam and I think I will score pretty good. Thank you so much!'
   },
   {
     id: 2,
-    image: '/assets/trustscreenshoots/WhatsApp Image 2026-02-23 at 10.43.47 AM (1).jpeg',
+    image: '/assets/trustscreenshoots/WhatsApp Image 2026-02-23 at 10.43.47 AM (1).webp',
     title: 'Complete guidance for project submission. All details filled carefully with instant support and PDF access.'
   },
   {
     id: 3,
-    image: '/assets/trustscreenshoots/WhatsApp Image 2026-02-23 at 10.43.47 AM (2).jpeg',
+    image: '/assets/trustscreenshoots/WhatsApp Image 2026-02-23 at 10.43.47 AM (2).webp',
     title: 'Your notes are really helpful. I would like to have notes for other marked subjects too.'
   },
   {
     id: 4,
-    image: '/assets/trustscreenshoots/WhatsApp Image 2026-02-23 at 10.43.47 AM (3).jpeg',
+    image: '/assets/trustscreenshoots/WhatsApp Image 2026-02-23 at 10.43.47 AM (3).webp',
     title: 'I visited your website and purchased notes. You gave instant reply to my message and instant PDF access. Thank you so much!'
+  },
+  {
+    id: 5,
+    image: '/assets/trustscreenshoots/Screenshot 8.webp',
+    title: 'Trusted by MBA students for concise and effective exam preparation.'
+  },
+  {
+    id: 6,
+    image: '/assets/trustscreenshoots/Screenshot 9.webp',
+    title: 'Making quick revision simple with well-structured key questions and answers.'
+  },
+  {
+    id: 7,
+    image: '/assets/trustscreenshoots/Screenshot 10.webp',
+    title: 'Helping M.Com students simplify last-day revision with clear, structured notes.'
+  },
+  {
+    id: 8,
+    image: '/assets/trustscreenshoots/Screenshot 11.webp',
+    title: 'When time is limited, structured Notes Ninja bundles make the difference.'
   }
 ];
 

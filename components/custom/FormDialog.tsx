@@ -78,6 +78,14 @@ interface ProductType {
   name: string;
 }
 
+type ExistingMedia = {
+	url?: string;
+	imageUrl?: string;
+	fileUrl?: string;
+	name?: string;
+	publicId?: string;
+};
+
 type SlugStatus = "idle" | "checking" | "available" | "taken" | "error";
 
 // Utility to generate a slug from a title
@@ -179,6 +187,44 @@ export default function FormDialog({
 				name: initialData.name || "",
 				slug: initialData.slug || "",
 			});
+
+			// Load existing images
+			if (initialData.images && Array.isArray(initialData.images)) {
+				const existingImages = initialData.images
+					.map((img: ExistingMedia) => {
+						const url = img.url || img.imageUrl;
+						if (!url) return null;
+						return {
+							url,
+							name: url.split('/').pop() || 'image',
+							publicId: img.publicId || '',
+							isExisting: true,
+						};
+					})
+					.filter((img): img is { url: string; name: string; publicId: string; isExisting: true } => Boolean(img));
+				setFiles(existingImages);
+			} else {
+				setFiles([]);
+			}
+
+			// Load existing digital files
+			if (initialData.digitalFiles && Array.isArray(initialData.digitalFiles)) {
+				const existingDigitalFiles = initialData.digitalFiles
+					.map((file: ExistingMedia) => {
+						const url = file.url || file.fileUrl;
+						if (!url) return null;
+						return {
+							url,
+							name: file.name || url.split('/').pop() || 'file',
+							publicId: file.publicId || '',
+							isExisting: true,
+						};
+					})
+					.filter((file): file is { url: string; name: string; publicId: string; isExisting: true } => Boolean(file));
+				setDigitalFiles(existingDigitalFiles);
+			} else {
+				setDigitalFiles([]);
+			}
 		} else {
 			// Reset form for new item
 			setFormData({
