@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, HelpCircle, BookOpen, Download, CreditCard, Shield } from 'lucide-react';
+import { ChevronDown, HelpCircle, BookOpen, Download, CreditCard } from 'lucide-react';
 
 interface AccordionItem {
   id: string;

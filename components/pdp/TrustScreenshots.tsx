@@ -115,7 +115,7 @@ export function TrustScreenshots() {
           className="text-center mb-20"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Real Students, Real Success
+            Student Feedback & Success Stories
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             See what students are saying about their experience

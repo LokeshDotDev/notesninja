@@ -10,9 +10,9 @@ const settings = {
 		},
 	},
 	site: {
-		name: "NotesNinja",
+		name: "MUJ Notes | Manipal University Jaipur Study Material, PYQs & Exam Notes – Notes Ninja",
 		description:
-			"Premium digital academic materials and study resources. Access high-quality notes, study guides, and educational content for students and educators. Instant download, expert-curated content.",
+			"Download MUJ Notes and Manipal University Jaipur study material, including PYQs and structured exam resources for BBA, BCA, B.Com, MBA and more.",
 		keywords:
 			"digital notes, study materials, academic resources, educational content, study guides, online learning, student resources, digital textbooks, academic notes, exam preparation",
 		url: "https://notesninja.com",
