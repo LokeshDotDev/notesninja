@@ -100,7 +100,7 @@ export default function RootLayout({
           <meta name="geo.region" content={settings.site.geo.region} />
           <meta name="geo.position" content={settings.site.geo.position} />
           <meta name="ICBM" content={settings.site.geo.icbm} />
-          <meta name="google-site-verification" content="mNmK_1WM8JiHujcMV8GhkRvaFpkm0q-1XPVzYzvAXK4" />
+          <meta name="google-site-verification" content="2iDLXRj_6XnY_eKYAamwjeVPUtL5oB_0wrSdAxGvLHI" />
 
           {/* Google Tag Manager */}
           <Script id="gtm-script" strategy="afterInteractive">
