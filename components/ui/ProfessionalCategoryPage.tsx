@@ -5,7 +5,7 @@ import { BlurFade } from "@/components/magicui/blur-fade";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { getPricingInfo, formatPrice, formatDiscount } from "@/lib/pricing";
+// import { getPricingInfo, formatPrice, formatDiscount } from "@/lib/pricing";
 import {
   BookOpen,
   Download,
@@ -397,7 +397,7 @@ export function ProfessionalCategoryPage({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
               {posts.map((post, index) => {
                 // console.log("Post data:", JSON.stringify(post, null, 2)); // Detailed log with formatting
-                console.log(post)
+                console.log(post);
                 // console.log("Available image fields:", {
                 //   cloudinaryUrl: post.cloudinaryUrl,
                 //   secure_url: post.secure_url,
@@ -409,93 +409,110 @@ export function ProfessionalCategoryPage({
                 //   cover: post.cover,
                 // });
                 return (
-                <BlurFade key={post.id} delay={0.25 + index * 0.1} inView>
-                  <Link href={`/product/${post.id}`}>
-                    <motion.div
-                      whileHover={{ y: -8, boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.15)" }}
-                      whileTap={{ scale: 0.98 }}
-                      transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-                      viewport={{ once: true }}
-                      className="group relative overflow-hidden rounded-3xl border border-neutral-200/50 dark:border-neutral-700/50 bg-white dark:bg-neutral-800/80 backdrop-blur-xl h-full"
-                    >
-                      {/* Image Section */}
-                      <div className="relative h-56 overflow-hidden rounded-t-3xl bg-neutral-100 dark:bg-neutral-900">
-                        {post.images && post.images.length > 0 && post.images[0].imageUrl ? (
-                          <Image
-                            src={post.images[0].imageUrl}
-                            alt={post.title}
-                            fill
-                            className="object-cover transition-transform duration-700 group-hover:scale-105"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-[rgb(0, 122, 255)]/20 to-purple-500/20 flex items-center justify-center">
-                            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[rgb(0, 122, 255)] to-[rgb(0, 94, 198)] flex items-center justify-center text-black shadow-lg">
-                              {getPostIcon(post.title)}
-                            </div>
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                      </div>
-                      
-                      {/* Content Section */}
-                      <div className="p-8 space-y-4">
-                        <h3 className="text-2xl font-semibold text-neutral-900 dark:text-white mb-2 group-hover:text-[rgb(0, 122, 255)] dark:group-hover:text-blue-400 transition-colors duration-300 line-clamp-2 leading-tight">
-                          {post.title}
-                        </h3>
-                        
-                        {post.description && (
-                          <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4 line-clamp-3">
-                            {post.description}
-                          </p>
-                        )}
-                        
-                        {/* Price Section - Amazon Style */}
-                        {(post.price !== null && post.price !== undefined) && (
-                          <div className="flex flex-col gap-3 mb-6">
-                            {post.compareAtPrice && post.compareAtPrice > post.price && (
-                              <div className="flex flex-col items-start">
-                                <span className="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold">
-                                  Limited Time Deal
-                                </span>
-                                <div className="flex items-baseline gap-2">
-                                  <span className="text-lg font-bold text-red-600">
-                                    -{Math.round(((post.compareAtPrice - post.price) / post.compareAtPrice) * 100)}%
-                                  </span>
-                                  <span className="text-base font-normal text-black dark:text-white">
-                                    ₹{post.price.toFixed(2)}
-                                  </span>
-                                </div>
-                                <span className="text-base text-neutral-500 dark:text-neutral-400">
-                                  M.R.P.: <span className="line-through">₹{post.compareAtPrice.toFixed(2)}</span>
-                                </span>
+                  <BlurFade key={post.id} delay={0.25 + index * 0.1} inView>
+                    <Link href={`/${categoryName}/${post.id}`}>
+                      {/* <Link href={`/product/${post.id}`}> */}
+                      <motion.div
+                        whileHover={{
+                          y: -8,
+                          boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.15)",
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{
+                          duration: 0.5,
+                          ease: [0.25, 0.46, 0.45, 0.94],
+                        }}
+                        viewport={{ once: true }}
+                        className="group relative overflow-hidden rounded-3xl border border-neutral-200/50 dark:border-neutral-700/50 bg-white dark:bg-neutral-800/80 backdrop-blur-xl h-full"
+                      >
+                        {/* Image Section */}
+                        <div className="relative h-56 overflow-hidden rounded-t-3xl bg-neutral-100 dark:bg-neutral-900">
+                          {post.images &&
+                          post.images.length > 0 &&
+                          post.images[0].imageUrl ? (
+                            <Image
+                              src={post.images[0].imageUrl}
+                              alt={post.title}
+                              fill
+                              className="object-cover transition-transform duration-700 group-hover:scale-105"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-[rgb(0, 122, 255)]/20 to-purple-500/20 flex items-center justify-center">
+                              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[rgb(0, 122, 255)] to-[rgb(0, 94, 198)] flex items-center justify-center text-black shadow-lg">
+                                {getPostIcon(post.title)}
                               </div>
-                            )}
-                            {!post.compareAtPrice && (
-                              <span className="text-xl font-normal text-black dark:text-white">
-                                ₹{post.price.toFixed(2)}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        
-                        <div className="flex items-center justify-between mb-6">
-                          <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
-                            <div className="w-2 h-2 bg-black rounded-full"></div>
-                            Instant download
-                          </span>
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                         </div>
-                        
-                        <Button 
-                          className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium shadow-sm hover:shadow-md transition-all duration-300 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700"
-                        >
-                          View Details
-                          <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
-                        </Button>
-                      </div>
-                    </motion.div>
-                  </Link>
-                </BlurFade>
+
+                        {/* Content Section */}
+                        <div className="p-8 space-y-4">
+                          <h3 className="text-2xl font-semibold text-neutral-900 dark:text-white mb-2 group-hover:text-[rgb(0, 122, 255)] dark:group-hover:text-blue-400 transition-colors duration-300 line-clamp-2 leading-tight">
+                            {post.title}
+                          </h3>
+
+                          {post.description && (
+                            <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4 line-clamp-3">
+                              {post.description}
+                            </p>
+                          )}
+
+                          {/* Price Section - Amazon Style */}
+                          {post.price !== null && post.price !== undefined && (
+                            <div className="flex flex-col gap-3 mb-6">
+                              {post.compareAtPrice &&
+                                post.compareAtPrice > post.price && (
+                                  <div className="flex flex-col items-start">
+                                    <span className="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold">
+                                      Limited Time Deal
+                                    </span>
+                                    <div className="flex items-baseline gap-2">
+                                      <span className="text-lg font-bold text-red-600">
+                                        -
+                                        {Math.round(
+                                          ((post.compareAtPrice - post.price) /
+                                            post.compareAtPrice) *
+                                            100,
+                                        )}
+                                        %
+                                      </span>
+                                      <span className="text-base font-normal text-black dark:text-white">
+                                        ₹{post.price.toFixed(2)}
+                                      </span>
+                                    </div>
+                                    <span className="text-base text-neutral-500 dark:text-neutral-400">
+                                      M.R.P.:{" "}
+                                      <span className="line-through">
+                                        ₹{post.compareAtPrice.toFixed(2)}
+                                      </span>
+                                    </span>
+                                  </div>
+                                )}
+                              {!post.compareAtPrice && (
+                                <span className="text-xl font-normal text-black dark:text-white">
+                                  ₹{post.price.toFixed(2)}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between mb-6">
+                            <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
+                              <div className="w-2 h-2 bg-black rounded-full"></div>
+                              Instant download
+                            </span>
+                          </div>
+
+                          <Button className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium shadow-sm hover:shadow-md transition-all duration-300 py-4 rounded-2xl border border-neutral-200 dark:border-neutral-700">
+                            View Details
+                            <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+                          </Button>
+                        </div>
+                      </motion.div>
+                    </Link>
+                  </BlurFade>
                 );
               })}
             </div>
