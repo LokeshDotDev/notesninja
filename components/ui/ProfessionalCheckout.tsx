@@ -178,12 +178,16 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
   // Pre-fill form data for authenticated users
   useEffect(() => {
     if (session?.user) {
-      const nameParts = session.user.name?.split(' ') || ['', ''];
+      const fullName = session.user.name || '';
+      const nameParts = fullName.trim().split(' ');
+      const firstName = nameParts[0] || 'User';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
       setFormData(prev => ({
         ...prev,
         email: session.user?.email || '',
-        firstName: nameParts[0] || '',
-        lastName: nameParts[1] || '',
+        firstName: firstName,
+        lastName: lastName,
       }));
     }
   }, [session]);
@@ -205,6 +209,11 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
   };
 
   const validateForm = () => {
+    // For logged-in users, only email is required (name comes from session)
+    if (session?.user) {
+      return formData.email || session.user.email;
+    }
+    // For guest users, all fields are required
     return (
       formData.email &&
       formData.firstName &&
@@ -240,6 +249,11 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
       });
 
       // Create Razorpay order
+      // Generate a short receipt ID (max 40 chars for Razorpay)
+      const timestamp = Date.now().toString(36);
+      const randomStr = Math.random().toString(36).substring(2, 8);
+      const shortReceipt = `rcpt_${timestamp}_${randomStr}`;
+      
       const orderResponse = await fetch('/api/razorpay/create-order', {
         method: 'POST',
         headers: {
@@ -248,7 +262,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         body: JSON.stringify({
           amount: product.price,
           currency: 'INR',
-          receipt: `receipt_${productId}`,
+          receipt: shortReceipt,
           notes: {
             productId,
             customerEmail: formData.email,
@@ -276,6 +290,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         description: product.title,
         order_id: orderData.order.id,
         handler: async function (response: RazorpayResponse) {
+          console.log('Payment successful, verifying...', { sessionUserId: session?.user?.id });
           // Verify payment
           const verifyResponse = await fetch('/api/razorpay/verify-payment', {
             method: 'POST',
@@ -287,8 +302,8 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
               productId,
-              customerEmail: formData.email,
-              customerName: `${formData.firstName} ${formData.lastName}`,
+              customerEmail: formData.email || session?.user?.email,
+              customerName: `${formData.firstName} ${formData.lastName}` || session?.user?.name,
               userId: session?.user?.id || null
             })
           });
@@ -515,6 +530,17 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-gray-600" />
+          <p className="text-gray-600">Loading checkout...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (error || !product) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-neutral-900 dark:to-neutral-800">
@@ -692,6 +718,17 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
               transition={{ delay: 1.0, duration: 0.8 }}
               className="mt-16 flex flex-col sm:flex-row gap-4 justify-center"
             >
+              {session?.user && (
+                <Button
+                  asChild
+                  className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105"
+                >
+                  <Link href="/dashboard">
+                    <User className="w-4 h-4 mr-2" />
+                    View My Purchases
+                  </Link>
+                </Button>
+              )}
               <Button
                 asChild
                 variant="outline"

@@ -78,7 +78,12 @@ export async function POST(req: NextRequest) {
         }
       });
 
-      console.log('Purchase saved successfully:', purchase);
+      console.log('Purchase saved successfully:', {
+        purchaseId: purchase.id,
+        userId: purchase.userId,
+        userEmail: purchase.userEmail,
+        productId: purchase.postId
+      });
 
       // Send purchase confirmation email for digital products
       if (purchase.post.isDigital && purchase.post.digitalFiles.length > 0) {
