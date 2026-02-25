@@ -69,30 +69,35 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
   const ugcVideos = [
     {
       id: '1',
+      thumbnail: '/assets/reviews-thumbnails/student-1.webp',
       embedSrc: 'https://play.gumlet.io/embed/699eacf2c051a86ff58d2380',
       aspectRatio: '29/52',
       title: 'Student Success Story - Interview Experience'
     },
     {
       id: '2',
+      thumbnail: '/assets/reviews-thumbnails/student-2.webp',
       embedSrc: 'https://play.gumlet.io/embed/699eacf2f8c697838345aa21',
       aspectRatio: '29/52',
       title: 'Academic Achievement Journey'
     },
     {
       id: '3',
+      thumbnail: '/assets/reviews-thumbnails/student-3.webp',
       embedSrc: 'https://play.gumlet.io/embed/699eacf2f8c697838345aa1b',
       aspectRatio: '9/16',
       title: 'Study Techniques That Work'
     },
     {
       id: '4',
+      thumbnail: '/assets/reviews-thumbnails/student-4.webp',
       embedSrc: 'https://play.gumlet.io/embed/699eacf2f8c697838345aa18',
       aspectRatio: '9/16',
       title: 'Exam Preparation Success'
     },
     {
       id: '5',
+      thumbnail: '/assets/reviews-thumbnails/student-5.webp',
       embedSrc: 'https://play.gumlet.io/embed/699eacf2ba6c1c14db0784f2',
       aspectRatio: '29/52',
       title: 'For $35. For everyone. Plus tax.'
