@@ -57,7 +57,7 @@ export default function SeeInActionSection({ videos }: SeeInActionSectionProps) 
               Our Student Trust
             </h2>
             <p className="text-base sm:text-lg text-gray-600">
-              Real students. Real results.
+              Verified Student Reviews
             </p>
           </div>
 
