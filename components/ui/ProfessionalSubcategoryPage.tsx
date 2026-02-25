@@ -18,6 +18,7 @@ import {
 import { PremiumLoader } from "@/components/ui/premium-loader";
 import Link from "next/link";
 import Image from "next/image";
+import { getPricingInfo, formatPrice, formatDiscount } from "@/lib/pricing";
 
 interface Post {
   id: string;
@@ -410,29 +411,31 @@ export function ProfessionalSubcategoryPage({ categoryName, subcategoryName }: P
                         
                         {post.price && (
                           <div className="flex flex-col gap-2">
-                            {post.compareAtPrice && post.compareAtPrice > post.price && (
-                              <div className="flex flex-col items-start">
-                                <span className="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold">
-                                  Limited Time Deal
-                                </span>
-                                <div className="flex items-baseline gap-2">
-                                  <span className="text-lg font-bold text-red-600">
-                                    -{Math.round(((post.compareAtPrice - post.price) / post.compareAtPrice) * 100)}%
+                            {(() => {
+                              const pricingInfo = getPricingInfo(post.price, post.compareAtPrice);
+                              return pricingInfo.hasDiscount ? (
+                                <div className="flex flex-col items-start">
+                                  <span className="bg-red-600 text-white px-3 py-2 rounded text-sm font-bold">
+                                    Limited Time Deal
                                   </span>
-                                  <span className="text-base font-normal text-black dark:text-white">
-                                    ₹{post.price.toFixed(2)}
+                                  <div className="flex items-baseline gap-2">
+                                    <span className="text-lg font-bold text-red-600">
+                                      {formatDiscount(pricingInfo.discountPercentage!)}
+                                    </span>
+                                    <span className="text-base font-normal text-black dark:text-white">
+                                      {formatPrice(pricingInfo.price)}
+                                    </span>
+                                  </div>
+                                  <span className="text-base text-neutral-500 dark:text-neutral-400">
+                                    M.R.P.: <span className="line-through">{formatPrice(pricingInfo.compareAtPrice!)}</span>
                                   </span>
                                 </div>
-                                <span className="text-base text-neutral-500 dark:text-neutral-400">
-                                  M.R.P.: <span className="line-through">₹{post.compareAtPrice.toFixed(2)}</span>
+                              ) : (
+                                <span className="text-xl font-normal text-black dark:text-white">
+                                  {formatPrice(pricingInfo.price)}
                                 </span>
-                              </div>
-                            )}
-                            {!post.compareAtPrice && (
-                              <span className="text-xl font-normal text-black dark:text-white">
-                                ₹{post.price.toFixed(2)}
-                              </span>
-                            )}
+                              );
+                            })()}
                           </div>
                         )}
                       </div>

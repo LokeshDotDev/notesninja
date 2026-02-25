@@ -320,35 +320,6 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
               customer_email: formData.email
             });
 
-            // Send confirmation email
-            try {
-              console.log('Product data:', product);
-              console.log('Digital files:', product.digitalFiles);
-              
-              const emailResponse = await fetch('/api/send-email', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  to: formData.email,
-                  customerName: `${formData.firstName} ${formData.lastName}`,
-                  productName: product.title,
-                  downloadLinks: product.digitalFiles || []
-                })
-              });
-
-              const emailResult = await emailResponse.json();
-              
-              if (!emailResponse.ok) {
-                console.error('Failed to send email:', emailResult.error);
-              } else {
-                console.log('Email sent successfully:', emailResult);
-              }
-            } catch (emailError) {
-              console.error('Email error:', emailError);
-            }
-            
             setOrderComplete(true);
             setPaymentStep("success");
           } else {

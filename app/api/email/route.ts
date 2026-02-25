@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { sendPurchaseEmail } from "@/lib/brevo";
 
 interface EmailData {
   to: string;
@@ -10,36 +11,37 @@ export async function POST(req: NextRequest) {
   try {
     const emailData: EmailData = await req.json();
 
-    // For now, we'll just log the email data
-    // In production, you would integrate with an email service like:
-    // - Resend (recommended for Next.js)
-    // - SendGrid
-    // - AWS SES
-    // - Nodemailer with SMTP
-    
-    console.log("Email would be sent:", {
+    console.log("Sending email via Brevo:", {
       to: emailData.to,
       subject: emailData.subject,
-      html: emailData.html,
       timestamp: new Date().toISOString()
     });
 
-    // Mock successful email sending
-    // In production, replace this with actual email service integration
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+    // Use Brevo service to send the email
+    const result = await sendPurchaseEmail({
+      to: emailData.to,
+      subject: emailData.subject,
+      customerName: 'Customer', // You can extract this from the email data if needed
+      productName: 'Digital Product', // You can extract this from the email data if needed
+      downloadLinks: [] // You can extract this from the email data if needed
+    });
+
+    console.log("Email sent successfully via Brevo:", result);
 
     return NextResponse.json({
       success: true,
-      message: "Email sent successfully",
-      timestamp: new Date().toISOString()
+      message: "Email sent successfully via Brevo",
+      timestamp: new Date().toISOString(),
+      brevoResponse: result
     });
 
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error("Error sending email via Brevo:", error);
     return NextResponse.json(
       { 
         success: false, 
-        error: "Failed to send email" 
+        error: "Failed to send email via Brevo",
+        details: error instanceof Error ? error.message : "Unknown error"
       },
       { status: 500 }
     );
