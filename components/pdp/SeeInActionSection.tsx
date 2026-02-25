@@ -6,9 +6,11 @@ import VideoModal from './VideoModal'
 
 interface Video {
   id: string
-  src: string
-  thumbnail: string
-  poster: string
+  src?: string
+  thumbnail?: string
+  poster?: string
+  embedSrc?: string
+  aspectRatio?: string
   title: string
 }
 
@@ -64,24 +66,33 @@ export default function SeeInActionSection({ videos }: SeeInActionSectionProps) 
             <style jsx>{`
               @keyframes smoothVideoScroll {
                 0% {
-                  transform: translateX(0);
+                  transform: translate3d(0, 0, 0);
                 }
                 100% {
-                  transform: translateX(calc(-50% - 24px));
+                  transform: translate3d(calc(-50% - var(--gap)), 0, 0);
                 }
               }
               .video-scroll-animate {
-                animation: smoothVideoScroll 20s linear infinite;
+                --gap: 16px;
+                gap: var(--gap);
+                animation: smoothVideoScroll 10s linear infinite;
               }
               .video-scroll-animate:hover {
                 animation-play-state: paused;
+              }
+              @media (min-width: 640px) {
+                .video-scroll-animate {
+                  --gap: 24px;
+                  gap: var(--gap);
+                  animation-duration: 16s;
+                }
               }
             `}</style>
             
             {/* Left/Right fade overlays */}
             <div className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-24 bg-gradient-to-r from-[#f8f8f8] to-transparent z-10" />
             <div className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-24 bg-gradient-to-l from-[#f8f8f8] to-transparent z-10" />
-            <div className="flex gap-4 sm:gap-6 will-change-transform video-scroll-animate">
+            <div className="flex flex-nowrap will-change-transform video-scroll-animate">
               {duplicatedVideos.map((video, index) => (
                 <VideoCard
                   key={`${video.id}-${index}`}

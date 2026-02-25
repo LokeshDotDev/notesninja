@@ -5,9 +5,11 @@ import Image from 'next/image'
 
 interface Video {
   id: string
-  src: string
-  thumbnail: string
-  poster: string
+  src?: string
+  thumbnail?: string
+  poster?: string
+  embedSrc?: string
+  aspectRatio?: string
   title: string
 }
 
@@ -21,6 +23,7 @@ export default function VideoCard({ video, onClick }: VideoCardProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isLoaded, setIsLoaded] = useState(false)
   const [isInView, setIsInView] = useState(false)
+  const isEmbed = Boolean(video.embedSrc)
 
   // Lazy load video when in viewport
   useEffect(() => {
@@ -58,7 +61,26 @@ export default function VideoCard({ video, onClick }: VideoCardProps) {
       onClick={() => onClick(video)}
     >
       {/* Video - paused by default, lazy loaded */}
-      {isInView && (
+      {isInView && isEmbed && (
+        <div className="absolute inset-0">
+          <div
+            className="relative w-full h-full"
+            style={{ aspectRatio: video.aspectRatio || '9/16' }}
+          >
+            <iframe
+              loading="lazy"
+              title={video.title}
+              src={video.embedSrc}
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              style={{ border: 'none', transform: 'scale(1.06)', transformOrigin: 'center'  }}
+              referrerPolicy="origin"
+              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen"
+            />
+          </div>
+        </div>
+      )}
+
+      {isInView && !isEmbed && (
         <video
           ref={videoRef}
           className="absolute inset-0 w-full h-full object-cover"
@@ -69,12 +91,12 @@ export default function VideoCard({ video, onClick }: VideoCardProps) {
           poster={video.poster || video.thumbnail}
           onLoadedData={() => setIsLoaded(true)}
         >
-          <source src={video.src} type="video/mp4" />
+          {video.src && <source src={video.src} type="video/mp4" />}
         </video>
       )}
       
       {/* Poster/Thumbnail when not loaded */}
-      {!isInView && video.poster && (
+      {!isInView && !isEmbed && video.poster && (
         <Image
           src={video.poster}
           alt={video.title}
@@ -84,24 +106,12 @@ export default function VideoCard({ video, onClick }: VideoCardProps) {
       )}
       
       {/* Loading state */}
-      {isInView && !isLoaded && (
+      {isInView && !isEmbed && !isLoaded && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-8 h-8 border-3 border-white/30 border-t-white rounded-full animate-spin" />
         </div>
       )}
       
-      {/* Play icon overlay */}
-      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity duration-300">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-white/95 rounded-full flex items-center justify-center shadow-lg">
-          <svg
-            className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-black ml-1"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path d="M8 5v14l11-7z" />
-          </svg>
-        </div>
-      </div>
     </div>
   )
 }

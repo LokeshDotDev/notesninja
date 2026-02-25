@@ -69,37 +69,32 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
   const ugcVideos = [
     {
       id: '1',
-      src: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_1_17_FEB_2026.mp4',
-      thumbnail: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_1_17_FEB_2026.mp4',
-      poster: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_1_17_FEB_2026.mp4',
+      embedSrc: 'https://play.gumlet.io/embed/699eacf2c051a86ff58d2380',
+      aspectRatio: '29/52',
       title: 'Student Success Story - Interview Experience'
     },
     {
       id: '2',
-      src: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_2_17_FEB_2026.mp4',
-      thumbnail: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_2_17_FEB_2026.mp4',
-      poster: '/assets/student reviews videos/NOTESNINJA_INTERVIEW_2_17_FEB_2026.mp4',
+      embedSrc: 'https://play.gumlet.io/embed/699eacf2f8c697838345aa21',
+      aspectRatio: '29/52',
       title: 'Academic Achievement Journey'
     },
     {
       id: '3',
-      src: '/assets/student reviews videos/Notes_Ninja_shot_Video01.mp4',
-      thumbnail: '/assets/student reviews videos/Notes_Ninja_shot_Video01.mp4',
-      poster: '/assets/student reviews videos/Notes_Ninja_shot_Video01.mp4',
+      embedSrc: 'https://play.gumlet.io/embed/699eacf2f8c697838345aa1b',
+      aspectRatio: '9/16',
       title: 'Study Techniques That Work'
     },
     {
       id: '4',
-      src: '/assets/student reviews videos/Notes_ninja_03.mp4',
-      thumbnail: '/assets/student reviews videos/Notes_ninja_03.mp4',
-      poster: '/assets/student reviews videos/Notes_ninja_03.mp4',
+      embedSrc: 'https://play.gumlet.io/embed/699eacf2f8c697838345aa18',
+      aspectRatio: '9/16',
       title: 'Exam Preparation Success'
     },
     {
       id: '5',
-      src: '/assets/student reviews videos/Notes_ninja_shoot_video02_1.mp4',
-      thumbnail: '/assets/student reviews videos/Notes_ninja_shoot_video02_1.mp4',
-      poster: '/assets/student reviews videos/Notes_ninja_shoot_video02_1.mp4',
+      embedSrc: 'https://play.gumlet.io/embed/699eacf2ba6c1c14db0784f2',
+      aspectRatio: '29/52',
       title: 'For $35. For everyone. Plus tax.'
     }
   ];
