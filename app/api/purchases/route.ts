@@ -52,10 +52,27 @@ export async function POST(req: NextRequest) {
 			);
 		}
 
+		// Resolve post by id or slug
+		const post = await prisma.post.findFirst({
+			where: {
+				OR: [{ id: postId }, { slug: postId }]
+			},
+			include: {
+				digitalFiles: true
+			}
+		});
+
+		if (!post) {
+			return NextResponse.json(
+				{ error: "Product not found" },
+				{ status: 404 }
+			);
+		}
+
 		// Check if user already purchased this product
 		const existingPurchase = await prisma.purchase.findFirst({
 			where: {
-				postId,
+				postId: post.id,
 				userEmail,
 				status: "completed"
 			}
@@ -71,7 +88,7 @@ export async function POST(req: NextRequest) {
 		// Create purchase record
 		const purchase = await prisma.purchase.create({
 			data: {
-				postId,
+				postId: post.id,
 				userEmail,
 				amount,
 				paymentId,

@@ -75,8 +75,10 @@ export async function POST(req: NextRequest) {
     try {
       // Get product details (including isDigital and digitalFiles for email trigger)
       console.log('📦 Fetching product:', productId);
-      const product = await prisma.post.findUnique({
-        where: { id: productId },
+      const product = await prisma.post.findFirst({
+        where: {
+          OR: [{ id: productId }, { slug: productId }]
+        },
         include: {
           digitalFiles: true
         }
@@ -91,6 +93,8 @@ export async function POST(req: NextRequest) {
       }
 
       console.log('✅ Product found:', {
+        id: product.id,
+        slug: product.slug,
         title: product.title,
         isDigital: product.isDigital,
         filesCount: product.digitalFiles.length,
@@ -101,7 +105,7 @@ export async function POST(req: NextRequest) {
       console.log('💾 Creating purchase record...');
       const purchase = await prisma.purchase.create({
         data: {
-          postId: productId,
+          postId: product.id,
           userEmail: customerEmail,
           userId: userId || null, // Include userId if authenticated
           paymentId: razorpay_payment_id,
