@@ -342,6 +342,8 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                   to: formData.email,
                   customerName: `${formData.firstName} ${formData.lastName}`,
                   productName: product.title,
+                  price: product.price,
+                  compareAtPrice: product.compareAtPrice,
                   downloadLinks: product.digitalFiles || []
                 })
               });

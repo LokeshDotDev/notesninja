@@ -72,7 +72,7 @@ function generatePurchaseEmailTemplate(data: EmailData): string {
   console.log('Download links:', data.downloadLinks);
   
   // Get pricing information
-  const formattedPrice = formatPrice(data.price || 0);
+  const formattedPrice = formatPrice(data.price || 3999);
   
   const downloadItems = data.downloadLinks?.map((file, index) => {
     // Use new secure download endpoint with absolute URL
