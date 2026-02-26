@@ -15,7 +15,7 @@ const settings = {
 			"Premium digital academic materials and study resources. Access high-quality notes, study guides, and educational content for students and educators. Instant download, expert-curated content.",
 		keywords:
 			"digital notes, study materials, academic resources, educational content, study guides, online learning, student resources, digital textbooks, academic notes, exam preparation",
-		url: "https://www.notesninja.com",
+		url: "https://notesninja.com",
 		author: "NotesNinja",
 		publisher: "NotesNinja",
 		twitter: "@notesninja",

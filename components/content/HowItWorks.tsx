@@ -355,15 +355,15 @@ export function HowItWorks() {
                     <ChevronRight className="w-4 h-4 ml-2" />
                   </a>
                 </Button>
-                <Button size="lg" variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium px-8 py-4 rounded-2xl transition-all duration-300">
+                {/* <Button size="lg" variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium px-8 py-4 rounded-2xl transition-all duration-300">
                   <a
-                    href="http://localhost:3001/online-manipal-university/notes-and-mockpaper"
+                    href={`${settings.site.url}/online-manipal-university/notes-and-mockpaper`}
                     className="flex items-center"
                   >
                     View All Products
                     <ChevronRight className="w-4 h-4 ml-2" />
                   </a>
-                </Button>
+                </Button> */}
               </div>
               
               {/* Clean feature indicators */}

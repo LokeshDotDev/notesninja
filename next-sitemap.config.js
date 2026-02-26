@@ -7,15 +7,10 @@ module.exports = {
     '/dashboard', 
     '/debug', 
     '/loading-demo',
-    '/ceramic',
-    '/curtain',
-    '/metal_frame_bed',
-    '/furniture',
-    '/key_and_cover',
-    '/led_and_plugs',
-    '/safety_and_access',
-    '/ceramic_and_curtains',
-    '/motel_sign_board'
+    '/api/admin',
+    '/api/debug',
+    '/auth/callback',
+    '/auth/error'
   ],
   transform: async (config, path) => {
     // Custom priority for different page types
