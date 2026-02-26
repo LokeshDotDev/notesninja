@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { sendPurchaseConfirmationEmail } from "@/lib/email";
+import { sendPurchaseEmail } from "@/lib/brevo";
 
 // GET all purchases (admin only)
 export async function GET(req: NextRequest) {
@@ -91,21 +91,26 @@ export async function POST(req: NextRequest) {
 			try {
 				const downloadLinks = purchase.post.digitalFiles.map(file => ({
 					fileName: file.fileName,
-					fileUrl: file.fileUrl
+					fileUrl: file.fileUrl,
+					fileSize: file.fileSize,
+					fileType: file.fileType,
+					publicId: file.publicId
 				}));
 
-				await sendPurchaseConfirmationEmail(
-					userEmail,
-					purchase.post.title,
-					purchase.id,
-					downloadLinks,
-					purchase.post.price || undefined,
-					purchase.post.compareAtPrice || undefined
-				);
+				// Call Brevo directly (server-side, no HTTP call needed)
+				await sendPurchaseEmail({
+					to: userEmail,
+					subject: `Thank You for Your Purchase - ${purchase.post.title}`,
+					customerName: userEmail.split('@')[0],
+					productName: purchase.post.title,
+					price: purchase.post.price ?? undefined,
+					compareAtPrice: purchase.post.compareAtPrice ?? undefined,
+					downloadLinks: downloadLinks
+				});
 				
-				console.log(`Purchase confirmation email sent to ${userEmail}`);
+				console.log(`✅ Purchase confirmation email sent to ${userEmail}`);
 			} catch (emailError) {
-				console.error("Failed to send purchase confirmation email:", emailError);
+				console.error("❌ Failed to send purchase confirmation email:", emailError);
 				// Don't fail the purchase if email fails
 			}
 		}

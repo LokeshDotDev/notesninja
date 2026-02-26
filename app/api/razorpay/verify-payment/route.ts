@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import prisma from "@/lib/prisma";
-import { sendPurchaseConfirmationEmail } from "@/lib/email";
+import { sendPurchaseEmail } from "@/lib/brevo";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,15 +15,36 @@ export async function POST(req: NextRequest) {
       userId
     } = await req.json();
 
+    console.log('🔍 Verifying payment:', {
+      orderId: razorpay_order_id,
+      paymentId: razorpay_payment_id,
+      productId,
+      customerEmail,
+      hasSignature: !!razorpay_signature
+    });
+
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      const missingFields = [];
+      if (!razorpay_order_id) missingFields.push('razorpay_order_id');
+      if (!razorpay_payment_id) missingFields.push('razorpay_payment_id');
+      if (!razorpay_signature) missingFields.push('razorpay_signature');
+      console.error('❌ Missing parameters:', missingFields);
       return NextResponse.json(
-        { error: "Missing payment verification parameters" },
+        { error: `Missing parameters: ${missingFields.join(', ')}` },
         { status: 400 }
       );
     }
 
     // Verify the payment signature
     const secret = process.env.RAZORPAY_KEY_SECRET!;
+    if (!secret) {
+      console.error('❌ RAZORPAY_KEY_SECRET not set in environment');
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 }
+      );
+    }
+
     const generated_signature = crypto
       .createHmac('sha256', secret)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
@@ -31,7 +52,14 @@ export async function POST(req: NextRequest) {
 
     const isSignatureValid = generated_signature === razorpay_signature;
 
+    console.log('🔐 Signature validation:', {
+      isValid: isSignatureValid,
+      generated: generated_signature.substring(0, 10) + '...',
+      received: razorpay_signature.substring(0, 10) + '...'
+    });
+
     if (!isSignatureValid) {
+      console.error('❌ Signature mismatch!');
       return NextResponse.json(
         { error: "Invalid payment signature" },
         { status: 400 }
@@ -45,20 +73,32 @@ export async function POST(req: NextRequest) {
     
     // Save purchase to database
     try {
-      // Get product details
+      // Get product details (including isDigital and digitalFiles for email trigger)
+      console.log('📦 Fetching product:', productId);
       const product = await prisma.post.findUnique({
         where: { id: productId },
-        select: { price: true }
+        include: {
+          digitalFiles: true
+        }
       });
 
       if (!product) {
+        console.error('❌ Product not found:', productId);
         return NextResponse.json(
           { error: "Product not found" },
           { status: 404 }
         );
       }
 
+      console.log('✅ Product found:', {
+        title: product.title,
+        isDigital: product.isDigital,
+        filesCount: product.digitalFiles.length,
+        price: product.price
+      });
+
       // Create purchase record
+      console.log('💾 Creating purchase record...');
       const purchase = await prisma.purchase.create({
         data: {
           postId: productId,
@@ -78,43 +118,72 @@ export async function POST(req: NextRequest) {
         }
       });
 
-      console.log('Purchase saved successfully:', {
+      console.log('✅ Purchase created:', {
         purchaseId: purchase.id,
         userId: purchase.userId,
         userEmail: purchase.userEmail,
-        productId: purchase.postId
+        productId: purchase.postId,
+        amount: purchase.amount,
+        status: purchase.status
+      });
+
+      console.log('📧 Email eligibility check:', {
+        isDigital: purchase.post.isDigital,
+        digitalFilesCount: purchase.post.digitalFiles.length,
+        willSendEmail: purchase.post.isDigital && purchase.post.digitalFiles.length > 0
       });
 
       // Send purchase confirmation email for digital products
       if (purchase.post.isDigital && purchase.post.digitalFiles.length > 0) {
         try {
+          console.log('📤 Preparing email for:', customerEmail);
           const downloadLinks = purchase.post.digitalFiles.map(file => ({
             fileName: file.fileName,
-            fileUrl: file.fileUrl
+            fileUrl: file.fileUrl,
+            fileSize: file.fileSize,
+            fileType: file.fileType,
+            publicId: file.publicId
           }));
 
-          await sendPurchaseConfirmationEmail(
-            customerEmail,
-            purchase.post.title,
-            purchase.id,
-            downloadLinks,
-            purchase.post.price || undefined,
-            purchase.post.compareAtPrice || undefined
-          );
+          console.log('📬 Sending email via Brevo...');
+          // Call Brevo directly (server-side, no HTTP call needed)
+          await sendPurchaseEmail({
+            to: customerEmail,
+            subject: `Thank You for Your Purchase - ${purchase.post.title}`,
+            customerName: customerName,
+            productName: purchase.post.title,
+            price: purchase.post.price ?? undefined,
+            compareAtPrice: purchase.post.compareAtPrice ?? undefined,
+            downloadLinks: downloadLinks
+          });
           
-          console.log(`Purchase confirmation email sent to ${customerEmail}`);
+          console.log(`✅ Email sent successfully to ${customerEmail}`);
         } catch (emailError) {
-          console.error("Failed to send purchase confirmation email:", emailError);
-          // Don't fail the purchase if email fails
+          console.error("❌ Failed to send email:", {
+            error: emailError instanceof Error ? emailError.message : String(emailError),
+            to: customerEmail
+          });
+          // Don't fail the purchase if email fails - it can be retried
         }
+      } else {
+        console.log('⏭️ Skipping email - not a digital product or no files');
       }
 
     } catch (dbError) {
-      console.error("Failed to save purchase:", dbError);
-      // Continue with payment verification even if DB save fails
+      console.error("❌ Database error:", {
+        error: dbError instanceof Error ? dbError.message : String(dbError)
+      });
+      // Still return success if payment was verified - purchase might have been created
+      // but we need to know about this in logs
+      return NextResponse.json({
+        success: true,
+        message: "Payment verified (database error occurred)",
+        paymentId: razorpay_payment_id,
+        warning: "Purchase may not have been recorded"
+      });
     }
     
-    console.log('Payment verified successfully:', {
+    console.log('✅ Payment verified successfully!', {
       razorpay_order_id,
       razorpay_payment_id,
       productId,
@@ -130,7 +199,10 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error("Payment verification error:", error);
+    console.error("❌ Payment verification error:", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return NextResponse.json(
       { 
         error: "Payment verification failed",

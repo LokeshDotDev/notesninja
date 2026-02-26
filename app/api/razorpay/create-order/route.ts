@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
     
     // Check environment variables
     if (!keyId || !keySecret) {
+      console.error('❌ Razorpay credentials missing');
       return NextResponse.json(
         { 
           error: "Server configuration error: Razorpay credentials not found",
@@ -35,6 +36,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    console.log('🔐 Razorpay credentials available');
+
     // Initialize Razorpay instance
     const razorpay = new Razorpay({
       key_id: keyId,
@@ -43,7 +46,10 @@ export async function POST(req: NextRequest) {
 
     const { amount, currency = "INR", receipt, notes } = await req.json();
 
+    console.log('📝 Creating order:', { amount, currency, receipt });
+
     if (!amount || amount <= 0) {
+      console.error('❌ Invalid amount:', amount);
       return NextResponse.json(
         { error: "Invalid amount" },
         { status: 400 }
@@ -60,7 +66,10 @@ export async function POST(req: NextRequest) {
       notes: notes || {},
     };
 
+    console.log('🚀 Sending to Razorpay:', { ...options, amount: amountInPaise });
     const order = await razorpay.orders.create(options);
+
+    console.log('✅ Order created:', { orderId: order.id, amount: order.amount });
 
     return NextResponse.json({
       success: true,
@@ -69,7 +78,10 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error("Razorpay order creation error:", error);
+    console.error("❌ Razorpay order creation error:", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return NextResponse.json(
       { 
         error: "Failed to create order",

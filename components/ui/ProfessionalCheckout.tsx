@@ -121,6 +121,9 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const hasTrackedBeginCheckout = useRef(false);
 
+  // Toggle to disable Razorpay during testing
+  const RAZORPAY_DISABLED_FOR_TESTING = false;
+
   useEffect(() => {
     async function fetchProduct() {
       try {
@@ -248,6 +251,60 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         imageUrl: product.imageUrl,
       });
 
+      if (RAZORPAY_DISABLED_FOR_TESTING) {
+        // Simulate a successful payment for testing
+        console.log('TEST MODE: Razorpay disabled. Simulating payment...');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        const mockTransactionId = `test_${Date.now()}_${Math.random().toString(36).substring(2,8)}`;
+        
+        // Create purchase record in database (same as real flow)
+        try {
+          console.log('TEST MODE: Creating purchase record via /api/purchases...');
+          const purchaseResponse = await fetch('/api/purchases', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              postId: product.id,
+              userEmail: formData.email,
+              amount: product.price || 0,
+              paymentId: mockTransactionId
+            })
+          });
+          
+          const purchaseResult = await purchaseResponse.json();
+          if (!purchaseResponse.ok) {
+            console.error('TEST MODE: Purchase creation failed:', purchaseResult);
+          } else {
+            console.log('TEST MODE: Purchase record created successfully:', purchaseResult);
+          }
+        } catch (purchaseError) {
+          console.error('TEST MODE: Failed to create purchase record:', purchaseError);
+        }
+
+        trackPurchase({
+          transactionId: mockTransactionId,
+          value: product.price || 0,
+          currency: 'INR',
+          products: [
+            {
+              id: product.id,
+              title: product.title,
+              price: product.price,
+              category: product.category?.name,
+              subcategory: product.subcategory?.name,
+              imageUrl: product.imageUrl,
+            }
+          ],
+          customerEmail: formData.email,
+          customerName: `${formData.firstName} ${formData.lastName}`,
+        });
+
+        setOrderComplete(true);
+        setPaymentStep('success');
+        return;
+      }
+
       // Create Razorpay order
       // Generate a short receipt ID (max 40 chars for Razorpay)
       const timestamp = Date.now().toString(36);
@@ -290,79 +347,82 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         description: product.title,
         order_id: orderData.order.id,
         handler: async function (response: RazorpayResponse) {
-          console.log('Payment successful, verifying...', { sessionUserId: session?.user?.id });
-          // Verify payment
-          const verifyResponse = await fetch('/api/razorpay/verify-payment', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              productId,
-              customerEmail: formData.email || session?.user?.email,
-              customerName: `${formData.firstName} ${formData.lastName}` || session?.user?.name,
-              userId: session?.user?.id || null
-            })
-          });
-
-          const verifyData = await verifyResponse.json();
-
-          if (verifyResponse.ok && verifyData.success) {
-            trackPurchase({
-              transactionId: response.razorpay_payment_id,
-              value: product.price || 0,
-              currency: "INR",
-              products: [
-                {
-                  id: product.id,
-                  title: product.title,
-                  price: product.price,
-                  category: product.category?.name,
-                  subcategory: product.subcategory?.name,
-                  imageUrl: product.imageUrl,
-                },
-              ],
-              customerEmail: formData.email,
-              customerName: `${formData.firstName} ${formData.lastName}`,
-            });
-            // Send confirmation email
-            try {
-              console.log('Product data:', product);
-              console.log('Digital files:', product.digitalFiles);
-              
-              const emailResponse = await fetch('/api/send-email', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  to: formData.email,
-                  customerName: `${formData.firstName} ${formData.lastName}`,
-                  productName: product.title,
-                  price: product.price,
-                  compareAtPrice: product.compareAtPrice,
-                  downloadLinks: product.digitalFiles || []
-                })
-              });
-
-              const emailResult = await emailResponse.json();
-              
-              if (!emailResponse.ok) {
-                console.error('Failed to send email:', emailResult.error);
-              } else {
-                console.log('Email sent successfully:', emailResult);
-              }
-            } catch (emailError) {
-              console.error('Email error:', emailError);
-            }
+          console.log('🔄 Payment successful, verifying...', { sessionUserId: session?.user?.id });
+          try {
+            // Verify payment with 10 second timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
             
-            setOrderComplete(true);
-            setPaymentStep("success");
-          } else {
-            throw new Error(verifyData.error || 'Payment verification failed');
+            const verifyResponse = await fetch('/api/razorpay/verify-payment', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                productId,
+                customerEmail: formData.email || session?.user?.email,
+                customerName: `${formData.firstName} ${formData.lastName}` || session?.user?.name,
+                userId: session?.user?.id || null
+              }),
+              signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+            const verifyData = await verifyResponse.json();
+
+            console.log('✅ Verification response:', { 
+              ok: verifyResponse.ok, 
+              status: verifyResponse.status,
+              success: verifyData.success,
+              error: verifyData.error 
+            });
+
+            if (verifyResponse.ok && verifyData.success) {
+              console.log('✅ Payment verified successfully! Creating purchase in DB...');
+              
+              trackPurchase({
+                transactionId: response.razorpay_payment_id,
+                value: product.price || 0,
+                currency: "INR",
+                products: [
+                  {
+                    id: product.id,
+                    title: product.title,
+                    price: product.price,
+                    category: product.category?.name,
+                    subcategory: product.subcategory?.name,
+                    imageUrl: product.imageUrl,
+                  },
+                ],
+                customerEmail: formData.email,
+                customerName: `${formData.firstName} ${formData.lastName}`,
+              });
+              
+              // Mark success immediately - email sent via server-side code
+              console.log('✅ Showing success screen now...');
+              setOrderComplete(true);
+              setPaymentStep("success");
+            } else {
+              const errorMsg = verifyData.error || 'Payment verification failed';
+              console.error('❌ Verification failed:', errorMsg);
+              throw new Error(errorMsg);
+            }
+          } catch (verifyError) {
+            console.error('❌ Verification error:', verifyError);
+            // Show error but also mark as complete with warning (payment was successful even if verification had issues)
+            const errorMsg = verifyError instanceof Error ? verifyError.message : 'Payment processing error';
+            if (verifyError instanceof Error && verifyError.name === 'AbortError') {
+              console.warn('⏱️ Verification timeout - payment may have been processed');
+              setError('Payment received. If you don\'t receive an email within 5 minutes, please contact support.');
+              setPaymentStep("success");
+              setOrderComplete(true);
+            } else {
+              setError(errorMsg);
+              setPaymentStep("error");
+            }
           }
         },
         modal: {

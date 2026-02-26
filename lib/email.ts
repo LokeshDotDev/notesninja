@@ -8,7 +8,13 @@ export async function sendPurchaseConfirmationEmail(
   compareAtPrice?: number
 ) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/send-email`, {
+    // Use NEXT_PUBLIC_APP_URL, fallback to NEXT_PUBLIC_BASE_URL, then localhost
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
+    const emailUrl = `${baseUrl}/api/send-email`;
+    
+    console.log('Sending email via:', emailUrl);
+    
+    const response = await fetch(emailUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -27,7 +33,8 @@ export async function sendPurchaseConfirmationEmail(
     });
 
     if (!response.ok) {
-      throw new Error('Failed to send purchase confirmation email');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Failed to send email: ${response.status} ${JSON.stringify(errorData)}`);
     }
 
     return await response.json();
