@@ -75,9 +75,7 @@ export function HeroSection() {
 						<span className='font-semibold'>Start Learning Free</span>
 						<ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
 					</a>
-					<button 
-						aria-label="Browse our collection of study materials"
-						className='inline-flex items-center justify-center gap-2 rounded-full border-2 border-neutral-300 dark:border-neutral-700 bg-white/10 backdrop-blur-sm px-8 py-4 text-neutral-900 dark:text-white font-semibold text-lg shadow-lg transition-all duration-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400/50'>
+					<button className='inline-flex items-center justify-center gap-2 rounded-full border-2 border-neutral-300 dark:border-neutral-700 bg-white/10 backdrop-blur-sm px-8 py-4 text-neutral-900 dark:text-white font-semibold text-lg shadow-lg transition-all duration-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400/50'>
 						<BookOpen className="w-5 h-5" />
 						<span className='font-semibold'>Browse Collection</span>
 					</button>

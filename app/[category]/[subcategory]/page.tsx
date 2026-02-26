@@ -26,25 +26,19 @@ export async function generateMetadata({ params }: SubcategoryPageProps): Promis
   const courseName = segments[segments.length - 1]; // Get last segment
   const courseTitle = slugToTitle(courseName).toUpperCase(); // BCA, MBA, etc.
   
-  const title = `${courseTitle} Study Materials | Notes & Mock Papers | ${settings.site.name}`;
-  const description = `Download comprehensive ${courseTitle} study materials including premium notes, mock papers, question banks, and exam preparation resources. Expert-curated content for ${courseTitle} students.`;
+  const title = `${courseTitle} | Notes & Mock Papers | ${settings.site.name}`;
+  const description = `Comprehensive study materials and resources for ${courseTitle}. Download premium notes, mock papers, and exam preparation materials.`;
   
   return {
     title,
     description,
-    keywords: `${courseTitle}, ${courseTitle} notes, ${courseTitle} mock papers, ${courseTitle} study materials, ${courseTitle} exam preparation, university notes, ${settings.site.name}`,
+    keywords: `${courseTitle}, study materials, notes, mock papers, exam preparation, ${settings.site.name}`,
     openGraph: {
       title,
       description,
       url: `${settings.site.url}/${category}/${subcategory}`,
       siteName: settings.site.name,
       type: 'website',
-      images: [{
-        url: `${settings.site.url}/assets/og-image.jpg`,
-        width: 1200,
-        height: 630,
-        alt: `${courseTitle} Study Materials`,
-      }],
     },
     twitter: {
       card: 'summary_large_image',

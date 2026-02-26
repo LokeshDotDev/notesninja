@@ -4,20 +4,24 @@ import "./globals.css";
 import Providers from "@/components/providers/SessionProvider";
 import { DynamicNavbar } from "@/components/custom/DynamicNavbar";
 import JsonLd from "@/components/custom/JsonLd";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import VisitorTracker from "@/components/analytics/GoogleAnalytics";
+import MetaPixel from "@/components/analytics/MetaPixel";
+import RouteChangeTracker from "@/components/analytics/RouteChangeTracker";
+import PerformanceMonitor from "@/components/custom/PerformanceMonitor";
+import NavigationLoader from "@/components/custom/NavigationLoader";
 import settings from "@/lib/settings";
 import { GTM_ID } from "@/lib/gtm";
 import Script from "next/script";
 import dynamic from "next/dynamic";
 
 // Lazy load Footer (it's at the bottom of the page)
-const Footer = dynamic(() => import("@/components/content/Footer"), { 
-  loading: () => null 
+const Footer = dynamic(() => import("@/components/content/Footer"), {
+  ssr: true
 });
 
-// Client-side only components - loaded after hydration  
-const ClientOnlyComponents = dynamic(() => import("@/components/custom/ClientOnlyComponents"), {
-  loading: () => null
-});
+// Lazy load WhatsApp chat widget - it's a client component so this is fine
+const WhatsAppChat = dynamic(() => import("@/components/ui/WhatsAppChat").then(mod => ({ default: mod.WhatsAppChat })));
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -85,43 +89,11 @@ export default function RootLayout({
     <Providers>
       <html lang="en">
         <head>
-          {/* Inline critical CSS to reduce render-blocking */}
-          <style dangerouslySetInnerHTML={{
-            __html: `
-              html { overflow-x: hidden; }
-              body { margin: 0; padding: 0; font-family: var(--font-poppins), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-              .hero-section { content-visibility: auto; }
-              img { display: block; }
-            `
-          }} />
-
-          {/* Critical: Preload LCP image - hero slider with responsive sizes */}
-          <link 
-            rel="preload" 
-            as="image" 
-            href="/assets/slider/Slide 1.webp"
-            type="image/webp"
-            fetchPriority="high"
-            imageSrcSet="/assets/slider/Slide 1.webp"
-            imageSizes="100vw"
-          />
-          
-          {/* Preload critical fonts */}
-          <link 
-            rel="preload" 
-            href="/_next/static/media/0484562807a97172-s.p.woff2" 
-            as="font" 
-            type="font/woff2" 
-            crossOrigin="anonymous"
-          />
-          
-          {/* Preconnect to critical domains with high priority */}
+          {/* Preconnect to critical domains */}
           <link rel="preconnect" href="https://www.googletagmanager.com" />
           <link rel="preconnect" href="https://www.google-analytics.com" />
-          <link rel="dns-prefetch" href="https://connect.facebook.net" />
+          <link rel="preconnect" href="https://connect.facebook.net" />
           <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
-          <link rel="dns-prefetch" href="https://res.cloudinary.com" />
-          <link rel="dns-prefetch" href="https://media.gumlet.io" />
           
           <link rel="canonical" href={settings.site.url} />
           <link rel="icon" type="image/png" href="/assets/Notes ninja Logo.png" />
@@ -130,8 +102,8 @@ export default function RootLayout({
           <meta name="ICBM" content={settings.site.geo.icbm} />
           <meta name="google-site-verification" content="mNmK_1WM8JiHujcMV8GhkRvaFpkm0q-1XPVzYzvAXK4" />
 
-          {/* Google Tag Manager - Deferred to lazyOnload to avoid render blocking */}
-          <Script id="gtm-script" strategy="lazyOnload" async>
+          {/* Google Tag Manager */}
+          <Script id="gtm-script" strategy="afterInteractive">
             {`
               (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
               new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -141,24 +113,26 @@ export default function RootLayout({
             `}
           </Script>
 
-          {/* Razorpay Script - lazy load only when checkout is triggered */}
+          {/* Razorpay Script - lazy load only when needed */}
           <Script 
             src="https://checkout.razorpay.com/v1/checkout.js" 
             strategy="lazyOnload"
-            async
           />
         </head>
         <body
           className={`${poppins.variable} font-sans antialiased pt-20`}
         >
+          <GoogleAnalytics ga_id={settings.site.analytics_ga_id} />
+          <VisitorTracker ga_id={settings.site.analytics_ga_id} />
+          <MetaPixel />
+          <RouteChangeTracker />
           <JsonLd />
-          <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-white focus:text-black">Skip to main content</a>
+          <PerformanceMonitor />
+          <NavigationLoader />
           <DynamicNavbar />
-          <main id="main-content" role="main">
-            {children}
-          </main>
+          {children}
           <Footer />
-          <ClientOnlyComponents ga_id={settings.site.analytics_ga_id} />
+          <WhatsAppChat />
 
           {/* Google Tag Manager (noscript) */}
           <noscript>

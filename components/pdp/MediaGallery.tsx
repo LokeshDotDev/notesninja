@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 
 interface PostImage {
@@ -71,8 +71,6 @@ export function MediaGallery({ images = [], mainImage, title }: MediaGalleryProp
             <button
               key={image.id}
               onClick={() => handleImageSelect(index)}
-              aria-label={`View image ${index + 1} of ${allImages.length}`}
-              aria-current={index === currentImageIndex}
               className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 bg-neutral-50 dark:bg-neutral-900 relative ${
                 index === currentImageIndex
                   ? 'border-orange-500 scale-105 shadow-lg'

@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useRef, useEffect, useState } from 'react'
-import Image from 'next/image'
 
 interface Video {
   id: string
@@ -60,16 +59,15 @@ export default function VideoCard({ video, onClick }: VideoCardProps) {
       className="relative w-[160px] sm:w-[200px] md:w-[240px] h-[280px] sm:h-[360px] md:h-[420px] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 cursor-pointer hover:scale-105 transition-transform duration-300 flex-shrink-0"
       onClick={() => onClick(video)}
     >
-      {/* Thumbnail - use Next.js Image for better optimization */}
+      {/* Thumbnail - Regular img tag for reliable loading */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       {video.thumbnail && !thumbnailError && (
-        <Image
+        <img
           src={video.thumbnail}
           alt={video.title}
           className="absolute inset-0 w-full h-full object-cover"
           onError={() => setThumbnailError(true)}
-          loading="lazy"
-          unoptimized
-          fill
+          loading="eager"
         />
       )}
 

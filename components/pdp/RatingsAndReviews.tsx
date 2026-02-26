@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import Image from 'next/image';
 import { motion } from 'motion/react';
 
 interface Review {
@@ -233,7 +232,7 @@ const ReviewCard = ({ review }: { review: Review }) => (
     <div className="flex items-start justify-between mb-3">
       <div className="flex-1">
         <div className="flex items-center gap-2 mb-1">
-          <h3 className="font-semibold text-gray-900 text-sm">{review.name}</h3>
+          <h4 className="font-semibold text-gray-900 text-sm">{review.name}</h4>
           {review.verified && <VerifiedBadge />}
         </div>
         <p className="text-xs text-gray-500">{review.date}</p>
@@ -255,14 +254,11 @@ const ReviewCard = ({ review }: { review: Review }) => (
     {/* Review Image (if present) */}
     {review.image && (
       <>
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={review.image}
           alt="Review image"
           className="w-full rounded-lg object-cover mt-3"
-          width={500}
-          height={400}
-          unoptimized
-          loading="lazy"
         />
       </>
     )}

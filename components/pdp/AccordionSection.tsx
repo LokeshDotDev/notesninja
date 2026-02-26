@@ -132,9 +132,7 @@ export function AccordionSection() {
         <p className="text-neutral-600 dark:text-neutral-400 mb-6 max-w-2xl mx-auto">
           Our support team is here to help you 24/7. Get in touch with us and we&apos;ll be happy to assist you.
         </p>
-        <button 
-          aria-label="Contact support team for assistance"
-          className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl">
+        <button className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl">
           Contact Support
         </button>
       </motion.div> */}

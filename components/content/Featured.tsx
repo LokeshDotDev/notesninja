@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { ShineBorder } from "@/components/magicui/shine-border";
 import { PointerHighlight } from "@/components/ui/pointer-highlight";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import React from "react";
 import Carousel from "@/components/ui/carousel";

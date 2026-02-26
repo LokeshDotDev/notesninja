@@ -31,13 +31,8 @@ const HowItWorks = dynamic(() => import("@/components/content/HowItWorks").then(
 
 export const metadata: Metadata = {
   title: `${settings.site.name} | Premium Digital Academic Materials & Study Resources`,
-  description: "Download premium study materials, notes, mock papers, and exam preparation resources for university students. Expert-curated content for BBA, BCA, MBA, MCA and more.",
+  description: settings.site.description,
   keywords: settings.site.keywords,
-  openGraph: {
-    title: `${settings.site.name} | Premium Digital Academic Materials`,
-    description: "Download premium study materials, notes, mock papers, and exam preparation resources for university students.",
-    type: 'website',
-  },
 };
 
 const ugcVideos = [

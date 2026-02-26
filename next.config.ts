@@ -5,11 +5,6 @@ const nextConfig: NextConfig = {
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
     RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
   },
-  compiler: {
-    removeConsole: process.env.NODE_ENV === "production" ? {
-      exclude: ['error', 'warn'],
-    } : false,
-  },
   experimental: {
     // Increase body size limit for file uploads to 4MB (Vercel free tier limit)
     // This allows streaming files through API
@@ -18,13 +13,7 @@ const nextConfig: NextConfig = {
     },
     // Optimize CSS and JS loading
     optimizeCss: true,
-    optimizePackageImports: [
-      'lucide-react', 
-      '@radix-ui/react-icons',
-      '@tabler/icons-react',
-      'motion',
-      'framer-motion'
-    ],
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
   images: {
     remotePatterns: [
@@ -65,18 +54,15 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ["image/webp", "image/avif"],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    qualities: [75, 85, 90, 100],
-    minimumCacheTTL: 86400, // Cache images for 24 hours
+    minimumCacheTTL: 60,
+    // Enable image optimization
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    loader: 'default',
-    loaderFile: undefined,
   },
   compress: true,
   poweredByHeader: false,
-  productionBrowserSourceMaps: false,
   // SWC minification is enabled by default in Next.js 15
   // Add caching headers
   async headers() {
@@ -105,15 +91,6 @@ const nextConfig: NextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=86400, immutable',
-          },
-        ],
-      },
-      {
-        source: '/assets/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
           },
         ],
       },

@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
+import { BlurFade } from "@/components/magicui/blur-fade";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -378,12 +379,11 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
         
         <div className={`relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 ${appleDesign.spacing.hero}`}>
           <div className="text-center max-w-7xl mx-auto">
-            {/* Apple-style breadcrumb - use whileInView to defer animation */}
+            {/* Apple-style breadcrumb */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-              viewport={{ once: true, amount: 0.5 }}
               className="flex items-center justify-center space-x-2 text-sm text-[rgb(99, 99, 102)] dark:text-neutral-500 mb-8 flex-wrap font-medium"
             >
               <Link href="/" className="hover:text-[rgb(0, 122, 255)] transition-colors duration-200">Home</Link>
@@ -401,23 +401,21 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
               ))}
             </motion.div>
 
-            {/* Apple-style hero title - defer animation */}
+            {/* Apple-style hero title */}
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-              viewport={{ once: true, amount: 0.5 }}
               className={`${appleDesign.typography.heroTitle} text-[rgb(28, 28, 30)] dark:text-white mb-6 leading-[1.1]`}
             >
               {category.name}
             </motion.h1>
 
-            {/* Apple-style subtitle - defer animation */}
+            {/* Apple-style subtitle */}
             <motion.p
               initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-              viewport={{ once: true, amount: 0.5 }}
               className={`${appleDesign.typography.body} text-[rgb(99, 99, 102)] dark:text-neutral-400 max-w-2xl mx-auto mb-12 text-xl`}
             >
               Comprehensive study materials and resources for {category.name.toLowerCase()}
@@ -490,23 +488,27 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
             {filteredPosts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
                 {filteredPosts.map((post, index) => {
-                  return (
-                    <div key={post.id} style={{ contentVisibility: index > 8 ? 'auto' : 'visible', willChange: index < 6 ? 'auto' : 'contents' }}>
+                console.log('Post data:', JSON.stringify(post, null, 2)); // Detailed log with formatting
+                console.log('Available image fields:', {
+                  cloudinaryUrl: post.cloudinaryUrl,
+                  secure_url: post.secure_url,
+                  url: post.url,
+                  coverImage: post.coverImage,
+                  image: post.image,
+                  imageUrl: post.imageUrl,
+                  thumbnail: post.thumbnail,
+                  cover: post.cover
+                });
+                return (
+                <BlurFade key={post.id} delay={0.25 + index * 0.1} inView>
+                  {/* <Link href={`/product/${post.id}`}> */}
                   <Link href={`/${categoryName}/${post.slug}`}>
-                    <div
+                    <motion.div
+                      whileHover={{ y: -8, boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.15)" }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      viewport={{ once: true }}
                       className="group relative overflow-hidden rounded-3xl border border-neutral-200/50 dark:border-neutral-700/50 bg-white dark:bg-neutral-800/80 backdrop-blur-xl h-full"
-                      style={{
-                        transition: index < 8 ? 'none' : 'transform 0.3s ease, box-shadow 0.3s ease',
-                      }}
-                      onMouseEnter={(e) => {
-                        if (index < 8) return; // Disable animation for first 8 cards
-                        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-8px)';
-                        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 20px 40px -15px rgba(0, 0, 0, 0.15)';
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
-                        (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
-                      }}
                     >
                       {/* Image Section */}
                       <div className="relative h-56 overflow-hidden rounded-t-3xl bg-neutral-100 dark:bg-neutral-900">
@@ -516,11 +518,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
                             alt={post.title}
                             fill
                             className="object-cover transition-transform duration-700 group-hover:scale-105"
-                            loading={index < 3 ? "eager" : "lazy"}
-                            priority={index === 0}
-                            quality={index === 0 ? 85 : index < 3 ? 75 : index < 8 ? 60 : 50}
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            fetchPriority={index === 0 ? "high" : index < 3 ? "auto" : "low"}
+                            loading="lazy"
                           />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-[rgb(0, 122, 255)]/20 to-purple-500/20 flex items-center justify-center">
@@ -593,10 +591,10 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
                           <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
                         </Button>
                       </div>
-                    </div>
+                    </motion.div>
                   </Link>
-                </div>
-                  );
+                </BlurFade>
+                );
                 })}
               </div>
             ) : (
@@ -703,7 +701,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
             {/* Apple-style Topics Grid/List */}
             <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" : "space-y-4"}>
               {category.children.map((subcategory, index) => (
-                <div key={subcategory.id}>
+                <BlurFade key={subcategory.id} delay={0.25 + index * 0.1} inView>
                   <Link href={`/${subcategory.path || subcategory.slug}`}>
                     {viewMode === "grid" ? (
                       /* Apple-style Grid View */
@@ -712,7 +710,6 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
                         whileTap={{ scale: 0.98 }}
                         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
                         className="group relative overflow-hidden rounded-3xl bg-white dark:bg-neutral-800 border border-[rgb(229, 229, 234)] dark:border-neutral-700 h-96 flex flex-col justify-between cursor-pointer hover:border-[rgb(0, 122, 255)]/50 transition-all duration-300 shadow-sm hover:shadow-xl"
-                        style={{ willChange: index < 3 ? 'transform' : 'auto' }}
                       >
                         {/* Subtle gradient overlay */}
                         <div className="absolute inset-0 bg-gradient-to-br from-[rgb(0, 122, 255)]/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -791,7 +788,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
                       </motion.div>
                     )}
                   </Link>
-                </div>
+                </BlurFade>
               ))}
             </div>
           </>
