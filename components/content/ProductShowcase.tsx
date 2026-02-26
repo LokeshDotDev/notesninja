@@ -140,11 +140,16 @@ export function ProductShowcase() {
                 </div>
                 
                 <div className="flex gap-2">
-                  <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button 
+                    aria-label={`Buy and download ${product.title}`}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
                     <Download className="w-4 h-4 mr-2" />
                     Buy & Download
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    aria-label={`View details for ${product.title}`}
+                    variant="outline" 
+                    size="sm">
                     <BookOpen className="w-4 h-4" />
                   </Button>
                 </div>
@@ -154,7 +159,11 @@ export function ProductShowcase() {
         </div>
 
         <div className="text-center mt-12">
-          <Button variant="outline" size="lg" className="border-gray-300 dark:border-gray-600">
+          <Button 
+            aria-label="View all available products and resources"
+            variant="outline" 
+            size="lg" 
+            className="border-gray-300 dark:border-gray-600">
             <a
               href="http://localhost:3001/online-manipal-university/notes-and-mockpaper"
               className="flex items-center"

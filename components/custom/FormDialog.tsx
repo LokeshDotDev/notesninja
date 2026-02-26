@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import NextImage from "next/image";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -686,11 +687,13 @@ export default function FormDialog({
 											<div className="flex-1 flex items-center space-x-3 min-w-0">
 												{/* Image preview */}
 												{file && 'url' in file ? (
-													// eslint-disable-next-line @next/next/no-img-element
-													<img 
+													<NextImage 
 														src={file.url} 
 														alt={file.name}
+														width={48}
+														height={48}
 														className="w-12 h-12 object-cover rounded flex-shrink-0"
+														unoptimized
 													/>
 												) : (
 													<div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
