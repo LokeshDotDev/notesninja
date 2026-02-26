@@ -202,7 +202,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         storeUserData(updatedFormData);
       }
     }
-  }, [session, product]);
+  }, [session, product, formData]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -264,7 +264,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [product]);
+  }, [product, storeUserData]);
 
   const handleFieldFocus = (field: string) => {
     setFocusedField(field);

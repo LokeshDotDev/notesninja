@@ -60,7 +60,6 @@ export default function VideoCard({ video, onClick }: VideoCardProps) {
       onClick={() => onClick(video)}
     >
       {/* Thumbnail - Regular img tag for reliable loading */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       {video.thumbnail && !thumbnailError && (
         <img
           src={video.thumbnail}
