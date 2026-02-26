@@ -2,67 +2,75 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import prisma from "@/lib/prisma";
 import { sendPurchaseEmail } from "@/lib/brevo";
+import { createRazorpaySecurity } from "@/lib/razorpay-security";
 
 export async function POST(req: NextRequest) {
+  const razorpaySecurity = createRazorpaySecurity();
+
   try {
-    const { 
-      razorpay_order_id, 
-      razorpay_payment_id, 
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
       razorpay_signature,
       productId,
       customerEmail,
       customerName,
-      userId
+      userId,
     } = await req.json();
 
-    console.log('🔍 Verifying payment:', {
+    razorpaySecurity.logSecurityEvent("payment_verification_started", {
       orderId: razorpay_order_id,
       paymentId: razorpay_payment_id,
       productId,
       customerEmail,
-      hasSignature: !!razorpay_signature
+      hasSignature: !!razorpay_signature,
     });
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       const missingFields = [];
-      if (!razorpay_order_id) missingFields.push('razorpay_order_id');
-      if (!razorpay_payment_id) missingFields.push('razorpay_payment_id');
-      if (!razorpay_signature) missingFields.push('razorpay_signature');
-      console.error('❌ Missing parameters:', missingFields);
+      if (!razorpay_order_id) missingFields.push("razorpay_order_id");
+      if (!razorpay_payment_id) missingFields.push("razorpay_payment_id");
+      if (!razorpay_signature) missingFields.push("razorpay_signature");
+      console.error("❌ Missing parameters:", missingFields);
       return NextResponse.json(
-        { error: `Missing parameters: ${missingFields.join(', ')}` },
-        { status: 400 }
+        { error: `Missing parameters: ${missingFields.join(", ")}` },
+        { status: 400 },
       );
     }
 
-    // Verify the payment signature
-    const secret = process.env.RAZORPAY_KEY_SECRET!;
-    if (!secret) {
-      console.error('❌ RAZORPAY_KEY_SECRET not set in environment');
-      return NextResponse.json(
-        { error: "Server configuration error" },
-        { status: 500 }
+    // Enhanced signature verification using security utility
+    try {
+      const isSignatureValid = razorpaySecurity.verifyPaymentSignature(
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
       );
-    }
 
-    const generated_signature = crypto
-      .createHmac('sha256', secret)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest('hex');
+      razorpaySecurity.logSecurityEvent("signature_verification", {
+        isValid: isSignatureValid,
+        orderId: razorpay_order_id,
+      });
 
-    const isSignatureValid = generated_signature === razorpay_signature;
-
-    console.log('🔐 Signature validation:', {
-      isValid: isSignatureValid,
-      generated: generated_signature.substring(0, 10) + '...',
-      received: razorpay_signature.substring(0, 10) + '...'
-    });
-
-    if (!isSignatureValid) {
-      console.error('❌ Signature mismatch!');
+      if (!isSignatureValid) {
+        console.error("❌ Invalid payment signature");
+        return NextResponse.json(
+          {
+            error: razorpaySecurity.getErrorMessage(
+              "Invalid payment signature",
+            ),
+          },
+          { status: 400 },
+        );
+      }
+    } catch (error) {
+      console.error("❌ Signature verification error:", error);
       return NextResponse.json(
-        { error: "Invalid payment signature" },
-        { status: 400 }
+        {
+          error: razorpaySecurity.getErrorMessage(
+            "Signature verification failed",
+          ),
+        },
+        { status: 500 },
       );
     }
 
@@ -70,39 +78,39 @@ export async function POST(req: NextRequest) {
     // 1. Save the purchase record to your database
     // 2. Send confirmation email
     // 3. Grant access to the digital files
-    
+
     // Save purchase to database
     try {
       // Get product details (including isDigital and digitalFiles for email trigger)
-      console.log('📦 Fetching product:', productId);
+      console.log("📦 Fetching product:", productId);
       const product = await prisma.post.findFirst({
         where: {
-          OR: [{ id: productId }, { slug: productId }]
+          OR: [{ id: productId }, { slug: productId }],
         },
         include: {
-          digitalFiles: true
-        }
+          digitalFiles: true,
+        },
       });
 
       if (!product) {
-        console.error('❌ Product not found:', productId);
+        console.error("❌ Product not found:", productId);
         return NextResponse.json(
           { error: "Product not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
-      console.log('✅ Product found:', {
+      console.log("✅ Product found:", {
         id: product.id,
         slug: product.slug,
         title: product.title,
         isDigital: product.isDigital,
         filesCount: product.digitalFiles.length,
-        price: product.price
+        price: product.price,
       });
 
       // Create purchase record
-      console.log('💾 Creating purchase record...');
+      console.log("💾 Creating purchase record...");
       const purchase = await prisma.purchase.create({
         data: {
           postId: product.id,
@@ -116,40 +124,41 @@ export async function POST(req: NextRequest) {
         include: {
           post: {
             include: {
-              digitalFiles: true
-            }
-          }
-        }
+              digitalFiles: true,
+            },
+          },
+        },
       });
 
-      console.log('✅ Purchase created:', {
+      console.log("✅ Purchase created:", {
         purchaseId: purchase.id,
         userId: purchase.userId,
         userEmail: purchase.userEmail,
         productId: purchase.postId,
         amount: purchase.amount,
-        status: purchase.status
+        status: purchase.status,
       });
 
-      console.log('📧 Email eligibility check:', {
+      console.log("📧 Email eligibility check:", {
         isDigital: purchase.post.isDigital,
         digitalFilesCount: purchase.post.digitalFiles.length,
-        willSendEmail: purchase.post.isDigital && purchase.post.digitalFiles.length > 0
+        willSendEmail:
+          purchase.post.isDigital && purchase.post.digitalFiles.length > 0,
       });
 
       // Send purchase confirmation email for digital products
       if (purchase.post.isDigital && purchase.post.digitalFiles.length > 0) {
         try {
-          console.log('📤 Preparing email for:', customerEmail);
-          const downloadLinks = purchase.post.digitalFiles.map(file => ({
+          console.log("📤 Preparing email for:", customerEmail);
+          const downloadLinks = purchase.post.digitalFiles.map((file) => ({
             fileName: file.fileName,
             fileUrl: file.fileUrl,
             fileSize: file.fileSize,
             fileType: file.fileType,
-            publicId: file.publicId
+            publicId: file.publicId,
           }));
 
-          console.log('📬 Sending email via Brevo...');
+          console.log("📬 Sending email via Brevo...");
           // Call Brevo directly (server-side, no HTTP call needed)
           await sendPurchaseEmail({
             to: customerEmail,
@@ -158,24 +167,26 @@ export async function POST(req: NextRequest) {
             productName: purchase.post.title,
             price: purchase.post.price ?? undefined,
             compareAtPrice: purchase.post.compareAtPrice ?? undefined,
-            downloadLinks: downloadLinks
+            downloadLinks: downloadLinks,
           });
-          
+
           console.log(`✅ Email sent successfully to ${customerEmail}`);
         } catch (emailError) {
           console.error("❌ Failed to send email:", {
-            error: emailError instanceof Error ? emailError.message : String(emailError),
-            to: customerEmail
+            error:
+              emailError instanceof Error
+                ? emailError.message
+                : String(emailError),
+            to: customerEmail,
           });
           // Don't fail the purchase if email fails - it can be retried
         }
       } else {
-        console.log('⏭️ Skipping email - not a digital product or no files');
+        console.log("⏭️ Skipping email - not a digital product or no files");
       }
-
     } catch (dbError) {
       console.error("❌ Database error:", {
-        error: dbError instanceof Error ? dbError.message : String(dbError)
+        error: dbError instanceof Error ? dbError.message : String(dbError),
       });
       // Still return success if payment was verified - purchase might have been created
       // but we need to know about this in logs
@@ -183,16 +194,16 @@ export async function POST(req: NextRequest) {
         success: true,
         message: "Payment verified (database error occurred)",
         paymentId: razorpay_payment_id,
-        warning: "Purchase may not have been recorded"
+        warning: "Purchase may not have been recorded",
       });
     }
-    
-    console.log('✅ Payment verified successfully!', {
+
+    console.log("✅ Payment verified successfully!", {
       razorpay_order_id,
       razorpay_payment_id,
       productId,
       customerEmail,
-      customerName
+      customerName,
     });
 
     return NextResponse.json({
@@ -201,18 +212,17 @@ export async function POST(req: NextRequest) {
       paymentId: razorpay_payment_id,
       orderId: razorpay_order_id,
     });
-
   } catch (error) {
     console.error("❌ Payment verification error:", {
       error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     });
     return NextResponse.json(
-      { 
+      {
         error: "Payment verification failed",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

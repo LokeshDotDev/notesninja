@@ -49,7 +49,7 @@ async function findPost(identifier: string) {
 /* ------------------------------------------------ */
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -68,7 +68,7 @@ export async function GET(
 
     const discountPercentage = calculateDiscountPercentage(
       post.price,
-      post.compareAtPrice
+      post.compareAtPrice,
     );
 
     const response = NextResponse.json({
@@ -78,7 +78,7 @@ export async function GET(
 
     response.headers.set(
       "Cache-Control",
-      "no-cache, no-store, must-revalidate"
+      "no-cache, no-store, must-revalidate",
     );
 
     return response;
@@ -86,7 +86,7 @@ export async function GET(
     console.error("Error fetching post:", error);
     return NextResponse.json(
       { error: "Failed to fetch post" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -96,7 +96,7 @@ export async function GET(
 /* ------------------------------------------------ */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getSession();
   if (!session?.user) {
@@ -156,13 +156,13 @@ export async function PATCH(
       }
 
       const uploadResult = (await uploadContent(
-        file
+        file,
       )) as CloudinaryUploadResult;
 
       if (!uploadResult?.secure_url) {
         return NextResponse.json(
           { error: "Image upload failed" },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
@@ -217,14 +217,14 @@ export async function PATCH(
               fileType: f.type,
             },
           });
-        })
+        }),
       );
     }
 
     if (Object.keys(dataToUpdate).length === 0) {
       return NextResponse.json(
         { error: "No valid fields provided" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -240,7 +240,7 @@ export async function PATCH(
 
     const discountPercentage = calculateDiscountPercentage(
       updatedPost.price,
-      updatedPost.compareAtPrice
+      updatedPost.compareAtPrice,
     );
 
     const response = NextResponse.json({
@@ -250,7 +250,7 @@ export async function PATCH(
 
     response.headers.set(
       "Cache-Control",
-      "no-cache, no-store, must-revalidate"
+      "no-cache, no-store, must-revalidate",
     );
 
     return response;
@@ -258,7 +258,7 @@ export async function PATCH(
     console.error("Error updating post:", error);
     return NextResponse.json(
       { error: "Failed to update post" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -268,7 +268,7 @@ export async function PATCH(
 /* ------------------------------------------------ */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getSession();
   if (!session?.user) {
@@ -303,6 +303,11 @@ export async function DELETE(
 
     await Promise.allSettled(deletions);
 
+    // Delete associated purchases first
+    await prisma.purchase.deleteMany({
+      where: { postId: post.id },
+    });
+
     await prisma.post.delete({
       where: { id: post.id },
     });
@@ -313,7 +318,7 @@ export async function DELETE(
 
     response.headers.set(
       "Cache-Control",
-      "no-cache, no-store, must-revalidate"
+      "no-cache, no-store, must-revalidate",
     );
 
     return response;
@@ -321,7 +326,7 @@ export async function DELETE(
     console.error("Error deleting post:", error);
     return NextResponse.json(
       { error: "Failed to delete post" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
