@@ -1,9 +1,39 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+
+/* Critical CSS for above-the-fold content */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* LCP optimization - inline critical hero styles */
+@layer utilities {
+  .hero-lcp {
+    contain: layout style paint;
+    content-visibility: auto;
+  }
+  
+  .image-lcp {
+    content-visibility: auto;
+  }
+  
+  /* GPU-accelerated animations for better compositing */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  /* Optimize transitions for compositing */
+  .optimize-transitions {
+    will-change: transform, opacity;
+  }
+  
+  /* Reduce paint areas */
+  .reduce-paint {
+    contain: layout style paint;
+  }
+}
 
 :root {
 	--radius: 0.625rem;
@@ -279,4 +309,35 @@
 
 .animate-scroll {
   animation: scroll 30s linear infinite;
+}
+/* Performance optimizations */
+* {
+  -webkit-backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  backface-visibility: hidden;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Optimize composited layers */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+.will-change-auto {
+  will-change: auto;
 }

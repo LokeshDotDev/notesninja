@@ -1,19 +1,49 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { AnnouncementBar } from '@/components/pdp/AnnouncementBar';
-import { MediaGallery } from '@/components/pdp/MediaGallery';
-import { ProductInfo } from '@/components/pdp/ProductInfo';
-import { ProductHighlights } from '@/components/pdp/ProductHighlights';
-import { AccordionSection } from '@/components/pdp/AccordionSection';
-import { RatingsAndReviews } from '@/components/pdp/RatingsAndReviews';
-import { TrustScreenshots } from '@/components/pdp/TrustScreenshots';
-import SeeInActionSection from '@/components/pdp/SeeInActionSection';
+import dynamic from 'next/dynamic';
 import { PremiumPageLoader } from '@/components/ui/premium-loader';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { trackViewItem } from '@/lib/analytics';
+
+// Dynamic imports for heavy components
+const AnnouncementBar = dynamic(() => import('@/components/pdp/AnnouncementBar').then(mod => ({ default: mod.AnnouncementBar })), {
+  ssr: true
+});
+
+const MediaGallery = dynamic(() => import('@/components/pdp/MediaGallery').then(mod => ({ default: mod.MediaGallery })), {
+  ssr: true
+});
+
+const ProductInfo = dynamic(() => import('@/components/pdp/ProductInfo').then(mod => ({ default: mod.ProductInfo })), {
+  ssr: true
+});
+
+const ProductHighlights = dynamic(() => import('@/components/pdp/ProductHighlights').then(mod => ({ default: mod.ProductHighlights })), {
+  ssr: true
+});
+
+const AccordionSection = dynamic(() => import('@/components/pdp/AccordionSection').then(mod => ({ default: mod.AccordionSection })), {
+  ssr: true,
+  loading: () => <div className="h-64 bg-gray-50 animate-pulse rounded-lg" />
+});
+
+const RatingsAndReviews = dynamic(() => import('@/components/pdp/RatingsAndReviews').then(mod => ({ default: mod.RatingsAndReviews })), {
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-50 animate-pulse rounded-lg" />
+});
+
+const TrustScreenshots = dynamic(() => import('@/components/pdp/TrustScreenshots').then(mod => ({ default: mod.TrustScreenshots })), {
+  ssr: false,
+  loading: () => <div className="h-64 bg-gray-50 animate-pulse rounded-lg" />
+});
+
+const SeeInActionSection = dynamic(() => import('@/components/pdp/SeeInActionSection'), {
+  ssr: false,
+  loading: () => <div className="h-96 bg-gray-50 animate-pulse rounded-lg" />
+});
 
 interface PostImage {
   id: string;

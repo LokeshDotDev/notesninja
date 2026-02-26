@@ -266,10 +266,17 @@ export function DigitalPricing() {
               Try NotesNinja risk-free. If you&apos;re not completely satisfied with your purchase, we&apos;ll refund your payment in full, no questions asked.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white text-green-600 hover:bg-gray-100">
+              <Button 
+                aria-label="Start your free trial"
+                size="lg" 
+                className="bg-white text-green-600 hover:bg-gray-100">
                 Start Your Free Trial
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-green-600">
+              <Button 
+                aria-label="Compare our pricing plans"
+                size="lg" 
+                variant="outline" 
+                className="border-white text-white hover:bg-white hover:text-green-600">
                 Compare Plans
               </Button>
             </div>

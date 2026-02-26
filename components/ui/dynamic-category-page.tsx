@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { PageHero } from "@/components/ui/page-hero";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import Link from "next/link";

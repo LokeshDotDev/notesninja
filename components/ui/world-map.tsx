@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { motion } from "motion/react";
-import DottedMap from "dotted-map";
+// import DottedMap from "dotted-map"; // Removed for performance
 
 import { useTheme } from "next-themes";
 import Image from "next/image";
@@ -20,16 +20,14 @@ export default function WorldMap({
 	lineColor = "#0ea5e9",
 }: MapProps) {
 	const svgRef = useRef<SVGSVGElement>(null);
-	const map = new DottedMap({ height: 100, grid: "diagonal" });
+	// const map = new DottedMap({ height: 100, grid: "diagonal" }); // Removed for performance
 
 	const { theme } = useTheme();
 
-	const svgMap = map.getSVG({
-		radius: 0.22,
-		color: theme === "dark" ? "#FFFFFF40" : "#00000040",
-		shape: "circle",
-		backgroundColor: theme === "dark" ? "black" : "white",
-	});
+	// Simplified map without DottedMap library
+	const svgMap = `<svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+		<rect width="800" height="400" fill="${theme === 'dark' ? 'black' : 'white'}"/>
+	</svg>`;
 
 	const projectPoint = (lat: number, lng: number) => {
 		const x = (lng + 180) * (800 / 360);

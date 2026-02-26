@@ -1,7 +1,7 @@
 import { BlurFade } from "@/components/magicui/blur-fade";
 import Image from "next/image";
 import React, { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 
 const furniture = [
 	{

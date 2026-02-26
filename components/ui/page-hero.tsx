@@ -1,6 +1,6 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 interface HeroSectionProps {
 	title: string;

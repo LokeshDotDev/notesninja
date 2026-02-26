@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -167,11 +168,12 @@ export function TrustScreenshots() {
 
                     {/* Image */}
                     <div className="relative aspect-[9/16] bg-white rounded-2xl overflow-hidden mb-6">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={screenshot.image}
                         alt={`Student testimonial ${screenshot.id}`}
                         className="w-full h-full object-cover "
+                        fill
+                        unoptimized
                         loading="lazy"
                       />
                     </div>
