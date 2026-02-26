@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import React, { useRef, useEffect, useState } from 'react'
 
 interface Video {
@@ -60,13 +61,16 @@ export default function VideoCard({ video, onClick }: VideoCardProps) {
       onClick={() => onClick(video)}
     >
       {/* Thumbnail - Regular img tag for reliable loading */}
+      {/* Thumbnail */}
       {video.thumbnail && !thumbnailError && (
-        <img
+        <Image
           src={video.thumbnail}
           alt={video.title}
-          className="absolute inset-0 w-full h-full object-cover"
+          fill
+          className="object-cover"
           onError={() => setThumbnailError(true)}
-          loading="eager"
+          sizes="(max-width: 640px) 160px, (max-width: 768px) 200px, 240px"
+          priority
         />
       )}
 

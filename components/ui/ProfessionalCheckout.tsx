@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -180,51 +180,8 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
     });
   }, [paymentStep, product]);
 
-  // Pre-fill form data for authenticated users and store initial data
-  useEffect(() => {
-    if (session?.user) {
-      const fullName = session.user.name || '';
-      const nameParts = fullName.trim().split(' ');
-      const firstName = nameParts[0] || 'User';
-      const lastName = nameParts.slice(1).join(' ') || '';
-      
-      const updatedFormData = {
-        ...formData,
-        email: session.user?.email || '',
-        firstName: firstName,
-        lastName: lastName,
-      };
-      
-      setFormData(updatedFormData);
-      
-      // Store authenticated user data immediately
-      if (product && session.user?.email) {
-        storeUserData(updatedFormData);
-      }
-    }
-  }, [session, product, formData]);
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Add haptic feedback simulation
-    if (typeof window !== 'undefined' && window.navigator.vibrate) {
-      window.navigator.vibrate(10);
-    }
-
-    // Store user data in real-time for marketing purposes
-    if (product && (field === 'email' || field === 'firstName' || field === 'lastName' || field === 'phone')) {
-      const currentData = { ...formData, [field]: value };
-      
-      // Only store if we have at least email
-      if (currentData.email && storeUserDataRef.current) {
-        storeUserDataRef.current(currentData);
-      }
-    }
-  };
-
   // Function to store user data immediately
-  const storeUserData = async (userData: typeof formData) => {
+  const storeUserData = useCallback(async (userData: typeof formData) => {
     try {
       await fetch('/api/user-logs', {
         method: 'POST',
@@ -245,6 +202,52 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
       console.error('Failed to store user data:', error);
       // Don't show error to user as this is background operation
     }
+  }, [product]);
+
+  // Pre-fill form data for authenticated users and store initial data
+  useEffect(() => {
+    if (session?.user) {
+      const fullName = session.user.name || '';
+      const nameParts = fullName.trim().split(' ');
+      const firstName = nameParts[0] || 'User';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      const updatedFormData = {
+        email: session.user?.email || '',
+        firstName: firstName,
+        lastName: lastName,
+        phone: ''
+      };
+      
+      setFormData(prev => ({
+        ...prev,
+        ...updatedFormData,
+      }));
+      
+      // Store authenticated user data immediately
+      if (product && session.user?.email) {
+        storeUserData(updatedFormData);
+      }
+    }
+  }, [session, product, storeUserData]);
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Add haptic feedback simulation
+    if (typeof window !== 'undefined' && window.navigator.vibrate) {
+      window.navigator.vibrate(10);
+    }
+
+    // Store user data in real-time for marketing purposes
+    if (product && (field === 'email' || field === 'firstName' || field === 'lastName' || field === 'phone')) {
+      const currentData = { ...formData, [field]: value };
+      
+      // Only store if we have at least email
+      if (currentData.email && storeUserDataRef.current) {
+        storeUserDataRef.current(currentData);
+      }
+    }
   };
 
   // Debounced version to avoid too many API calls
@@ -264,7 +267,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [product, storeUserData]);
+  }, [storeUserData]);
 
   const handleFieldFocus = (field: string) => {
     setFocusedField(field);
