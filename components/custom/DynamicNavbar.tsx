@@ -120,7 +120,7 @@ export function DynamicNavbar() {
 
 	return (
 		<>
-			<nav className={`fixed top-0 left-0 right-0 z-50 w-full ${appleNavbar.border} ${appleNavbar.background} backdrop-blur-xl shadow-sm`}>
+			<nav className={`fixed top-0 left-0 right-0 z-[100] w-full ${appleNavbar.border} ${appleNavbar.background} backdrop-blur-xl shadow-sm`}>
 			<div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
 				<div className="flex h-20 items-center justify-between">
 					{/* Mobile Hamburger Menu - Left Side */}
@@ -162,7 +162,7 @@ export function DynamicNavbar() {
 							</button>
 							
 							{isDropdownOpen && (
-								<div className="absolute top-full left-0 mt-3 w-96 bg-white dark:bg-neutral-800 rounded-2xl shadow-xl border border-[rgb(229, 229, 234)] dark:border-neutral-700 overflow-hidden backdrop-blur-xl">
+								<div className="absolute top-full left-0 mt-3 w-96 bg-white dark:bg-neutral-800 rounded-2xl shadow-xl border border-[rgb(229, 229, 234)] dark:border-neutral-700 overflow-hidden backdrop-blur-xl z-[110]">
 									<div className="py-2 max-h-96 overflow-y-auto scrollbar-thin">
 										{loading ? (
 											<div className="px-6 py-4 text-sm text-[rgb(142, 142, 147)] dark:text-neutral-500">
@@ -216,7 +216,7 @@ export function DynamicNavbar() {
 								</Button>
 								
 								{isUserDropdownOpen && (
-									<div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+									<div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-[110]">
 										{isCurrentUserAdmin && (
 											<Link
 												href="/admin"

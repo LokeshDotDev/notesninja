@@ -120,6 +120,8 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
   const [orderComplete, setOrderComplete] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const hasTrackedBeginCheckout = useRef(false);
+  const storeUserDataRef = useRef<((userData: typeof formData) => void) | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Toggle to disable Razorpay during testing
   const RAZORPAY_DISABLED_FOR_TESTING = false;
@@ -178,7 +180,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
     });
   }, [paymentStep, product]);
 
-  // Pre-fill form data for authenticated users
+  // Pre-fill form data for authenticated users and store initial data
   useEffect(() => {
     if (session?.user) {
       const fullName = session.user.name || '';
@@ -186,22 +188,83 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
       const firstName = nameParts[0] || 'User';
       const lastName = nameParts.slice(1).join(' ') || '';
       
-      setFormData(prev => ({
-        ...prev,
+      const updatedFormData = {
+        ...formData,
         email: session.user?.email || '',
         firstName: firstName,
         lastName: lastName,
-      }));
+      };
+      
+      setFormData(updatedFormData);
+      
+      // Store authenticated user data immediately
+      if (product && session.user?.email) {
+        storeUserData(updatedFormData);
+      }
     }
-  }, [session]);
+  }, [session, product]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
     // Add haptic feedback simulation
     if (typeof window !== 'undefined' && window.navigator.vibrate) {
       window.navigator.vibrate(10);
     }
+
+    // Store user data in real-time for marketing purposes
+    if (product && (field === 'email' || field === 'firstName' || field === 'lastName' || field === 'phone')) {
+      const currentData = { ...formData, [field]: value };
+      
+      // Only store if we have at least email
+      if (currentData.email && storeUserDataRef.current) {
+        storeUserDataRef.current(currentData);
+      }
+    }
   };
+
+  // Function to store user data immediately
+  const storeUserData = async (userData: typeof formData) => {
+    try {
+      await fetch('/api/user-logs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          phone: userData.phone,
+          productId: product?.id,
+          productName: product?.title || '',
+          productPrice: product?.price,
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to store user data:', error);
+      // Don't show error to user as this is background operation
+    }
+  };
+
+  // Debounced version to avoid too many API calls
+  useEffect(() => {
+    storeUserDataRef.current = (userData: typeof formData) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
+      timeoutRef.current = setTimeout(() => {
+        storeUserData(userData);
+      }, 1000); // Wait 1 second after user stops typing
+    };
+    
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [product]);
 
   const handleFieldFocus = (field: string) => {
     setFocusedField(field);
@@ -1065,6 +1128,21 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                     <div className="mb-8">
                       <h2 className="text-3xl font-semibold text-gray-900 mb-2">Student Information</h2>
                       <p className="text-gray-600">Enter your details for a seamless checkout experience</p>
+                      
+                      {/* Marketing Disclaimer */}
+                      <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0">
+                            <svg fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <div className="text-sm text-blue-800">
+                            <p className="font-medium mb-1">Data Storage Notice</p>
+                            <p>We store your name, email, and phone number for marketing purposes and to improve your experience. Your information helps us provide better service and keep you updated about relevant educational resources.</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     
                     <div className="space-y-6">
