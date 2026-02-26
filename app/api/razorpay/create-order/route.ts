@@ -89,8 +89,8 @@ export async function POST(req: NextRequest) {
     const order = await razorpay.orders.create(options);
 
     console.log("✅ Order created:", {
-      orderId: (order as any).id,
-      amount: (order as any).amount,
+      orderId: (order as { id: string }).id,
+      amount: (order as { amount: number }).amount,
     });
 
     return NextResponse.json({

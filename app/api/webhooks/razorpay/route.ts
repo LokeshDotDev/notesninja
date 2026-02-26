@@ -114,7 +114,46 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function handlePaymentAuthorized(payload: any) {
+interface RazorpayWebhookPayload {
+  payment?: {
+    id: string;
+    entity: string;
+    amount: number;
+    currency: string;
+    status: string;
+    order_id?: string;
+    invoice_id?: string;
+    international?: boolean;
+    method?: string;
+    amount_refunded?: number;
+    refund_status?: string;
+    captured?: boolean;
+    description?: string;
+    email?: string;
+    contact?: string;
+    notes?: Record<string, string>;
+    fee?: number;
+    tax?: number;
+    error_code?: string;
+    error_description?: string;
+    created_at?: number;
+  };
+  order?: {
+    id: string;
+    entity: string;
+    amount: number;
+    amount_paid?: number;
+    amount_due?: number;
+    currency: string;
+    receipt?: string;
+    status: string;
+    attempts?: number;
+    notes?: Record<string, string>;
+    created_at?: number;
+  };
+}
+
+async function handlePaymentAuthorized(payload: RazorpayWebhookPayload) {
   console.log("💳 Payment authorized:", {
     paymentId: payload.payment?.id,
     orderId: payload.order?.id,
@@ -136,7 +175,7 @@ async function handlePaymentAuthorized(payload: any) {
   }
 }
 
-async function handlePaymentCaptured(payload: any) {
+async function handlePaymentCaptured(payload: RazorpayWebhookPayload) {
   console.log("💰 Payment captured:", {
     paymentId: payload.payment?.id,
     orderId: payload.order?.id,
@@ -226,7 +265,7 @@ async function handlePaymentCaptured(payload: any) {
   }
 }
 
-async function handlePaymentFailed(payload: any) {
+async function handlePaymentFailed(payload: RazorpayWebhookPayload) {
   console.log("❌ Payment failed:", {
     paymentId: payload.payment?.id,
     orderId: payload.order?.id,
@@ -261,7 +300,7 @@ async function handlePaymentFailed(payload: any) {
   }
 }
 
-async function handleOrderPaid(payload: any) {
+async function handleOrderPaid(payload: RazorpayWebhookPayload) {
   console.log("📦 Order paid:", {
     orderId: payload.order?.id,
     amount: payload.order?.amount,
@@ -270,15 +309,4 @@ async function handleOrderPaid(payload: any) {
 
   // This event is useful when you have multiple payments per order
   // or when you want to track order-level completion
-}
-
-// Helper function to clean up old event IDs (prevent memory leak)
-export function cleanupProcessedEvents() {
-  // Keep only last 1000 events to prevent memory issues
-  if (processedWebhookEvents.size > 1000) {
-    const eventsArray = Array.from(processedWebhookEvents);
-    const toKeep = eventsArray.slice(-500); // Keep last 500
-    processedWebhookEvents.clear();
-    toKeep.forEach((event) => processedWebhookEvents.add(event));
-  }
 }

@@ -105,7 +105,7 @@ export class RazorpaySecurity {
   /**
    * Sanitize and validate notes
    */
-  sanitizeNotes(notes: Record<string, any>): Record<string, string> {
+  sanitizeNotes(notes: Record<string, unknown>): Record<string, string> {
     const sanitized: Record<string, string> = {};
     
     Object.keys(notes).forEach(key => {
@@ -201,7 +201,7 @@ export class RazorpaySecurity {
   /**
    * Log security events
    */
-  logSecurityEvent(event: string, data: any) {
+  logSecurityEvent(event: string, data: Record<string, unknown>) {
     const logData = {
       timestamp: new Date().toISOString(),
       event,
@@ -233,7 +233,7 @@ export function createRazorpaySecurity(): RazorpaySecurity {
     keyId: process.env.RAZORPAY_KEY_ID || '',
     keySecret: process.env.RAZORPAY_KEY_SECRET || '',
     webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET,
-    environment: (process.env.NODE_ENV as any) || 'development'
+    environment: (process.env.NODE_ENV as 'production' | 'development' | 'test') || 'development'
   };
 
   return new RazorpaySecurity(config);

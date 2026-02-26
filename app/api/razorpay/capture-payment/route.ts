@@ -41,15 +41,10 @@ export async function POST(req: NextRequest) {
     });
 
     // Capture the payment
-    const captureOptions: any = {
-      amount: amount, // Amount in paise
-      currency: "INR",
-    };
-
     const capturedPayment = await razorpay.payments.capture(
       paymentId,
-      captureOptions.amount,
-      captureOptions,
+      amount,
+      "INR"
     );
 
     console.log("✅ Payment captured successfully:", {

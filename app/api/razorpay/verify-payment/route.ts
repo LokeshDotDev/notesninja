@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 import prisma from "@/lib/prisma";
 import { sendPurchaseEmail } from "@/lib/brevo";
 import { createRazorpaySecurity } from "@/lib/razorpay-security";
