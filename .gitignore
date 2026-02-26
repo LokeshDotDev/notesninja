@@ -42,3 +42,25 @@ next-env.d.ts
 
 # clerk configuration (can include secrets)
 /.clerk/
+# Build artifacts that should never be committed
+/.next/
+/.turbo/
+/build/
+/out/
+
+# Cache files - prevent bloat on server
+.turbo/
+.eslintcache
+tsconfig.tsbuildinfo
+
+# Large reports - regenerate on demand
+/lighthouse-reports/
+/coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
