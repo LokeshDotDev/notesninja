@@ -161,14 +161,7 @@ async function handlePaymentAuthorized(payload: RazorpayWebhookPayload) {
     status: payload.payment?.status,
   });
 
-  // For authorized payments, you might want to:
-  // 1. Log the authorization
-  // 2. Decide whether to auto-capture or manual capture
-  // 3. Update order status to 'authorized'
-
   try {
-    // Update payment status in database if you track it
-    // This is where you could implement manual capture logic
     console.log("✅ Payment authorization handled");
   } catch (error) {
     console.error("❌ Error handling payment authorization:", error);
@@ -245,7 +238,7 @@ async function handlePaymentCaptured(payload: RazorpayWebhookPayload) {
           publicId: file.publicId,
         }));
 
-        await sendPurchaseEmail({
+        const emailResult = await sendPurchaseEmail({
           to: purchase.userEmail,
           subject: `Thank You for Your Purchase - ${updatedPurchase.post.title}`,
           customerName: purchase.user?.name || "Customer",
@@ -255,7 +248,12 @@ async function handlePaymentCaptured(payload: RazorpayWebhookPayload) {
           downloadLinks: downloadLinks,
         });
 
-        console.log("📧 Confirmation email sent via webhook");
+        if (emailResult.success) {
+          console.log("📧 Confirmation email sent via webhook");
+          console.log(`📧 Message ID: ${emailResult.messageId}`);
+        } else {
+          console.error("❌ Failed to send webhook email:", emailResult.error);
+        }
       } catch (emailError) {
         console.error("❌ Failed to send webhook email:", emailError);
       }
@@ -293,8 +291,6 @@ async function handlePaymentFailed(payload: RazorpayWebhookPayload) {
 
       console.log("✅ Purchase marked as failed:", purchase.id);
     }
-
-    // You could also send failure notification emails here
   } catch (error) {
     console.error("❌ Error handling payment failed:", error);
   }

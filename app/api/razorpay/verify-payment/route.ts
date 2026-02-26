@@ -157,9 +157,8 @@ export async function POST(req: NextRequest) {
             publicId: file.publicId,
           }));
 
-          console.log("📬 Sending email via Brevo...");
-          // Call Brevo directly (server-side, no HTTP call needed)
-          await sendPurchaseEmail({
+          console.log('📬 Sending email via Brevo with retry mechanism...');
+          const emailResult = await sendPurchaseEmail({
             to: customerEmail,
             subject: `Thank You for Your Purchase - ${purchase.post.title}`,
             customerName: customerName,
@@ -168,8 +167,13 @@ export async function POST(req: NextRequest) {
             compareAtPrice: purchase.post.compareAtPrice ?? undefined,
             downloadLinks: downloadLinks,
           });
-
-          console.log(`✅ Email sent successfully to ${customerEmail}`);
+          
+          if (emailResult.success) {
+            console.log(`✅ Email sent successfully to ${customerEmail}`);
+            console.log(`📧 Message ID: ${emailResult.messageId}`);
+          } else {
+            console.error(`❌ Email failed to send to ${customerEmail}:`, emailResult.error);
+          }
         } catch (emailError) {
           console.error("❌ Failed to send email:", {
             error:
@@ -178,7 +182,7 @@ export async function POST(req: NextRequest) {
                 : String(emailError),
             to: customerEmail,
           });
-          // Don't fail the purchase if email fails - it can be retried
+          // Don't fail the purchase if email fails - it can be retried via webhook
         }
       } else {
         console.log("⏭️ Skipping email - not a digital product or no files");

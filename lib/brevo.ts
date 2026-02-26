@@ -20,50 +20,150 @@ interface EmailData {
   }>;
 }
 
-export async function sendPurchaseEmail(emailData: EmailData) {
+interface EmailLog {
+  id: string;
+  to: string;
+  subject: string;
+  status: 'pending' | 'sent' | 'failed';
+  attempts: number;
+  lastAttempt: Date;
+  errorMessage?: string;
+  messageId?: string;
+}
+
+// In-memory email queue (in production, use Redis or database)
+const emailQueue: Map<string, EmailLog> = new Map();
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 2000; // 2 seconds
+
+export async function sendPurchaseEmail(emailData: EmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
   if (!BREVO_API_KEY) {
     console.error('Brevo API key is not configured');
-    throw new Error('Brevo API key is not configured');
+    return { success: false, error: 'Brevo API key is not configured' };
   }
 
-  console.log('Sending email to:', emailData.to);
+  const emailId = `${emailData.to}-${Date.now()}`;
+  let attempts = 0;
+
+  console.log('📧 Sending email to:', emailData.to);
   console.log('API Key exists:', !!BREVO_API_KEY);
+
+  // Add to queue
+  emailQueue.set(emailId, {
+    id: emailId,
+    to: emailData.to,
+    subject: emailData.subject,
+    status: 'pending',
+    attempts: 0,
+    lastAttempt: new Date()
+  });
 
   const emailHtml = generatePurchaseEmailTemplate(emailData);
 
-  try {
-    const response = await axios.post(
-      `${BREVO_API_URL}/smtp/email`,
-      {
-        sender: {
-          name: 'NotesNinja',
-          email: 'contact@notesninja.in'
-        },
-        to: [{
-          email: emailData.to,
-          name: emailData.customerName || 'Customer'
-        }],
-        subject: emailData.subject,
-        htmlContent: emailHtml
-      },
-      {
-        headers: {
-          'api-key': BREVO_API_KEY,
-          'Content-Type': 'application/json'
-        }
+  while (attempts < MAX_RETRIES) {
+    attempts++;
+    
+    try {
+      // Update queue
+      const logEntry = emailQueue.get(emailId);
+      if (logEntry) {
+        logEntry.attempts = attempts;
+        logEntry.lastAttempt = new Date();
+        logEntry.status = 'pending';
       }
-    );
 
-    console.log('Brevo response:', response.data);
-    return response.data;
-  } catch (error) {
-    console.error('Brevo email error details:', error);
-    if (axios.isAxiosError(error)) {
-      console.error('Axios error response:', error.response?.data);
-      console.error('Axios error status:', error.response?.status);
-      console.error('Axios error headers:', error.response?.headers);
+      console.log(`📤 Attempt ${attempts}/${MAX_RETRIES} to send email to ${emailData.to}`);
+
+      const response = await axios.post(
+        `${BREVO_API_URL}/smtp/email`,
+        {
+          sender: {
+            name: 'NotesNinja',
+            email: 'contact@notesninja.in'
+          },
+          to: [{
+            email: emailData.to,
+            name: emailData.customerName || 'Customer'
+          }],
+          subject: emailData.subject,
+          htmlContent: emailHtml
+        },
+        {
+          headers: {
+            'api-key': BREVO_API_KEY,
+            'Content-Type': 'application/json'
+          },
+          timeout: 10000 // 10 second timeout
+        }
+      );
+
+      console.log('✅ Email sent successfully!');
+      console.log('📧 Brevo response:', response.data);
+
+      // Update queue with success
+      if (logEntry) {
+        logEntry.status = 'sent';
+        logEntry.messageId = response.data.messageId;
+      }
+
+      return { success: true, messageId: response.data.messageId };
+
+    } catch (error) {
+      console.error(`❌ Attempt ${attempts} failed:`, error instanceof Error ? error.message : String(error));
+      
+      const logEntry = emailQueue.get(emailId);
+      if (logEntry) {
+        logEntry.errorMessage = error instanceof Error ? error.message : String(error);
+      }
+
+      if (attempts < MAX_RETRIES) {
+        console.log(`⏳ Retrying in ${RETRY_DELAY_MS}ms...`);
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+      } else {
+        console.error(`💥 All ${MAX_RETRIES} attempts failed for ${emailData.to}`);
+        
+        // Update queue with failure
+        if (logEntry) {
+          logEntry.status = 'failed';
+        }
+
+        return { 
+          success: false, 
+          error: `Failed after ${MAX_RETRIES} attempts: ${error instanceof Error ? error.message : String(error)}` 
+        };
+      }
     }
-    throw new Error(`Failed to send email: ${(error as Error).message}`);
+  }
+
+  return { success: false, error: 'Unknown error' };
+}
+
+// Utility functions for email monitoring
+export function getEmailQueue(): EmailLog[] {
+  return Array.from(emailQueue.values());
+}
+
+export function getEmailStats(): {
+  total: number;
+  sent: number;
+  failed: number;
+  pending: number;
+} {
+  const emails = getEmailQueue();
+  return {
+    total: emails.length,
+    sent: emails.filter(e => e.status === 'sent').length,
+    failed: emails.filter(e => e.status === 'failed').length,
+    pending: emails.filter(e => e.status === 'pending').length
+  };
+}
+
+export function clearOldEmailLogs(olderThanHours: number = 24): void {
+  const cutoff = new Date(Date.now() - olderThanHours * 60 * 60 * 1000);
+  for (const [id, log] of emailQueue.entries()) {
+    if (log.lastAttempt < cutoff) {
+      emailQueue.delete(id);
+    }
   }
 }
 
