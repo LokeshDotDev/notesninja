@@ -64,3 +64,18 @@ Thumbs.db
 # Logs
 *.log
 logs/
+# Test files
+*test*.js
+*test*.html
+*test*.json
+
+# Development documentation
+*TEST*.md
+*OPTIMIZATIONS*.md
+*GUIDE*.md
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db

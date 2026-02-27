@@ -415,9 +415,9 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         handler: async function (response: RazorpayResponse) {
           console.log('🔄 Payment successful, verifying...', { sessionUserId: session?.user?.id });
           try {
-            // Verify payment with 10 second timeout
+            // Verify payment with 15 second timeout for robust processing
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
             
             const verifyResponse = await fetch('/api/razorpay/verify-payment', {
               method: 'POST',
@@ -443,12 +443,21 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
               ok: verifyResponse.ok, 
               status: verifyResponse.status,
               success: verifyData.success,
-              error: verifyData.error 
+              error: verifyData.error,
+              isDuplicate: verifyData.isDuplicate,
+              emailSent: verifyData.emailSent,
+              purchaseId: verifyData.purchaseId
             });
 
             if (verifyResponse.ok && verifyData.success) {
-              console.log('✅ Payment verified successfully! Creating purchase in DB...');
+              console.log('✅ Payment verified successfully!', {
+                purchaseId: verifyData.purchaseId,
+                emailSent: verifyData.emailSent,
+                isDuplicate: verifyData.isDuplicate,
+                processingTime: verifyData.processingTimeMs
+              });
               
+              // Track purchase event
               trackPurchase({
                 transactionId: response.razorpay_payment_id,
                 value: product.price || 0,
@@ -467,19 +476,40 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                 customerName: `${formData.firstName} ${formData.lastName}`,
               });
               
-              // Mark success immediately - email sent via server-side code
-              console.log('✅ Showing success screen now...');
+              // Show success screen with appropriate messaging
+              if (verifyData.isDuplicate) {
+                console.log('ℹ️ Duplicate payment detected - showing success');
+              }
+              
+              if (verifyData.emailSent) {
+                console.log('📧 Confirmation email sent successfully');
+              } else if (verifyData.emailError) {
+                console.warn('⚠️ Email failed but payment succeeded:', verifyData.emailError);
+              }
+              
               setOrderComplete(true);
               setPaymentStep("success");
             } else {
               const errorMsg = verifyData.error || 'Payment verification failed';
-              console.error('❌ Verification failed:', errorMsg);
-              throw new Error(errorMsg);
+              const errorCode = verifyData.code || 'UNKNOWN_ERROR';
+              console.error('❌ Verification failed:', { errorMsg, errorCode });
+              
+              // Provide user-friendly error messages based on error code
+              let userMessage = errorMsg;
+              if (errorCode === 'INVALID_SIGNATURE') {
+                userMessage = 'Payment verification failed. Please contact support with your order details.';
+              } else if (errorCode === 'MISSING_FIELDS') {
+                userMessage = 'Missing payment information. Please try again.';
+              } else if (errorCode === 'PRODUCT_NOT_FOUND') {
+                userMessage = 'Product not found. Please contact support.';
+              }
+              
+              throw new Error(userMessage);
             }
           } catch (verifyError) {
             console.error('❌ Verification error:', verifyError);
-            // Show error but also mark as complete with warning (payment was successful even if verification had issues)
             const errorMsg = verifyError instanceof Error ? verifyError.message : 'Payment processing error';
+            
             if (verifyError instanceof Error && verifyError.name === 'AbortError') {
               console.warn('⏱️ Verification timeout - payment may have been processed');
               setError('Payment received. If you don\'t receive an email within 5 minutes, please contact support.');
@@ -488,6 +518,9 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
             } else {
               setError(errorMsg);
               setPaymentStep("error");
+              
+              // Track error for analytics
+              trackError(errorMsg, "payment_verification");
             }
           }
         },
