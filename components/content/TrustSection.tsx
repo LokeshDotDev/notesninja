@@ -8,7 +8,6 @@ import ProductCategory from "./ProductCategory";
 // Lazy load heavy components
 const Projects = lazy(() => import("./Projects"));
 const Showcase = lazy(() => import("./Showcase"));
-const World = lazy(() => import("./World"));
 const Footer = lazy(() => import("./Footer"));
 
 const TrustSection = () => {
@@ -226,14 +225,6 @@ const TrustSection = () => {
 						</div>
 					}>
 					<Showcase />
-				</Suspense>
-				<Suspense
-					fallback={
-						<div className='h-32 flex items-center justify-center'>
-							Loading...
-						</div>
-					}>
-					<World />
 				</Suspense>
 				<Suspense
 					fallback={
