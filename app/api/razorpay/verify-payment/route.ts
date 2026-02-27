@@ -35,7 +35,10 @@ export async function POST(req: NextRequest) {
       customerEmail
     };
     
-    const missingFields = Object.keys(requiredFields).filter(key => !requiredFields[key]);
+    const missingFields = Object.keys(requiredFields).filter(key => {
+      const value = requiredFields[key as keyof typeof requiredFields];
+      return !value;
+    });
     
     if (missingFields.length > 0) {
       console.error('❌ Missing required parameters:', missingFields);
@@ -59,6 +62,7 @@ export async function POST(req: NextRequest) {
         },
         { status: 500 }
       );
+    }
 
     // Verify Razorpay signature using HMAC SHA256
     const expectedSignature = crypto
@@ -67,7 +71,7 @@ export async function POST(req: NextRequest) {
       .digest('hex');
 
     // Check if signatures have same length before comparing
-    if (expectedSignature.length !== razorpay_signature.length) {
+    if (!razorpay_signature || expectedSignature.length !== razorpay_signature.length) {
       console.error('❌ Signature length mismatch');
       return NextResponse.json(
         { 
