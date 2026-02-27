@@ -9,6 +9,14 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     
+    console.log('🔍 Payment verification started:', {
+      hasOrderId: !!body.razorpay_order_id,
+      hasPaymentId: !!body.razorpay_payment_id,
+      hasSignature: !!body.razorpay_signature,
+      productId: body.productId,
+      customerEmail: body.customerEmail
+    });
+    
     // Validate required fields safely
     const requiredFields = ['razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature', 'productId', 'customerEmail'];
     const missingFields = requiredFields.filter(field => !body[field]);
@@ -48,6 +56,12 @@ export async function POST(req: NextRequest) {
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest('hex');
 
+    console.log('🔐 Signature verification:', {
+      expected: expectedSignature,
+      received: razorpay_signature,
+      lengthsMatch: expectedSignature.length === razorpay_signature.length
+    });
+
     if (expectedSignature.length !== razorpay_signature.length) {
       console.error('❌ Signature length mismatch');
       return NextResponse.json({ error: "Invalid payment signature", code: 'INVALID_SIGNATURE' }, { status: 400 });
@@ -63,6 +77,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid payment signature", code: 'INVALID_SIGNATURE' }, { status: 400 });
     }
 
+    console.log('✅ Signature verified successfully');
+
     // Prevent duplicate purchases
     const existingPurchase = await prisma.purchase.findFirst({
       where: { paymentId: razorpay_payment_id },
@@ -70,6 +86,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingPurchase) {
+      console.log('🔄 Duplicate payment detected:', existingPurchase.id);
       return NextResponse.json({
         success: true,
         message: "Payment already processed",
@@ -87,8 +104,11 @@ export async function POST(req: NextRequest) {
     });
 
     if (!product) {
+      console.error('❌ Product not found:', productId);
       return NextResponse.json({ error: "Product not found", code: 'PRODUCT_NOT_FOUND' }, { status: 404 });
     }
+
+    console.log('📦 Product found:', { title: product.title, isDigital: product.isDigital, fileCount: product.digitalFiles?.length });
 
     // Create purchase record
     const purchase = await prisma.purchase.create({
@@ -107,6 +127,8 @@ export async function POST(req: NextRequest) {
       }
     });
 
+    console.log('💳 Purchase record created:', purchase.id);
+
     // --- EMAIL SENDING LOGIC ---
     let emailSent = false;
     let emailError: string | undefined;
@@ -124,6 +146,9 @@ export async function POST(req: NextRequest) {
           fileType: file.fileType,
           publicId: file.publicId
         }));
+        console.log(`📎 Prepared ${downloadLinks.length} download links`);
+      } else {
+        console.log('📄 No digital files available - sending generic confirmation');
       }
 
       // Send the email regardless of whether it's a digital or physical product
@@ -153,6 +178,12 @@ export async function POST(req: NextRequest) {
       console.error('❌ Email sending error caught:', emailError);
     }
 
+    console.log('🎉 Payment verification completed:', {
+      purchaseId: purchase.id,
+      emailSent,
+      processingTime: Date.now() - startTime
+    });
+
     return NextResponse.json({
       success: true,
       message: "Payment verified and processed successfully",
@@ -164,16 +195,20 @@ export async function POST(req: NextRequest) {
       emailError,
       processingTimeMs: Date.now() - startTime
     });
-
   } catch (error) {
+    console.error('💥 Payment verification failed:', {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
     return NextResponse.json(
-      { 
+      {
         error: "Payment verification failed",
         details: error instanceof Error ? error.message : "Unknown error",
         code: 'VERIFICATION_ERROR',
         processingTimeMs: Date.now() - startTime
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

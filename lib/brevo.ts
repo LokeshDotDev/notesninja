@@ -37,16 +37,26 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000; // 2 seconds
 
 export async function sendPurchaseEmail(emailData: EmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  console.log('🚀 Starting email send process');
+  console.log('📧 Email data:', {
+    to: emailData.to,
+    subject: emailData.subject,
+    customerName: emailData.customerName,
+    productName: emailData.productName,
+    hasDownloadLinks: !!emailData.downloadLinks && emailData.downloadLinks.length > 0
+  });
+
+  // Check API key configuration
   if (!BREVO_API_KEY) {
-    console.error('Brevo API key is not configured');
+    console.error('❌ BREVO_API_KEY is not configured in environment variables');
+    console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('BREVO')));
     return { success: false, error: 'Brevo API key is not configured' };
   }
 
+  console.log('✅ Brevo API key found');
+
   const emailId = `${emailData.to}-${Date.now()}`;
   let attempts = 0;
-
-  console.log('📧 Sending email to:', emailData.to);
-  console.log('API Key exists:', !!BREVO_API_KEY);
 
   // Add to queue
   emailQueue.set(emailId, {
@@ -59,6 +69,7 @@ export async function sendPurchaseEmail(emailData: EmailData): Promise<{ success
   });
 
   const emailHtml = generatePurchaseEmailTemplate(emailData);
+  console.log('📝 Email template generated');
 
   while (attempts < MAX_RETRIES) {
     attempts++;
@@ -74,20 +85,29 @@ export async function sendPurchaseEmail(emailData: EmailData): Promise<{ success
 
       console.log(`📤 Attempt ${attempts}/${MAX_RETRIES} to send email to ${emailData.to}`);
 
+      const emailPayload = {
+        sender: {
+          name: 'NotesNinja',
+          email: process.env.BREVO_SENDER_EMAIL || 'contact@notesninja.in'
+        },
+        to: [{
+          email: emailData.to,
+          name: emailData.customerName || 'Customer'
+        }],
+        subject: emailData.subject,
+        htmlContent: emailHtml
+      };
+
+      console.log('📋 Email payload:', {
+        sender: emailPayload.sender,
+        to: emailPayload.to,
+        subject: emailPayload.subject,
+        hasHtmlContent: !!emailPayload.htmlContent
+      });
+
       const response = await axios.post(
         `${BREVO_API_URL}/smtp/email`,
-        {
-          sender: {
-            name: 'NotesNinja',
-            email: process.env.BREVO_SENDER_EMAIL || 'contact@notesninja.in'
-          },
-          to: [{
-            email: emailData.to,
-            name: emailData.customerName || 'Customer'
-          }],
-          subject: emailData.subject,
-          htmlContent: emailHtml
-        },
+        emailPayload,
         {
           headers: {
             'api-key': BREVO_API_KEY,
@@ -178,47 +198,53 @@ export function clearOldEmailLogs(olderThanHours: number = 24): void {
 }
 
 function generatePurchaseEmailTemplate(data: EmailData): string {
-  console.log('Email template data:', data);
-  console.log('Download links:', data.downloadLinks);
+  console.log('📋 Generating email template with data:', data);
   
   // Get pricing information
   const formattedPrice = formatPrice(data.price || 0);
   
-  const downloadItems = data.downloadLinks?.map((file, index) => {
-    // Use new secure download endpoint with absolute URL
-    // For production emails, we need to use the actual domain
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://notesninja.in';
-    const downloadUrl = `${baseUrl}/api/download?fileUrl=${encodeURIComponent(file.fileUrl)}&fileName=${encodeURIComponent(file.fileName)}`;
-    
-    console.log('Email: Using secure download URL:', { fileName: file.fileName, downloadUrl });
-    
-    const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + 30); // 30 days from now
-    const formattedExpiry = expiryDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    
-    return `
-        <!-- Product Row ${index + 1} -->
-        <tr>
-            <td style="padding: 15px; font-size: 14px; color: #333333; border-bottom: 1px solid #e5e5e5;">
-                <a href="${downloadUrl}" style="color: #00b386; text-decoration: underline;" target="_blank">${file.fileName}</a>
-            </td>
-            <td style="padding: 15px; font-size: 14px; color: #666666; border-bottom: 1px solid #e5e5e5;">
-                ${formattedExpiry}
-            </td>
-            <td style="padding: 15px; border-bottom: 1px solid #e5e5e5;">
-                <a href="${downloadUrl}" style="display: inline-block; background: linear-gradient(135deg, #00d9a3, #00b386); color: #ffffff; padding: 8px 20px; text-decoration: none; border-radius: 5px; font-size: 13px; font-weight: 700;" download="${file.fileName}" target="_blank">Download</a>
-            </td>
-        </tr>
+  // Handle download links - make them optional
+  let downloadItems = '';
+  if (data.downloadLinks && data.downloadLinks.length > 0) {
+    downloadItems = data.downloadLinks.map((file, index) => {
+      // Use new secure download endpoint with absolute URL
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://notesninja.in';
+      const downloadUrl = `${baseUrl}/api/download?fileUrl=${encodeURIComponent(file.fileUrl)}&fileName=${encodeURIComponent(file.fileName)}`;
+      
+      console.log('📎 Email: Using secure download URL:', { fileName: file.fileName, downloadUrl });
+      
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 30); // 30 days from now
+      const formattedExpiry = expiryDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      
+      return `
+          <!-- Product Row ${index + 1} -->
+          <tr>
+              <td style="padding: 15px; font-size: 14px; color: #333333; border-bottom: 1px solid #e5e5e5;">
+                  <a href="${downloadUrl}" style="color: #00b386; text-decoration: underline;" target="_blank">${file.fileName}</a>
+              </td>
+              <td style="padding: 15px; font-size: 14px; color: #666666; border-bottom: 1px solid #e5e5e5;">
+                  ${formattedExpiry}
+              </td>
+              <td style="padding: 15px; border-bottom: 1px solid #e5e5e5;">
+                  <a href="${downloadUrl}" style="display: inline-block; background: linear-gradient(135deg, #00d9a3, #00b386); color: #ffffff; padding: 8px 20px; text-decoration: none; border-radius: 5px; font-size: 13px; font-weight: 700;" download="${file.fileName}" target="_blank">Download</a>
+              </td>
+          </tr>
+      `;
+    }).join('');
+  } else {
+    // Show a message for non-digital products or when no files are available
+    downloadItems = `
+      <tr>
+          <td colspan="3" style="padding: 20px; font-size: 14px; color: #666666; text-align: center; border-bottom: 1px solid #e5e5e5;">
+              Your order has been processed successfully. If this is a digital product, download links will be available once the payment is fully verified.
+          </td>
+      </tr>
     `;
-  }).join('') || '';
-
-  console.log('Generated download items:', downloadItems);
+  }
 
   const orderDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const orderNumber = Math.random().toString(36).substr(2, 9).toUpperCase();
-  const expiryDate = new Date();
-  expiryDate.setDate(expiryDate.getDate() + 30);
-  const formattedExpiry = expiryDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   return `
 <!DOCTYPE html>
@@ -331,10 +357,10 @@ function generatePurchaseEmailTemplate(data: EmailData): string {
                             <div style="background-color: #e6faf5; border: 1px solid #b3f0e0; border-radius: 6px; padding: 20px;">
                                 <h3 style="margin: 0 0 12px; font-size: 16px; color: #00b386; font-weight: 700;">📌 Important Information</h3>
                                 <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #333333; line-height: 1.8;">
-                                    <li>Your download links will expire on <strong>${formattedExpiry}</strong></li>
-                                    <li>Download all files immediately to avoid losing access</li>
+                                    <li>Your payment has been successfully processed</li>
+                                    <li>If you purchased digital products, download links are available above</li>
                                     <li>Save the files to your device for future reference</li>
-                                    <li>If you face any issues downloading, please contact our support team</li>
+                                    <li>If you face any issues, please contact our support team</li>
                                     <li>These are digital products - no physical items will be shipped</li>
                                 </ul>
                             </div>
@@ -351,7 +377,7 @@ function generatePurchaseEmailTemplate(data: EmailData): string {
                                 </p>
                                 <p style="margin: 0; font-size: 14px; color: #333333;">
                                     📧 <a href="mailto:support@notesninja.in" style="color: #00b386; text-decoration: underline; font-weight: 600;">support@notesninja.in</a><br>
-                                    📱 <a href="tel:+919876543210" style="color: #00b386; text-decoration: underline; font-weight: 600;">+916378990158</a>
+                                    📱 <a href="tel:+916378990158" style="color: #00b386; text-decoration: underline; font-weight: 600;">+916378990158</a>
                                 </p>
                             </div>
                         </td>
