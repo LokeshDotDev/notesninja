@@ -8,6 +8,7 @@ interface PostImage {
 	imageUrl: string;
 	publicId: string;
 	order: number;
+	isCover?: boolean;
 }
 
 interface StackedImagesProps {
@@ -25,6 +26,8 @@ export function StackedImages({
 }: StackedImagesProps) {
 	if (!images || images.length === 0) return null;
 	const sortedImages = [...images].sort((a, b) => a.order - b.order);
+	// Find cover image, fallback to first image
+	const coverImage = sortedImages.find(img => img.isCover) || sortedImages[0];
 	const displayImages = sortedImages.slice(0, 3); // Show max 3 stacked images
 	const remainingCount = Math.max(0, images.length - 3);
 
@@ -69,7 +72,7 @@ export function StackedImages({
 				{/* Main image container to maintain proper spacing */}
 				<div className='w-full h-48 sm:h-56 md:h-64 lg:h-72 rounded-xl overflow-hidden opacity-0'>
 					<Image
-						src={sortedImages[0].imageUrl}
+						src={coverImage.imageUrl}
 						alt={title}
 						width={300}
 						height={200}

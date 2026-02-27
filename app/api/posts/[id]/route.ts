@@ -138,7 +138,12 @@ export async function PATCH(
       dataToUpdate.compareAtPrice = parseFloat(compareAtPrice);
 
     /* ---------- IMAGE UPDATE ---------- */
+    // Only handle image updates if a file is provided
+    // This maintains compatibility with the new gallery system
     if (file) {
+      console.log("⚠️  Legacy image upload detected - this will replace gallery images");
+      console.log("💡 Consider using the gallery system instead for multiple images");
+      
       const existingImages = await prisma.postImage.findMany({
         where: { postId },
       });

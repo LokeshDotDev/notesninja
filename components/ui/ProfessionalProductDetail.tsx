@@ -29,6 +29,7 @@ interface PostImage {
   imageUrl: string;
   publicId: string;
   order: number;
+  isCover?: boolean;
 }
 
 interface DigitalFile {
@@ -243,7 +244,7 @@ export function ProfessionalProductDetail({
     product.images && product.images.length > 0
       ? product.images.sort((a, b) => a.order - b.order)
       : product.imageUrl
-        ? [{ id: "main", imageUrl: product.imageUrl, publicId: "", order: 0 }]
+        ? [{ id: "main", imageUrl: product.imageUrl, publicId: "", order: 0, isCover: false }]
         : [];
 
   const currentImage = images[currentImageIndex] || null;

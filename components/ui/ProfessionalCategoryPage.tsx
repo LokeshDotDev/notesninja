@@ -118,6 +118,7 @@ interface Post {
     publicId: string;
     order: number;
     postId: string;
+    isCover?: boolean;
   }>;
 }
 
@@ -512,9 +513,9 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
                     >
                       {/* Image Section */}
                       <div className="relative h-56 overflow-hidden rounded-t-3xl bg-neutral-100 dark:bg-neutral-900">
-                        {post.images && post.images.length > 0 && post.images[0].imageUrl ? (
+                        {post.images && post.images.length > 0 ? (
                           <Image
-                            src={post.images[0].imageUrl}
+                            src={post.images.find(img => img.isCover)?.imageUrl || post.images[0].imageUrl}
                             alt={post.title}
                             fill
                             className="object-cover transition-transform duration-700 group-hover:scale-105"

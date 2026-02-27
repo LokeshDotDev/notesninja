@@ -115,8 +115,6 @@ model Purchase {
   currency      String   @default("USD")
   status        String   @default("pending")
   downloadCount Int      @default(0)
-  emailSent     Boolean  @default(false) // Track if confirmation email was sent
-  emailSentAt   DateTime? // When the confirmation email was sent
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   post          Post     @relation(fields: [postId], references: [id])

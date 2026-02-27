@@ -79,7 +79,7 @@ export async function sendPurchaseEmail(emailData: EmailData): Promise<{ success
         {
           sender: {
             name: 'NotesNinja',
-            email: process.env.BREVO_SENDER_EMAIL || 'contact@notesninja.in'
+            email: 'contact@notesninja.in'
           },
           to: [{
             email: emailData.to,
@@ -110,16 +110,6 @@ export async function sendPurchaseEmail(emailData: EmailData): Promise<{ success
 
     } catch (error) {
       console.error(`❌ Attempt ${attempts} failed:`, error instanceof Error ? error.message : String(error));
-      
-      // Log detailed error information from Brevo
-      if (axios.isAxiosError(error)) {
-        console.error('🔴 Brevo API Error Details:', {
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          data: error.response?.data,
-          message: error.message
-        });
-      }
       
       const logEntry = emailQueue.get(emailId);
       if (logEntry) {

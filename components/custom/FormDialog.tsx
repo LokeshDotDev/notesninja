@@ -20,10 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PremiumLoader } from "@/components/ui/premium-loader";
+import ProductGallery from "@/components/ProductGallery";
 import {
   X,
   FileText,
-  Image,
+  Image as ImageIcon,
   CheckCircle,
   XCircle,
   Loader2,
@@ -50,8 +51,10 @@ interface FormDialogProps {
 		slug?: string;
 		parentId?: string;
 		images?: Array<{
+			id?: string;
 			publicId?: string;
 			imageUrl?: string;
+			order?: number;
 			isCover?: boolean;
 		}>;
 		digitalFiles?: Array<{
@@ -124,9 +127,17 @@ export default function FormDialog({
 		name: "",
 		slug: "",
 	});
-	const [files, setFiles] = useState<(File | { url: string; name: string; publicId: string; isExisting: boolean })[]>([]);
 	const [digitalFiles, setDigitalFiles] = useState<(File | { url: string; name: string; publicId: string; isExisting: boolean })[]>([]);
-	const [coverImageIndex, setCoverImageIndex] = useState<number>(0);
+	const [currentPost, setCurrentPost] = useState<{
+		id: string;
+		images: Array<{
+			id?: string;
+			publicId?: string;
+			imageUrl?: string;
+			order?: number;
+			isCover?: boolean;
+		}>;
+	} | null>(null);
 
   // Slug checker state
   const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
@@ -143,7 +154,11 @@ export default function FormDialog({
           fetch("/api/categories"),
           fetch("/api/product-types"),
         ]);
-        if (categoriesRes.ok) setCategories(await categoriesRes.json());
+        if (categoriesRes.ok) {
+          const cats = await categoriesRes.json();
+          console.log("FormDialog - Categories loaded:", cats);
+          setCategories(cats);
+        }
         if (productTypesRes.ok) setProductTypes(await productTypesRes.json());
       } catch (error) {
         console.error("Error fetching form data:", error);
@@ -152,60 +167,52 @@ export default function FormDialog({
     if (type === "post" || type === "subcategory") fetchData();
   }, [type]);
 
-  // Auto-generate slug from title when the user hasn't manually edited the slug field
+  // Initialize form with initial data (only after categories are loaded for post type)
   useEffect(() => {
-    if (type !== "post" || slugManuallyEdited) return;
-    const generated = generateSlug(formData.title);
-    setPreviewSlug(generated);
-    setFormData((prev) => ({ ...prev, slug: generated }));
-    setSlugStatus("idle");
-    setSlugMessage("");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.title, type]);
+    if (initialData) {
+      // For post type, wait until categories are loaded to prevent race condition
+      if (type === "post" && categories.length === 0) return;
+      
+      console.log("FormDialog - Setting form data with:", {
+        categoryId: initialData.categoryId,
+        categoriesLength: categories.length,
+        type
+      });
+      
+      setFormData({
+        title: initialData.title || "",
+        description: initialData.description || initialData.descripition || "",
+        categoryId: initialData.categoryId || "",
+        subcategoryId: initialData.subcategoryId || "",
+        productTypeId: initialData.productTypeId || "",
+        price: initialData.price?.toString() || "",
+        compareAtPrice: initialData.compareAtPrice?.toString() || "",
+        isDigital: initialData.isDigital || false,
+        name: initialData.name || "",
+        slug: initialData.slug || "",
+      });
 
-  // When the user manually edits the slug input, keep previewSlug in sync
-  useEffect(() => {
-    if (type !== "post" || !slugManuallyEdited) return;
-    setPreviewSlug(formData.slug);
-    setSlugStatus("idle");
-    setSlugMessage("");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.slug]);
-
-	// Initialize form with initial data
-	useEffect(() => {
-		if (initialData) {
-			setFormData({
-				title: initialData.title || "",
-				description: initialData.description || initialData.descripition || "",
-				categoryId: initialData.categoryId || "",
-				subcategoryId: initialData.subcategoryId || "",
-				productTypeId: initialData.productTypeId || "",
-				price: initialData.price?.toString() || "",
-				compareAtPrice: initialData.compareAtPrice?.toString() || "",
-				isDigital: initialData.isDigital || false,
-				name: initialData.name || "",
-				slug: initialData.slug || "",
-			});
-
-			// Load existing images
-			if (initialData.images && Array.isArray(initialData.images)) {
-				const existingImages = initialData.images
-					.map((img: ExistingMedia) => {
-						const url = img.url || img.imageUrl;
-						if (!url) return null;
-						return {
-							url,
-							name: url.split('/').pop() || 'image',
-							publicId: img.publicId || '',
-							isExisting: true,
-						};
-					})
-					.filter((img): img is { url: string; name: string; publicId: string; isExisting: true } => Boolean(img));
-				setFiles(existingImages);
-			} else {
-				setFiles([]);
-			}
+      // Set current post for gallery
+      if (type === "post" && initialData.id) {
+        setCurrentPost({
+          id: String(initialData.id),
+          images: (initialData.images || []).map((img: {
+            id?: string;
+            imageUrl?: string;
+            publicId?: string;
+            order?: number;
+            isCover?: boolean;
+          }) => ({
+            id: img.id || '',
+            imageUrl: img.imageUrl || '',
+            publicId: img.publicId || '',
+            order: img.order || 0,
+            isCover: img.isCover || false
+          }))
+        });
+      } else {
+        setCurrentPost(null);
+      }
 
 			// Load existing digital files
 			if (initialData.digitalFiles && Array.isArray(initialData.digitalFiles)) {
@@ -239,10 +246,30 @@ export default function FormDialog({
 				name: "",
 				slug: "",
 			});
-			setFiles([]);
+			setCurrentPost(null);
 			setDigitalFiles([]);
 		}
-	}, [initialData]);
+	}, [initialData, type, categories.length]);
+
+  // Auto-generate slug from title when the user hasn't manually edited the slug field
+  useEffect(() => {
+    if (type !== "post" || slugManuallyEdited) return;
+    const generated = generateSlug(formData.title);
+    setPreviewSlug(generated);
+    setFormData((prev) => ({ ...prev, slug: generated }));
+    setSlugStatus("idle");
+    setSlugMessage("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.title, type]);
+
+  // When the user manually edits the slug input, keep previewSlug in sync
+  useEffect(() => {
+    if (type !== "post" || !slugManuallyEdited) return;
+    setPreviewSlug(formData.slug);
+    setSlugStatus("idle");
+    setSlugMessage("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.slug]);
 
   const isControlled = controlledOpen !== undefined;
   const isOpen = isControlled ? controlledOpen : open;
@@ -313,19 +340,6 @@ export default function FormDialog({
 			}
 		}
 
-		// Add files
-		files.forEach((file) => {
-			// Only add actual File objects, not existing file objects
-			if (file instanceof File) {
-				submitData.append("files", file);
-			}
-		});
-
-		// Add cover image index for multiple images
-		if (files.length > 0) {
-			submitData.append("coverImageIndex", coverImageIndex.toString());
-		}
-
 		// Add digital files for digital products
 		if (formData.isDigital && digitalFiles.length > 0) {
 			digitalFiles.forEach((file) => {
@@ -360,28 +374,13 @@ export default function FormDialog({
 				name: "",
 				slug: "",
 			});
-			setFiles([]);
+			setCurrentPost(null);
 			setDigitalFiles([]);
 		}
 		setIsOpen(false);
 	};
 
-  const MAX_IMAGE_SIZE = 4 * 1024 * 1024;
   const MAX_DIGITAL_FILE_SIZE = 100 * 1024 * 1024;
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    const oversizedFiles = selectedFiles.filter(
-      (file) => file.size > MAX_IMAGE_SIZE,
-    );
-    if (oversizedFiles.length > 0) {
-      alert(
-        `The following image files exceed 4MB limit:\n${oversizedFiles.map((f) => `${f.name} (${(f.size / 1024 / 1024).toFixed(2)}MB)`).join("\n")}`,
-      );
-      return;
-    }
-    setFiles((prev) => [...prev, ...selectedFiles]);
-  };
 
   const handleDigitalFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
@@ -397,8 +396,6 @@ export default function FormDialog({
     setDigitalFiles((prev) => [...prev, ...selectedFiles]);
   };
 
-  const removeFile = (index: number) =>
-    setFiles((prev) => prev.filter((_, i) => i !== index));
   const removeDigitalFile = (index: number) =>
     setDigitalFiles((prev) => prev.filter((_, i) => i !== index));
 
@@ -415,6 +412,7 @@ export default function FormDialog({
   };
 
   const flatCategories = flattenCategories(categories);
+  console.log("FormDialog - flatCategories:", flatCategories);
 
    const SlugStatusIndicator = () => {
     if (slugStatus === "idle") return null;
@@ -553,11 +551,14 @@ export default function FormDialog({
 							<div className="space-y-2">
 								<Label htmlFor="category">Category *</Label>
 								<p className="text-xs text-neutral-500">Select any category (including nested ones)</p>
-								<Select value={formData.categoryId} onValueChange={(value: string) => setFormData(prev => ({ ...prev, categoryId: value, subcategoryId: "" }))}>
+								<Select value={formData.categoryId} onValueChange={(value: string) => {
+									console.log("Category selected:", value);
+									setFormData(prev => ({ ...prev, categoryId: value, subcategoryId: "" }));
+								}}>
 									<SelectTrigger>
 										<SelectValue placeholder="Select category" />
 									</SelectTrigger>
-									<SelectContent>
+									<SelectContent className="z-[150]">
 										{flatCategories.length > 0 ? (
 											flatCategories.map((category) => (
 												<SelectItem key={category.id} value={category.id}>
@@ -647,84 +648,31 @@ export default function FormDialog({
 						</div>
 
 						
-						{/* Product Images Section - For both physical and digital products */}
+						{/* Product Images Section - Using ProductGallery Component */}
 						<div>
 							<Label>Product Images</Label>
 							<p className="text-xs text-gray-500 mt-1">
 								Upload multiple images. Select one as cover image for product cards.
 							</p>
-							<div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-4">
-								<input
-									type="file"
-									multiple
-									accept="image/*"
-									onChange={handleFileChange}
-									className="hidden"
-									id="file-upload"
+							{currentPost ? (
+								<ProductGallery
+									postId={currentPost.id}
+									images={currentPost.images || []}
+									onImagesChange={(updatedPost) => {
+										setCurrentPost(updatedPost);
+									}}
+									disabled={isLoading}
 								/>
-								<label
-									htmlFor="file-upload"
-									className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
-								>
-									<Image className="w-8 h-8 text-gray-400 mb-2" aria-label="Upload product images" />
-									<span className="text-sm text-gray-600">Click to upload images</span>
-									<span className="text-xs text-gray-500">PNG, JPG, GIF - Max 4MB each (Vercel free tier)</span>
-								</label>
-							</div>
-							{files.length > 0 && (
-								<div className="mt-4 space-y-3">
-									<div className="text-sm font-medium text-gray-700">Select Cover Image:</div>
-									{files.map((file, index) => (
-										<div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border">
-											<input
-												type="radio"
-												name="coverImage"
-												checked={coverImageIndex === index}
-												onChange={() => setCoverImageIndex(index)}
-												className="w-4 h-4 text-blue-600 flex-shrink-0"
-											/>
-											<div className="flex-1 flex items-center space-x-3 min-w-0">
-												{/* Image preview */}
-												{file && 'url' in file ? (
-													// eslint-disable-next-line @next/next/no-img-element
-													<img 
-														src={file.url} 
-														alt={file.name}
-														className="w-12 h-12 object-cover rounded flex-shrink-0"
-													/>
-												) : (
-													<div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-														<Image className="w-6 h-6 text-gray-400" aria-label="file icon" />
-													</div>
-												)}
-												<div className="flex-1 min-w-0">
-													<span className="text-sm truncate block">{file.name}</span>
-													<div className="flex items-center space-x-2 mt-1">
-														{file && 'isExisting' in file && file.isExisting && (
-															<span className="text-xs text-gray-500">(Existing)</span>
-														)}
-														{coverImageIndex === index && (
-															<span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Cover</span>
-														)}
-													</div>
-												</div>
-											</div>
-											<Button
-												type="button"
-												variant="ghost"
-												size="sm"
-												onClick={() => {
-													removeFile(index);
-													if (coverImageIndex >= files.length - 1) {
-														setCoverImageIndex(Math.max(0, files.length - 2));
-													}
-												}}
-												className="flex-shrink-0"
-											>
-												<X className="w-4 h-4" />
-											</Button>
-										</div>
-									))}
+							) : (
+								<div className="mt-2 p-4 border-2 border-dashed border-gray-300 rounded-lg text-center text-gray-500">
+									<div className="w-8 h-8 mx-auto mb-2 text-gray-400 flex items-center justify-center">
+									<ImageIcon className="w-8 h-8" />
+								</div>
+									<p className="text-sm font-medium mb-2">📝 Save product first to add images</p>
+									<p className="text-xs">Images can be managed after creating the product</p>
+									<div className="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-700">
+										💡 <strong>Tip:</strong> Fill in the product details above and click &quot;Create&quot; to enable image management
+									</div>
 								</div>
 							)}
 						</div>
@@ -820,7 +768,11 @@ export default function FormDialog({
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleFileChange}
+                  onChange={() => {
+                    // For featured items, we'll handle single image upload
+                    // This can be extended to use the gallery system if needed
+                    console.log("Featured image upload not implemented yet");
+                  }}
                   className="hidden"
                   id="featured-file-upload"
                 />
@@ -828,7 +780,7 @@ export default function FormDialog({
                   htmlFor="featured-file-upload"
                   className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
                 >
-                  <Image
+                  <ImageIcon
                     className="w-8 h-8 text-gray-400 mb-2"
                     aria-label="Upload featured image"
                   />
@@ -840,26 +792,6 @@ export default function FormDialog({
                   </span>
                 </label>
               </div>
-              {files.length > 0 && (
-                <div className="mt-2 space-y-2">
-                  {files.map((file, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-2 bg-gray-50 rounded"
-                    >
-                      <span className="text-sm truncate">{file.name}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFile(index)}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         );
@@ -941,7 +873,7 @@ export default function FormDialog({
 	
 	if (triggerLabel === null) {
 		return (
-			<Dialog open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog open={isOpen} onOpenChange={setIsOpen} modal={false}>
 				<DialogContent className="bg-white dark:bg-gray-800 dark:text-white max-w-5xl max-h-[90vh] p-0 rounded-lg shadow-2xl flex flex-col">
 					<DialogHeader className="border-b border-gray-200 dark:border-gray-700 px-6 py-4 bg-white dark:bg-gray-800 flex-shrink-0">
 						<DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -983,7 +915,7 @@ export default function FormDialog({
 	}
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
+		<Dialog open={isOpen} onOpenChange={setIsOpen} modal={false}>
 			{triggerLabel && (
 				<Button
 					onClick={() => setIsOpen(true)}
