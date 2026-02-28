@@ -19,7 +19,7 @@ const slides: Slide[] = [
     title: "",
     subtitle: "",
     buttonText: "",
-    backgroundImage: "/assets/slider/Slide 1.png",
+    backgroundImage: "/assets/slider/Notes Ninja in 1.jpg.webp",
     backgroundColor: "from-transparent to-transparent"
   },
   {
@@ -27,7 +27,7 @@ const slides: Slide[] = [
     title: "",
     subtitle: "",
     buttonText: "",
-    backgroundImage: "/assets/slider/Slide 2.png",
+    backgroundImage: "/assets/slider/Notes Ninja in 2.jpg.webp",
     backgroundColor: "from-transparent to-transparent"
   },
   {
@@ -35,7 +35,7 @@ const slides: Slide[] = [
     title: "",
     subtitle: "",
     buttonText: "",
-    backgroundImage: "/assets/slider/Slide 3.png",
+    backgroundImage: "/assets/slider/Notes Ninja in 3.jpg.webp",
     backgroundColor: "from-transparent to-transparent"
   },
   {
@@ -43,7 +43,7 @@ const slides: Slide[] = [
     title: "",
     subtitle: "",
     buttonText: "",
-    backgroundImage: "/assets/slider/Slide 4.png",
+    backgroundImage: "/assets/slider/Notes Ninja in 4.jpg.webp",
     backgroundColor: "from-transparent to-transparent"
   },
   {
@@ -51,7 +51,7 @@ const slides: Slide[] = [
     title: "",
     subtitle: "",
     buttonText: "",
-    backgroundImage: "/assets/slider/Slide 5 option 1.png",
+    backgroundImage: "/assets/slider/Notes Ninja in 5.jpg (1).webp",
     backgroundColor: "from-transparent to-transparent"
   }
 ];

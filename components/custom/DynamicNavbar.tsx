@@ -107,7 +107,10 @@ export function DynamicNavbar() {
 					href={`/${category.path || category.slug}`}
 					className={`block px-6 py-3 text-sm ${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
 					style={{ paddingLeft: `${24 + depth * 16}px` }}
-					onClick={() => setIsDropdownOpen(false)}
+					onClick={() => {
+						setIsDropdownOpen(false);
+						setIsMobileMenuOpen(false);
+					}}
 				>
 					{category.name}
 				</Link>
