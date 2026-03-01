@@ -12,8 +12,11 @@ interface CategoryPageProps {
 export default function CategoryPage({ params }: CategoryPageProps) {
   const { category } = use(params);
   
-  // Exclude HTML verification file from being treated as a category
-  if (category === "udfqcfua9mzrfa6zp5jath0qx5skal.html") {
+  // Exclude HTML verification file and admin routes from being treated as a category
+  if (category === "udfqcfua9mzrfa6zp5jath0qx5skal.html" || 
+      category === "admin" || 
+      category === "admin/logs" ||
+      category.startsWith("admin/")) {
     notFound();
   }
   
