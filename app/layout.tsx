@@ -93,7 +93,6 @@ export default function RootLayout({
           <link rel="preconnect" href="https://www.googletagmanager.com" />
           <link rel="preconnect" href="https://www.google-analytics.com" />
           <link rel="preconnect" href="https://connect.facebook.net" />
-          <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
           
           <link rel="canonical" href={settings.site.url} />
           <link rel="icon" type="image/png" href="/assets/Notes ninja Logo.png" />
@@ -113,11 +112,6 @@ export default function RootLayout({
             `}
           </Script>
 
-          {/* Razorpay Script - lazy load only when needed */}
-          <Script 
-            src="https://checkout.razorpay.com/v1/checkout.js" 
-            strategy="lazyOnload"
-          />
         </head>
         <body
           className={`${poppins.variable} font-sans antialiased pt-20`}

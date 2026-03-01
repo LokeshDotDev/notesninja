@@ -69,39 +69,60 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
   const ugcVideos = [
     {
       id: '1',
-      thumbnail: '/assets/reviews-thumbnails/student-1.webp',
-      embedSrc: 'https://play.gumlet.io/embed/699eacf2c051a86ff58d2380',
-      aspectRatio: '29/52',
+      thumbnail: '/assets/reviews-thumbnails/Screenshot 2026-03-01 at 4.35.06 PM.png',
+      embedSrc: 'https://play.gumlet.io/embed/69a41a6d825d3351d56a73e8',
+      aspectRatio: '9/16',
       title: 'Student Success Story - Interview Experience'
     },
     {
       id: '2',
-      thumbnail: '/assets/reviews-thumbnails/student-2.webp',
-      embedSrc: 'https://play.gumlet.io/embed/699eacf2f8c697838345aa21',
-      aspectRatio: '29/52',
+      thumbnail: '/assets/reviews-thumbnails/Screenshot 2026-03-01 at 4.36.12 PM.png',
+      embedSrc: 'https://play.gumlet.io/embed/69a41a6d98dac99517915c0a',
+      aspectRatio: '9/16',
       title: 'Academic Achievement Journey'
     },
     {
       id: '3',
-      thumbnail: '/assets/reviews-thumbnails/student-3.webp',
-      embedSrc: 'https://play.gumlet.io/embed/699eacf2f8c697838345aa1b',
+      thumbnail: '/assets/reviews-thumbnails/Screenshot 2026-03-01 at 4.36.59 PM.png',
+      embedSrc: 'https://play.gumlet.io/embed/69a41a6d825d3351d56a73ea',
       aspectRatio: '9/16',
       title: 'Study Techniques That Work'
     },
     {
       id: '4',
-      thumbnail: '/assets/reviews-thumbnails/student-4.webp',
-      embedSrc: 'https://play.gumlet.io/embed/699eacf2f8c697838345aa18',
+      thumbnail: '/assets/reviews-thumbnails/Screenshot 2026-03-01 at 4.37.46 PM.png',
+      embedSrc: 'https://play.gumlet.io/embed/69a41a6d825d3351d56a73e6',
       aspectRatio: '9/16',
       title: 'Exam Preparation Success'
     },
     {
       id: '5',
-      thumbnail: '/assets/reviews-thumbnails/student-5.webp',
-      embedSrc: 'https://play.gumlet.io/embed/699eacf2ba6c1c14db0784f2',
-      aspectRatio: '29/52',
-      title: 'For $35. For everyone. Plus tax.'
-    }
+      thumbnail: '/assets/reviews-thumbnails/Screenshot 2026-03-01 at 4.42.32 PM.png',
+      embedSrc: 'https://play.gumlet.io/embed/69a41a6de9610ba04ec142aa',
+      aspectRatio: '9/16',
+      title: 'Real Results from Real Students'
+    },
+    {
+      id: '6',
+      thumbnail: '/assets/reviews-thumbnails/Screenshot 2026-03-01 at 4.43.00 PM.png',
+      embedSrc: 'https://play.gumlet.io/embed/69a41a6d825d3351d56a73df',
+      aspectRatio: '9/16',
+      title: 'Student Achievement Showcase'
+    },
+    {
+      id: '7',
+      thumbnail: '/assets/reviews-thumbnails/Screenshot 2026-03-01 at 4.44.18 PM.png',
+      embedSrc: 'https://play.gumlet.io/embed/69a41a6de9610ba04ec142b1',
+      aspectRatio: '9/16',
+      title: 'Learning Success Stories'
+    },
+    {
+      id: '8',
+      thumbnail: '/assets/reviews-thumbnails/Screenshot 2026-03-01 at 4.44.51 PM.png',
+      embedSrc: 'https://play.gumlet.io/embed/69a41a6d98dac99517915c0d',
+      aspectRatio: '9/16',
+      title: 'Academic Excellence Journey'
+    },
   ];
 
   useEffect(() => {

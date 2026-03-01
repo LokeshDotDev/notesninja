@@ -118,7 +118,6 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
   const hasTrackedBeginCheckout = useRef(false);
   const storeUserDataRef = useRef<((userData: typeof formData) => void) | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -269,13 +268,6 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
     };
   }, [storeUserData]);
 
-  const handleFieldFocus = (field: string) => {
-    setFocusedField(field);
-  };
-
-  const handleFieldBlur = () => {
-    setFocusedField(null);
-  };
 
   const validateForm = () => {
     // For logged-in users, only email is required (name comes from session)
@@ -400,9 +392,28 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
         throw new Error(orderData.error || 'Failed to create payment order');
       }
 
+      // Dynamically load Razorpay script if not already loaded
+      const loadRazorpay = () => {
+        return new Promise<boolean>((resolve) => {
+          if (typeof window.Razorpay !== 'undefined') {
+            return resolve(true);
+          }
+
+          const script = document.createElement("script");
+          script.id = "razorpay-script";
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.async = true;
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.body.appendChild(script);
+        });
+      };
+
+      await loadRazorpay();
+
       // Check if Razorpay is loaded
-      if (!window.Razorpay) {
-        throw new Error('Razorpay SDK not loaded. Please refresh the page and try again.');
+      if (typeof window.Razorpay === 'undefined') {
+        throw new Error('Razorpay SDK failed to load. Please refresh the page and try again.');
       }
 
       const options = {
@@ -946,164 +957,118 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-100/50 via-transparent to-transparent"></div>
       
       {/* Apple-style Content Layout */}
-      <main className="relative z-10 max-w-6xl mx-auto px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Order Summary - Apple Style */}
+      <main className="relative z-10 max-w-6xl mx-auto px-4 lg:px-8 py-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Order Summary - Compact */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
-            className="lg:col-span-1"
+            className="lg:col-span-4"
           >
-            <motion.div 
-              className="sticky top-8"
-              whileHover={{ y: -2 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            >
+            <div className="sticky top-4">
               {/* Apple-style Card */}
               <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
-                {/* Product Header */}
-                <div className="p-6 border-b border-gray-200/60">
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">Order Summary</h2>
+                {/* Mobile: Minimal Summary - Desktop: Full Summary */}
+                <div className="p-4 border-b border-gray-200/60">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-3">Order Summary</h2>
                   
-                  {/* Product Info */}
-                  <div className="flex gap-4">
-                    {product.imageUrl ? (
-                      <motion.div 
-                        className="relative flex-shrink-0"
-                        whileHover={{ scale: 1.05 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                      >
+                  {/* Mobile: Only title and price */}
+                  <div className="block lg:hidden">
+                    <h3 className="font-medium text-gray-900 text-sm mb-2 leading-tight line-clamp-2">
+                      {product.title}
+                    </h3>
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-gray-900">Total</span>
+                      <span className="font-bold text-lg text-gray-900">
+                        {formatPrice(product.price || 0)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Desktop: Full product info */}
+                  <div className="hidden lg:block">
+                    <div className="flex gap-3">
+                      {product.imageUrl ? (
                         <Image
                           src={product.imageUrl}
                           alt={product.title}
-                          width={80}
-                          height={80}
-                          className="w-20 h-20 object-cover rounded-xl shadow-sm"
+                          width={60}
+                          height={60}
+                          className="w-14 h-14 object-cover rounded-lg shadow-sm flex-shrink-0"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent rounded-xl"></div>
-                      </motion.div>
-                    ) : (
-                      <motion.div 
-                        className="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0"
-                        whileHover={{ scale: 1.05 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                      >
-                        <FileText className="w-8 h-8 text-gray-400" />
-                      </motion.div>
-                    )}
-                    
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 text-lg mb-2 leading-tight">
-                        {product.title}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs font-medium">
-                          Digital
-                        </span>
-                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">
-                          Instant Access
-                        </span>
+                      ) : (
+                        <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <FileText className="w-6 h-6 text-gray-400" />
+                        </div>
+                      )}
+                      
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-gray-900 text-sm mb-1 leading-tight line-clamp-2">
+                          {product.title}
+                        </h3>
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-green-100 text-green-800 text-[10px] font-medium">
+                            Digital
+                          </span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-medium">
+                            Instant
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
                 
-                {/* Price Details */}
-                <div className="p-6 space-y-4">
-                  <div className="flex justify-between items-center">
+                {/* Desktop: Price Details */}
+                <div className="hidden lg:block p-4 space-y-2">
+                  <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="font-medium text-gray-900">
                       {formatPrice(product.price || 0)}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-600">Processing</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-green-600">FREE</span>
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                    </div>
+                    <span className="font-medium text-green-600">FREE</span>
                   </div>
                   
-                  <div className="pt-4 border-t border-gray-200/60">
+                  <div className="pt-2 border-t border-gray-200/60">
                     <div className="flex justify-between items-center">
-                      <span className="text-xl font-semibold text-gray-900">Total</span>
-                      <span className="text-xl font-semibold text-gray-900">
+                      <span className="font-semibold text-gray-900">Total</span>
+                      <span className="font-bold text-lg text-gray-900">
                         {formatPrice(product.price || 0)}
                       </span>
                     </div>
                   </div>
                 </div>
                 
-                {/* Trust Indicators */}
-                <div className="px-6 pb-6 space-y-3">
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-                    <span>Instant download after purchase</span>
+                {/* Desktop: Trust Indicators */}
+                <div className="hidden lg:block px-4 pb-4 space-y-1.5">
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <CheckCircle className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+                    <span>Instant download</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <Shield className="w-4 h-4 text-green-600 flex-shrink-0" />
-                    <span>Secure payment processing</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-                    <span>24/7 customer support</span>
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <Shield className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+                    <span>Secure payment</span>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          </motion.div>
-
-          {/* User Info Section */}
-            <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden mb-6">
-              <div className="p-6 border-b border-gray-200/60">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {session ? "Account Information" : "Contact Information"}
-                  </h3>
-                  {session && (
-                    <div className="flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full border border-green-200/50">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-green-700">Signed In</span>
-                    </div>
-                  )}
-                </div>
-                
-                {session ? (
-                  <div className="mt-4 p-4 bg-gray-50 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                        <User className="w-5 h-5 text-gray-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{session.user?.name}</p>
-                        <p className="text-sm text-gray-600">{session.user?.email}</p>
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-3">
-                      Your purchase will be linked to your account for easy access in your dashboard.
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-600 mt-3">
-                    You can purchase as a guest or create an account to track your orders.
-                  </p>
-                )}
               </div>
             </div>
+          </motion.div>
 
-            {/* Payment Form - Apple Style */}
+          {/* Payment Form - Compact Layout */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            className="lg:col-span-2"
+            className="lg:col-span-8"
           >
-            {/* Apple-style Card */}
-            <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
-              {/* Progress Steps - Apple Style */}
-              <div className="px-8 py-6 border-b border-gray-200/60">
-                <div className="flex items-center justify-center space-x-8">
+            {/* Progress Steps - Desktop Only */}
+            <div className="hidden lg:block bg-white rounded-xl border border-gray-200/60 shadow-sm overflow-hidden mb-4">
+              <div className="px-4 py-3 border-b border-gray-200/60">
+                <div className="flex items-center justify-center space-x-4">
                   {[
                     { step: "details", label: "Details", completed: paymentStep !== "details" },
                     { step: "payment", label: "Payment", completed: paymentStep === "success" },
@@ -1111,24 +1076,22 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                   ].map((item, index) => (
                     <React.Fragment key={item.step}>
                       <div className="flex flex-col items-center">
-                        <motion.div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-500 ${
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-500 ${
                             item.completed
                               ? 'bg-green-600 text-white'
                               : paymentStep === item.step
                               ? 'bg-black text-white'
                               : 'bg-gray-200 text-gray-600'
                           }`}
-                          whileHover={{ scale: 1.1 }}
-                          transition={{ type: "spring", stiffness: 400, damping: 25 }}
                         >
                           {item.completed ? (
-                            <CheckCircle className="w-5 h-5" />
+                            <CheckCircle className="w-4 h-4" />
                           ) : (
                             <span>{index + 1}</span>
                           )}
-                        </motion.div>
-                        <span className={`mt-2 text-sm font-medium transition-colors duration-500 ${
+                        </div>
+                        <span className={`mt-1 text-xs font-medium transition-colors duration-500 ${
                           item.completed
                             ? 'text-green-600'
                             : paymentStep === item.step
@@ -1139,13 +1102,10 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                         </span>
                       </div>
                       {index < 2 && (
-                        <motion.div
-                          className={`w-16 h-0.5 transition-colors duration-500 ${
+                        <div
+                          className={`w-8 h-0.5 transition-colors duration-500 ${
                             item.completed ? 'bg-green-600' : 'bg-gray-300'
                           }`}
-                          initial={{ scaleX: 0 }}
-                          animate={{ scaleX: item.completed ? 1 : 0.3 }}
-                          transition={{ duration: 0.5, delay: 0.1 }}
                         />
                       )}
                     </React.Fragment>
@@ -1153,157 +1113,320 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                 </div>
               </div>
               
-              {/* Form Content */}
-              <div className="p-8">
+              {/* Form Content - Desktop */}
+              <div className="p-4">
                 {paymentStep === "details" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    {/* Compact Header */}
+                    <div className="mb-4">
+                      <h2 className="text-xl font-semibold text-gray-900">Student Information</h2>
+                      <p className="text-sm text-gray-600">Enter your details to continue</p>
+                    </div>
+                    
+                    {/* Compact Form */}
+                    <div className="space-y-3">
+                      {!session && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label htmlFor="firstName" className="block text-xs font-medium text-gray-700 mb-1">
+                              First Name
+                            </Label>
+                            <div className="relative">
+                              <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                              <Input
+                                id="firstName"
+                                type="text"
+                                value={formData.firstName}
+                                onChange={(e) => handleInputChange("firstName", e.target.value)}
+                                onFocus={() => {}}
+                                className="pl-9 h-10 rounded-lg border-gray-300 text-sm"
+                                placeholder="First name"
+                                required
+                              />
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="lastName" className="block text-xs font-medium text-gray-700 mb-1">
+                              Last Name
+                            </Label>
+                            <div className="relative">
+                              <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                              <Input
+                                id="lastName"
+                                type="text"
+                                value={formData.lastName}
+                                onChange={(e) => handleInputChange("lastName", e.target.value)}
+                                onFocus={() => {}}
+                                className="pl-9 h-10 rounded-lg border-gray-300 text-sm"
+                                placeholder="Last name"
+                                required
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div>
+                        <Label htmlFor="email" className="block text-xs font-medium text-gray-700 mb-1">
+                          Email Address
+                        </Label>
+                        <div className="relative">
+                          <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            id="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => handleInputChange("email", e.target.value)}
+                            disabled={!!session}
+                            className={`pl-9 h-10 rounded-lg border-gray-300 text-sm ${session ? 'bg-gray-100' : ''}`}
+                            placeholder="your@email.com"
+                            required
+                          />
+                        </div>
+                        {session && (
+                          <p className="text-xs text-gray-500 mt-0.5">From your account</p>
+                        )}
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="phone" className="block text-xs font-medium text-gray-700 mb-1">
+                          Phone (Optional)
+                        </Label>
+                        <div className="relative">
+                          <Smartphone className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            id="phone"
+                            type="tel"
+                            value={formData.phone}
+                            onChange={(e) => handleInputChange("phone", e.target.value)}
+                            onFocus={() => {}}
+                            className="pl-9 h-10 rounded-lg border-gray-300 text-sm"
+                            placeholder="Phone number"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Compact Data Notice */}
+                      <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-xs text-blue-800">
+                          <span className="font-medium">Note:</span> We store your info for order processing and updates.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Continue Button */}
+                    <div className="mt-4">
+                      <Button
+                        onClick={() => setPaymentStep("payment")}
+                        className="w-full bg-black hover:bg-gray-800 text-white h-11 rounded-lg font-medium text-sm"
+                      >
+                        Continue to Payment
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+                {paymentStep === "payment" && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
                   >
                     <div className="mb-8">
-                      <h2 className="text-3xl font-semibold text-gray-900 mb-2">Student Information</h2>
-                      <p className="text-gray-600">Enter your details for a seamless checkout experience</p>
-                      
-                      {/* Marketing Disclaimer */}
-                      <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                        <div className="flex items-start gap-3">
-                          <div className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0">
-                            <svg fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                          <div className="text-sm text-blue-800">
-                            <p className="font-medium mb-1">Data Storage Notice</p>
-                            <p>We store your name, email, and phone number for marketing purposes and to improve your experience. Your information helps us provide better service and keep you updated about relevant educational resources.</p>
-                          </div>
-                        </div>
-                      </div>
+                      <h2 className="text-3xl font-semibold text-gray-900 mb-2">Payment Details</h2>
+                      <p className="text-gray-600">Review your information and complete your purchase</p>
                     </div>
                     
-                    <div className="space-y-6">
-                      {!session && (
-                        <>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                              <Label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                                First Name
-                              </Label>
-                              <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <Input
-                                  id="firstName"
-                                  type="text"
-                                  value={formData.firstName}
-                                  onChange={(e) => handleInputChange("firstName", e.target.value)}
-                                  onFocus={() => handleFieldFocus("firstName")}
-                                  onBlur={handleFieldBlur}
-                                  className={`pl-10 h-12 rounded-xl border transition-all duration-200 ${
-                                    focusedField === "firstName"
-                                      ? 'border-black bg-gray-50'
-                                      : 'border-gray-300 bg-white'
-                                  }`}
-                                  placeholder="Rahul"
-                                  required
-                                />
-                              </div>
-                            </div>
-                            
-                            <div>
-                              <Label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                                Last Name
-                              </Label>
-                              <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <Input
-                                  id="lastName"
-                                  type="text"
-                                  value={formData.lastName}
-                                  onChange={(e) => handleInputChange("lastName", e.target.value)}
-                                  onFocus={() => handleFieldFocus("lastName")}
-                                  onBlur={handleFieldBlur}
-                                  className={`pl-10 h-12 rounded-xl border transition-all duration-200 ${
-                                    focusedField === "lastName"
-                                      ? 'border-black bg-gray-50'
-                                      : 'border-gray-300 bg-white'
-                                  }`}
-                                  placeholder="Sharma"
-                                  required
-                                />
-                              </div>
-                            </div>
+                    {/* Customer Summary */}
+                    <div className="bg-gray-50 rounded-xl p-6 mb-8">
+                      <h3 className="font-semibold text-gray-900 mb-4">Student Information</h3>
+                      <div className="space-y-3">
+                        <div className="flex justify-between py-2 border-b border-gray-200">
+                          <span className="text-gray-600">Name</span>
+                          <span className="font-medium text-gray-900">{formData.firstName} {formData.lastName}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-gray-200">
+                          <span className="text-gray-600">Email</span>
+                          <span className="font-medium text-gray-900">{formData.email}</span>
+                        </div>
+                        {formData.phone && (
+                          <div className="flex justify-between py-2">
+                            <span className="text-gray-600">Phone</span>
+                            <span className="font-medium text-gray-900">{formData.phone}</span>
                           </div>
-                        </>
-                      )}
-                      
-                      <div>
-                        <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                          Email Address
-                        </Label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <Input
-                            id="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => handleInputChange("email", e.target.value)}
-                            onFocus={() => handleFieldFocus("email")}
-                            onBlur={handleFieldBlur}
-                            disabled={!!session}
-                            className={`pl-10 h-12 rounded-xl border transition-all duration-200 ${
-                              focusedField === "email"
-                                ? 'border-black bg-gray-50'
-                                : 'border-gray-300 bg-white'
-                            } ${session ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                            placeholder="rahul@example.com"
-                            required
-                          />
-                        </div>
-                        {session && (
-                          <p className="text-xs text-gray-500 mt-1">Email is pre-filled from your account</p>
                         )}
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                          Phone Number (Optional)
-                        </Label>
-                        <div className="relative">
-                          <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <Input
-                            id="phone"
-                            type="tel"
-                            value={formData.phone}
-                            onChange={(e) => handleInputChange("phone", e.target.value)}
-                            onFocus={() => handleFieldFocus("phone")}
-                            onBlur={handleFieldBlur}
-                            className={`pl-10 h-12 rounded-xl border transition-all duration-200 ${
-                              focusedField === "phone"
-                                ? 'border-black bg-gray-50'
-                                : 'border-gray-300 bg-white'
-                            }`}
-                            placeholder="+1234567890"
-                          />
-                        </div>
                       </div>
                     </div>
                     
                     <motion.div 
-                      className="mt-8 flex justify-center"
+                      className="flex justify-center"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 }}
                     >
                       <Button
-                        onClick={() => setPaymentStep("payment")}
-                        className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105"
+                        onClick={handlePayment}
+                        disabled={isProcessing}
+                        className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Continue to Payment
-                        <ChevronRight className="w-4 h-4 ml-2" />
+                        {isProcessing ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            Pay with Razorpay
+                          </>
+                        )}
                       </Button>
                     </motion.div>
                   </motion.div>
                 )}
+                
+                {paymentStep === "processing" && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6 }}
+                    className="text-center py-16"
+                  >
+                    <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Loader2 className="w-8 h-8 text-white animate-spin" />
+                    </div>
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-2">Processing Your Order</h2>
+                    <p className="text-gray-600">Please wait while we secure your purchase...</p>
+                  </motion.div>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Form - No Progress Steps */}
+            <div className="lg:hidden bg-white rounded-xl border border-gray-200/60 shadow-sm overflow-hidden">
+              <div className="p-4">
+                {paymentStep === "details" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    {/* Compact Header */}
+                    <div className="mb-4">
+                      <h2 className="text-xl font-semibold text-gray-900">Student Information</h2>
+                      <p className="text-sm text-gray-600">Enter your details to continue</p>
+                    </div>
+                    
+                    {/* Compact Form */}
+                    <div className="space-y-3">
+                      {!session && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label htmlFor="firstName" className="block text-xs font-medium text-gray-700 mb-1">
+                              First Name
+                            </Label>
+                            <div className="relative">
+                              <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                              <Input
+                                id="firstName"
+                                type="text"
+                                value={formData.firstName}
+                                onChange={(e) => handleInputChange("firstName", e.target.value)}
+                                onFocus={() => {}}
+                                className="pl-9 h-10 rounded-lg border-gray-300 text-sm"
+                                placeholder="First name"
+                                required
+                              />
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="lastName" className="block text-xs font-medium text-gray-700 mb-1">
+                              Last Name
+                            </Label>
+                            <div className="relative">
+                              <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                              <Input
+                                id="lastName"
+                                type="text"
+                                value={formData.lastName}
+                                onChange={(e) => handleInputChange("lastName", e.target.value)}
+                                onFocus={() => {}}
+                                className="pl-9 h-10 rounded-lg border-gray-300 text-sm"
+                                placeholder="Last name"
+                                required
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div>
+                        <Label htmlFor="email" className="block text-xs font-medium text-gray-700 mb-1">
+                          Email Address
+                        </Label>
+                        <div className="relative">
+                          <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            id="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => handleInputChange("email", e.target.value)}
+                            disabled={!!session}
+                            className={`pl-9 h-10 rounded-lg border-gray-300 text-sm ${session ? 'bg-gray-100' : ''}`}
+                            placeholder="your@email.com"
+                            required
+                          />
+                        </div>
+                        {session && (
+                          <p className="text-xs text-gray-500 mt-0.5">From your account</p>
+                        )}
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="phone" className="block text-xs font-medium text-gray-700 mb-1">
+                          Phone (Optional)
+                        </Label>
+                        <div className="relative">
+                          <Smartphone className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            id="phone"
+                            type="tel"
+                            value={formData.phone}
+                            onChange={(e) => handleInputChange("phone", e.target.value)}
+                            onFocus={() => {}}
+                            className="pl-9 h-10 rounded-lg border-gray-300 text-sm"
+                            placeholder="Phone number"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Compact Data Notice */}
+                      <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-xs text-blue-800">
+                          <span className="font-medium">Note:</span> We store your info for order processing and updates.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Continue Button */}
+                    <div className="mt-4">
+                      <Button
+                        onClick={() => setPaymentStep("payment")}
+                        className="w-full bg-black hover:bg-gray-800 text-white h-11 rounded-lg font-medium text-sm"
+                      >
+                        Continue to Payment
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+                
                 {paymentStep === "payment" && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}

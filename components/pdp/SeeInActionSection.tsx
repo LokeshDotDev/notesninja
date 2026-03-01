@@ -44,8 +44,8 @@ export default function SeeInActionSection({ videos }: SeeInActionSectionProps) 
     setSelectedVideo(videos[prevIndex])
   }
 
-  // Double videos for smooth infinite scroll effect
-  const duplicatedVideos = [...videos, ...videos]
+  // Triple videos for perfect seamless infinite scroll effect
+  const duplicatedVideos = [...videos, ...videos, ...videos]
 
   return (
     <>
@@ -61,7 +61,7 @@ export default function SeeInActionSection({ videos }: SeeInActionSectionProps) 
             </p>
           </div>
 
-          {/* Horizontal Auto-Scrolling Video Row - Smooth Infinite Scroll */}
+          {/* Horizontal Auto-Scrolling Video Row - Truly Seamless Infinite Scroll */}
           <div className="overflow-hidden relative group w-full">
             <style jsx>{`
               @keyframes smoothVideoScroll {
@@ -69,22 +69,45 @@ export default function SeeInActionSection({ videos }: SeeInActionSectionProps) 
                   transform: translate3d(0, 0, 0);
                 }
                 100% {
-                  transform: translate3d(calc(-50% - var(--gap)), 0, 0);
+                  transform: translate3d(calc(-160px * 8 - 16px * 7), 0, 0);
                 }
               }
               .video-scroll-animate {
                 --gap: 16px;
                 gap: var(--gap);
-                animation: smoothVideoScroll 10s linear infinite;
+                animation: smoothVideoScroll 20s linear infinite;
               }
               .video-scroll-animate:hover {
                 animation-play-state: paused;
               }
               @media (min-width: 640px) {
+                @keyframes smoothVideoScroll {
+                  0% {
+                    transform: translate3d(0, 0, 0);
+                  }
+                  100% {
+                    transform: translate3d(calc(-200px * 8 - 24px * 7), 0, 0);
+                  }
+                }
                 .video-scroll-animate {
                   --gap: 24px;
                   gap: var(--gap);
-                  animation-duration: 16s;
+                  animation-duration: 25s;
+                }
+              }
+              @media (min-width: 768px) {
+                @keyframes smoothVideoScroll {
+                  0% {
+                    transform: translate3d(0, 0, 0);
+                  }
+                  100% {
+                    transform: translate3d(calc(-240px * 8 - 24px * 7), 0, 0);
+                  }
+                }
+                .video-scroll-animate {
+                  --gap: 24px;
+                  gap: var(--gap);
+                  animation-duration: 30s;
                 }
               }
             `}</style>

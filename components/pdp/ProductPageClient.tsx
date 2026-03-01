@@ -54,38 +54,59 @@ interface Product {
 const ugcVideos = [
   {
     id: "1",
-    thumbnail: "/assets/reviews-thumbnails/student-1.webp",
-    embedSrc: "https://play.gumlet.io/embed/699eacf2c051a86ff58d2380",
-    aspectRatio: "29/52",
+    thumbnail: "/assets/reviews-thumbnails/student2.webp",
+    embedSrc: "https://play.gumlet.io/embed/69a41a6d825d3351d56a73e8",
+    aspectRatio: "9/16",
     title: "Student Success Story - Interview Experience",
   },
   {
     id: "2",
-    thumbnail: "/assets/reviews-thumbnails/student-4.webp",
-    embedSrc: "https://play.gumlet.io/embed/699eacf2f8c697838345aa21",
-    aspectRatio: "29/52",
+    thumbnail: "/assets/reviews-thumbnails/student3.webp",
+    embedSrc: "https://play.gumlet.io/embed/69a41a6d98dac99517915c0a",
+    aspectRatio: "9/16",
     title: "Academic Achievement Journey",
   },
   {
     id: "3",
-    thumbnail: "/assets/reviews-thumbnails/student-2.webp",
-    embedSrc: "https://play.gumlet.io/embed/699eacf2f8c697838345aa1b",
+    thumbnail: "/assets/reviews-thumbnails/student7.webp",
+    embedSrc: "https://play.gumlet.io/embed/69a41a6d825d3351d56a73ea",
     aspectRatio: "9/16",
     title: "Study Techniques That Work",
   },
   {
     id: "4",
-    thumbnail: "/assets/reviews-thumbnails/student-3.webp",
-    embedSrc: "https://play.gumlet.io/embed/699eacf2f8c697838345aa18",
+    thumbnail: "/assets/reviews-thumbnails/student6.webp",
+    embedSrc: "https://play.gumlet.io/embed/69a41a6d825d3351d56a73e6",
     aspectRatio: "9/16",
     title: "Exam Preparation Success",
   },
   {
     id: "5",
-    thumbnail: "/assets/reviews-thumbnails/student-5.webp",
-    embedSrc: "https://play.gumlet.io/embed/699eacf2ba6c1c14db0784f2",
-    aspectRatio: "29/52",
+    thumbnail: "/assets/reviews-thumbnails/student1.webp",
+    embedSrc: "https://play.gumlet.io/embed/69a41a6de9610ba04ec142aa",
+    aspectRatio: "9/16",
     title: "Real Results from Real Students",
+  },
+  {
+    id: "6",
+    thumbnail: "/assets/reviews-thumbnails/student5.webp",
+    embedSrc: "https://play.gumlet.io/embed/69a41a6d825d3351d56a73df",
+    aspectRatio: "9/16",
+    title: "Student Achievement Showcase",
+  },
+  {
+    id: "7",
+    thumbnail: "/assets/reviews-thumbnails/student8.webp",
+    embedSrc: "https://play.gumlet.io/embed/69a41a6de9610ba04ec142b1",
+    aspectRatio: "9/16",
+    title: "Learning Success Stories",
+  },
+  {
+    id: "8",
+    thumbnail: "/assets/reviews-thumbnails/student4.webp",
+    embedSrc: "https://play.gumlet.io/embed/69a41a6d98dac99517915c0d",
+    aspectRatio: "9/16",
+    title: "Academic Excellence Journey",
   },
 ];
 
@@ -94,6 +115,11 @@ export function ProductPageClient({ productId }: { productId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPurchasing, setIsPurchasing] = useState(false);
+  const [zoomData, setZoomData] = useState<{ isVisible: boolean; imageUrl: string; position: { x: number; y: number } }>({
+    isVisible: false,
+    imageUrl: '',
+    position: { x: 0, y: 0 }
+  });
 
   // Scroll to top on page load
   useEffect(() => {
@@ -179,6 +205,10 @@ export function ProductPageClient({ productId }: { productId: string }) {
     window.location.href = `/checkout/${productId}`;
   };
 
+  const handleZoomChange = (zoomInfo: { isVisible: boolean; imageUrl: string; position: { x: number; y: number } }) => {
+    setZoomData(zoomInfo);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-white">
@@ -237,11 +267,31 @@ export function ProductPageClient({ productId }: { productId: string }) {
               images={product.images}
               mainImage={product.imageUrl}
               title={product.title}
+              onZoomChange={handleZoomChange}
             />
           </div>
           
           {/* Right Side - Product Info (Scrollable) */}
-          <div>
+          <div className="relative">
+            {/* Zoom Preview - Overlay that doesn't shift content */}
+            {zoomData.isVisible && (
+              <div className="absolute top-0 left-0 right-0 z-50 bg-white border-2 border-gray-300 rounded-lg shadow-xl overflow-hidden hidden md:block">
+                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">Zoom Preview</span>
+                  <span className="bg-black/70 text-white text-xs px-2 py-1 rounded">2x</span>
+                </div>
+                <div 
+                  className="relative w-full h-[28rem] bg-gray-50"
+                  style={{
+                    backgroundImage: `url(${zoomData.imageUrl})`,
+                    backgroundPosition: `${zoomData.position.x}% ${zoomData.position.y}%`,
+                    backgroundSize: '200%',
+                    backgroundRepeat: 'no-repeat'
+                  }}
+                />
+              </div>
+            )}
+            
             <ProductInfo 
               product={product}
               onPurchase={handlePurchase}

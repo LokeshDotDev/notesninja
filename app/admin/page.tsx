@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -116,6 +117,7 @@ function extractCountry(location: string = ""): string {
 
 export default function Dashboard() {
 	const { data: session, status } = useSession();
+	const router = useRouter();
 	const [posts, setPosts] = useState<Post[]>([]);
 	const [featured, setFeatured] = useState<Featured[]>([]);
 	const [categories, setCategories] = useState<Category[]>([]);
@@ -621,6 +623,23 @@ export default function Dashboard() {
 							<p className='text-4xl font-extrabold text-green-600'>
 								{analytics?.totalPosts || 0}
 							</p>
+						</CardContent>
+					</Card>
+					<Card className='shadow-xl border-0 bg-white/80 backdrop-blur-md hover:scale-[1.03] transition-transform duration-300 h-[280px] flex flex-col cursor-pointer'
+						onClick={() => router.push('/admin/logs')}
+					>
+						<CardHeader className='flex-shrink-0'>
+							<CardTitle className='text-lg font-semibold flex items-center gap-2'>
+								<span className='inline-block w-2 h-2 bg-orange-500 rounded-full'></span>
+								User Logs
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 ml-auto">
+								  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-6 0V8.25A2.25 2.25 0 0112 6h6m-6 0l6-6m0 0v6m0-6h-6" />
+								</svg>
+							</CardTitle>
+						</CardHeader>
+						<CardContent className='flex-1 flex flex-col items-center justify-center'>
+							<p className='text-sm text-gray-500 mb-2'>View user activity logs</p>
+							<p className='text-sm text-orange-600 font-medium'>Click to view logs →</p>
 						</CardContent>
 					</Card>
 					<Card className='shadow-xl border-0 bg-white/80 backdrop-blur-md hover:scale-[1.03] transition-transform duration-300 h-[280px] flex flex-col'>

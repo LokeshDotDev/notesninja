@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion } from "motion/react";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { Button } from "@/components/ui/button";
@@ -150,6 +150,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
   const [breadcrumbs, setBreadcrumbs] = useState<{ name: string; path: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSemester, setSelectedSemester] = useState<string>("all");
+  const studyMaterialsRef = useRef<HTMLDivElement>(null);
 
   // Helper function to build breadcrumb trail from category path
   const buildBreadcrumbs = (categoryPath: string) => {
@@ -214,14 +215,18 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
     return filtered;
   };
 
-  // Scroll to top when category changes
+  // Scroll to Study Materials section when category changes
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-      left: 0
-    });
-  }, [categoryName]);
+    if (!loading && studyMaterialsRef.current) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        studyMaterialsRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 100);
+    }
+  }, [loading]);
 
   // Update filtered posts when posts, search query, or semester changes
   useEffect(() => {
@@ -433,6 +438,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
         {posts && posts.length > 0 && (
           <>
             <motion.div
+              ref={studyMaterialsRef}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}

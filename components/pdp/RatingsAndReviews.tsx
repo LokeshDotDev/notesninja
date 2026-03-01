@@ -27,7 +27,7 @@ const reviews: Review[] = [
   {
     id: 2,
     name: "Priya Singh",
-    rating: 5,
+    rating: 4,
     date: "2 weeks ago",
     review: "So simple and clear — loved it. 🤩",
     verified: true,
@@ -45,7 +45,7 @@ const reviews: Review[] = [
   {
     id: 4,
     name: "Sneha Gupta",
-    rating: 5,
+    rating: 4.5,
     date: "1 month ago",
     review: "Helpful for quick concept revision.",
     verified: true,
@@ -54,9 +54,9 @@ const reviews: Review[] = [
   {
     id: 5,
     name: "Vikram Reddy",
-    rating: 5,
+    rating: 3,
     date: "2 days ago",
-    review: "Really helpful, saved me a lot of time.",
+    review: "Good content but could use more examples.",
     verified: true,
     itemType: "Exam Prep"
   },
@@ -72,7 +72,7 @@ const reviews: Review[] = [
   {
     id: 7,
     name: "Rohan Kumar",
-    rating: 5,
+    rating: 4,
     date: "1 week ago",
     review: "Important topics were nicely covered. 👍",
     verified: true,
@@ -81,7 +81,7 @@ const reviews: Review[] = [
   {
     id: 8,
     name: "Divya Joshi",
-    rating: 5,
+    rating: 4.5,
     date: "3 weeks ago",
     review: "Very organized and easy to read.",
     verified: true,
@@ -99,7 +99,7 @@ const reviews: Review[] = [
   {
     id: 10,
     name: "Neha Verma",
-    rating: 5,
+    rating: 4,
     date: "2 weeks ago",
     review: "Worth it for exam preparation.",
     verified: true,
@@ -108,7 +108,7 @@ const reviews: Review[] = [
   {
     id: 11,
     name: "Aditya Rao",
-    rating: 5,
+    rating: 4.5,
     date: "6 days ago",
     review: "Very easy to understand, no confusion.",
     verified: true,
@@ -126,7 +126,7 @@ const reviews: Review[] = [
   {
     id: 13,
     name: "Siddharth Shah",
-    rating: 5,
+    rating: 4,
     date: "3 days ago",
     review: "Really satisfied — everything was clear.",
     verified: true,
@@ -135,9 +135,9 @@ const reviews: Review[] = [
   {
     id: 14,
     name: "Riya Kapoor",
-    rating: 5,
+    rating: 3,
     date: "1 week ago",
-    review: "Very satisfied with the content quality.",
+    review: "Decent notes, but some topics missing.",
     verified: true,
     itemType: "Notes Collection"
   },
@@ -153,7 +153,7 @@ const reviews: Review[] = [
   {
     id: 16,
     name: "Kavya Iyer",
-    rating: 5,
+    rating: 4.5,
     date: "5 days ago",
     review: "Worth it.",
     verified: true,
@@ -162,7 +162,7 @@ const reviews: Review[] = [
   {
     id: 17,
     name: "Harsh Malhotra",
-    rating: 5,
+    rating: 4,
     date: "4 weeks ago",
     review: "Good for last-minute prep.",
     verified: true,
@@ -180,7 +180,7 @@ const reviews: Review[] = [
   {
     id: 19,
     name: "Tarun Nair",
-    rating: 5,
+    rating: 4,
     date: "3 days ago",
     review: "Simple and effective.",
     verified: true,
@@ -189,7 +189,7 @@ const reviews: Review[] = [
   {
     id: 20,
     name: "Simran Kaur",
-    rating: 5,
+    rating: 4.5,
     date: "2 weeks ago",
     review: "Very helpful.",
     verified: true,
@@ -197,17 +197,29 @@ const reviews: Review[] = [
   }
 ];
 
-const StarIcon = ({ filled }: { filled: boolean }) => (
-  <svg
-    className={`w-4 h-4 ${filled ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    stroke="none"
-  >
-    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-  </svg>
-);
+const StarIcon = ({ filled, half, index }: { filled: boolean; half?: boolean; index?: number }) => {
+  const gradientId = `halfStar-${index ?? 0}`;
+  return (
+    <svg
+      className={`w-4 h-4 ${filled ? 'text-yellow-400 fill-yellow-400' : half ? 'text-yellow-400' : 'text-gray-300'}`}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill={half ? `url(#${gradientId})` : filled ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth={half ? 0 : filled ? 0 : 2}
+    >
+      {half && (
+        <defs>
+          <linearGradient id={gradientId}>
+            <stop offset="50%" stopColor="currentColor" />
+            <stop offset="50%" stopColor="transparent" />
+          </linearGradient>
+        </defs>
+      )}
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+    </svg>
+  );
+};
 
 const VerifiedBadge = () => (
   <div className="flex items-center gap-1">
@@ -241,9 +253,11 @@ const ReviewCard = ({ review }: { review: Review }) => (
 
     {/* Star Rating */}
     <div className="flex items-center gap-1 mb-3">
-      {[...Array(5)].map((_, i) => (
-        <StarIcon key={i} filled={i < review.rating} />
-      ))}
+      {[...Array(5)].map((_, i) => {
+        const filled = i < Math.floor(review.rating);
+        const half = !filled && i < review.rating;
+        return <StarIcon key={i} filled={filled} half={half} index={i} />;
+      })}
     </div>
 
     {/* Review Text */}
@@ -273,7 +287,8 @@ const ReviewCard = ({ review }: { review: Review }) => (
 );
 
 export function RatingsAndReviews() {
-  const averageRating = 4.8;
+  // Calculate real average from reviews
+  const averageRating = Number((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1));
   const totalReviews = 602;
 
   return (
@@ -292,9 +307,11 @@ export function RatingsAndReviews() {
             </h2>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <StarIcon key={i} filled={i < Math.floor(averageRating)} />
-                ))}
+                {[...Array(5)].map((_, i) => {
+                  const filled = i < Math.floor(averageRating);
+                  const half = !filled && i < averageRating;
+                  return <StarIcon key={i} filled={filled} half={half} index={i} />;
+                })}
               </div>
               <span className="text-lg font-semibold text-gray-900">{averageRating}</span>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full">
@@ -310,16 +327,16 @@ export function RatingsAndReviews() {
         {/* Reviews Horizontal Scrolling Carousel */}
         <div className="overflow-hidden relative group w-full mt-8">
           <style jsx>{`
-            @keyframes smoothReviewScroll {
+            @keyframes seamlessReviewScroll {
               0% {
                 transform: translateX(0);
               }
               100% {
-                transform: translateX(calc(-50% - 24px));
+                transform: translateX(calc(-1 * var(--scroll-width)));
               }
             }
             .review-scroll-animate {
-              animation: smoothReviewScroll 10s linear infinite;
+              animation: seamlessReviewScroll 30s linear infinite;
             }
             .review-scroll-animate:hover {
               animation-play-state: paused;
@@ -331,9 +348,15 @@ export function RatingsAndReviews() {
           {/* Right fade overlay */}
           <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-gray-50 to-transparent z-10" />
           
-          <div className="flex gap-6 will-change-transform review-scroll-animate">
-            {/* Triple the reviews for truly seamless infinite scroll */}
-            {[...reviews, ...reviews, ...reviews].map((review, index) => (
+          <div 
+            className="flex gap-6 will-change-transform review-scroll-animate"
+            style={{
+              // Width of one set: 20 reviews × 320px + 19 gaps × 24px = 6400 + 456 = 6856px
+              '--scroll-width': '6856px'
+            } as React.CSSProperties}
+          >
+            {/* Double the reviews for seamless infinite scroll - 2 copies create perfect loop */}
+            {[...reviews, ...reviews].map((review, index) => (
               <div key={`${review.id}-${index}`} className="flex-shrink-0 w-80">
                 <ReviewCard review={review} />
               </div>
