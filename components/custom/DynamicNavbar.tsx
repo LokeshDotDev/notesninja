@@ -185,6 +185,12 @@ export function DynamicNavbar() {
 
 						{/* Other Links */}
 						<Link
+							href="/articles"
+							className={`${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
+						>
+							Articles
+						</Link>
+						<Link
 							href="/privacy-policy"
 							className={`${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
 						>
@@ -195,12 +201,6 @@ export function DynamicNavbar() {
 							className={`${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
 						>
 							Terms & Conditions
-						</Link>
-						<Link
-							href="/refund-cancellation"
-							className={`${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
-						>
-							Refund & Cancellation
 						</Link>
 					</div>
 
@@ -237,6 +237,14 @@ export function DynamicNavbar() {
 										>
 											<User className="w-4 h-4 text-blue-600" />
 											Dashboard
+										</Link>
+										<Link
+											href="/articles/create"
+											className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+											onClick={() => setIsUserDropdownOpen(false)}
+										>
+											<User className="w-4 h-4 text-green-600" />
+											Write Article
 										</Link>
 										<button
 											onClick={() => {
@@ -301,6 +309,13 @@ export function DynamicNavbar() {
 
 							{/* Other Links */}
 							<Link
+								href="/articles"
+								className={`block px-6 py-3 text-sm ${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
+								onClick={() => setIsMobileMenuOpen(false)}
+							>
+								Articles
+							</Link>
+							<Link
 								href="/privacy-policy"
 								className={`block px-6 py-3 text-sm ${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
 								onClick={() => setIsMobileMenuOpen(false)}
@@ -314,13 +329,6 @@ export function DynamicNavbar() {
 							>
 								Terms & Conditions
 							</Link>
-							<Link
-								href="/refund-cancellation"
-								className={`block px-6 py-3 text-sm ${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
-								onClick={() => setIsMobileMenuOpen(false)}
-							>
-								Refund & Cancellation
-							</Link>
 
 							{/* Mobile Authentication Section */}
 							{session ? (
@@ -332,6 +340,14 @@ export function DynamicNavbar() {
 									>
 										<User className="w-4 h-4 inline mr-2" />
 										{isCurrentUserAdmin ? "Admin Dashboard" : "Dashboard"}
+									</Link>
+									<Link
+										href="/articles/create"
+										className={`block px-6 py-3 text-sm ${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
+										onClick={() => setIsMobileMenuOpen(false)}
+									>
+										<User className="w-4 h-4 inline mr-2" />
+										Write Article
 									</Link>
 									<button
 										onClick={() => {

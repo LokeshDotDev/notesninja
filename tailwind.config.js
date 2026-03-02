@@ -48,7 +48,9 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+      require('@tailwindcss/typography'),
+  ],
   // Custom utilities for animation control
   safelist: [
     'group-hover:animation-pause',

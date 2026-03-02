@@ -134,6 +134,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   purchases     Purchase[]
+  articles      Article[]
 }
 
 enum Role {
@@ -196,4 +197,26 @@ model UserLog {
   ipAddress   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Article {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  excerpt     String?
+  content     String    @db.Text
+  coverImage  String?
+  coverImagePublicId String?
+  published   Boolean   @default(false)
+  featured    Boolean   @default(false)
+  views       Int       @default(0)
+  readingTime Int       @default(0)
+  tags        String[]
+  metaTitle   String?
+  metaDescription String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
 }

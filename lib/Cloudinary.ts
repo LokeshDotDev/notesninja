@@ -165,7 +165,10 @@ export function getAccessibleUrl(secureUrl: string, publicId: string, resourceTy
 	return signedUrl;
 }
 
-export async function deleteContent(publicId: string): Promise<unknown> {
+export async function deleteContent(
+	publicId: string,
+	resourceType: "image" | "video" | "raw" = "image"
+): Promise<unknown> {
 	if (
 		!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ||
 		!process.env.CLOUDINARY_API_KEY ||
@@ -178,7 +181,7 @@ export async function deleteContent(publicId: string): Promise<unknown> {
 
 	try {
 		console.log(`Attempting to delete Cloudinary resource: ${publicId}`);
-		
+
 		// Try different variations of the public_id
 		const variations = [
 			publicId, // Original public_id
@@ -186,29 +189,24 @@ export async function deleteContent(publicId: string): Promise<unknown> {
 			`${publicId}.jpeg`, // With .jpeg extension
 			`${publicId}.png`, // With .png extension
 		];
-		
-		for (const variation of variations) {
-			console.log(`Trying to delete as image: ${variation}`);
-			const result = await cloudinary.uploader.destroy(variation);
-			console.log(`Delete result for ${variation}:`, result);
-			
-			if (result.result === 'ok' || result.result === 'deleted') {
-				console.log(`✅ Successfully deleted: ${variation}`);
-				return result;
-			}
-		}
-		
-		// If all image attempts failed, try as raw resource with variations
-		for (const variation of variations) {
-			console.log(`Trying to delete ${variation} as raw resource...`);
-			const result = await cloudinary.uploader.destroy(variation, { 
-				resource_type: 'raw' 
-			});
-			console.log(`Raw delete result for ${variation}:`, result);
-			
-			if (result.result === 'ok' || result.result === 'deleted') {
-				console.log(`✅ Successfully deleted as raw: ${variation}`);
-				return result;
+
+		const priorityResourceTypes: Array<"image" | "video" | "raw"> = [
+			resourceType,
+			...(["image", "video", "raw"] as const).filter((t) => t !== resourceType),
+		]
+
+		for (const type of priorityResourceTypes) {
+			for (const variation of variations) {
+				console.log(`Trying to delete as ${type}: ${variation}`);
+				const result = await cloudinary.uploader.destroy(variation, {
+					resource_type: type,
+				});
+				console.log(`Delete result for ${type}/${variation}:`, result);
+
+				if (result.result === "ok" || result.result === "deleted") {
+					console.log(`✅ Successfully deleted (${type}): ${variation}`);
+					return result;
+				}
 			}
 		}
 		

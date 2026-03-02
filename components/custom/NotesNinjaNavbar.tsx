@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/resizable-navbar";
 import settings from "@/lib/settings";
 import { useState } from "react";
-import { ChevronDown, BookOpen, FileText, Shield, RefreshCw } from "lucide-react";
+import { ChevronDown, BookOpen, FileText, Shield } from "lucide-react";
 
 export function NotesNinjaNavbar() {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -37,7 +37,6 @@ export function NotesNinjaNavbar() {
 		},
 		{ name: "Privacy Policy", link: "/privacy-policy", icon: FileText },
 		{ name: "Terms & Conditions", link: "/terms-conditions", icon: Shield },
-		{ name: "Refund & Cancellation", link: "/refund-cancellation", icon: RefreshCw },
 	];
 
 	return (

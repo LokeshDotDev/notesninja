@@ -151,12 +151,6 @@ export function NotesNinjaNavbarWithDropdown() {
 						>
 							Terms & Conditions
 						</Link>
-						<Link
-							href="/refund-cancellation"
-							className="text-neutral-700 dark:text-neutral-300 hover:text-primary transition-colors"
-						>
-							Refund & Cancellation
-						</Link>
 					</div>
 
 					{/* CTA Button */}
@@ -241,13 +235,6 @@ export function NotesNinjaNavbarWithDropdown() {
 								onClick={() => setIsMobileMenuOpen(false)}
 							>
 								Terms & Conditions
-							</Link>
-							<Link
-								href="/refund-cancellation"
-								className="block px-3 py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-primary transition-colors"
-								onClick={() => setIsMobileMenuOpen(false)}
-							>
-								Refund & Cancellation
 							</Link>
 
 							{/* Mobile CTA Button */}
