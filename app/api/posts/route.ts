@@ -75,14 +75,8 @@ export async function GET(req: NextRequest) {
 			orderBy: { createdAt: "desc" },
 		});
 
-		// Add cache-busting timestamp to imageUrl for all posts
+		// Calculate discount percentage for all posts
 		const postsWithDiscount = posts.map(post => {
-			if (post.imageUrl) {
-				const cacheBuster = Math.random().toString(36).substring(7);
-				post.imageUrl = `${post.imageUrl}?v=${cacheBuster}`;
-			}
-			
-			// Calculate discount percentage
 			const discountPercentage = calculateDiscountPercentage(post.price, post.compareAtPrice);
 			
 			return {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { trackBeginCheckout } from "@/lib/analytics";
 import {
@@ -164,16 +164,44 @@ export function ProductInfo({
       {/* Rating */}
       <div className="flex items-center gap-2">
         <div className="flex items-center">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={`w-5 h-5 ${
-                i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-              }`}
-            />
-          ))}
+          <svg className="w-0 h-0 absolute">
+            <defs>
+              <linearGradient id="halfStarGradient">
+                <stop offset="50%" stopColor="#facc15" />
+                <stop offset="50%" stopColor="#d1d5db" />
+              </linearGradient>
+            </defs>
+          </svg>
+          {[...Array(5)].map((_, i) => {
+            const rating = 4.5;
+            const filled = i < Math.floor(rating);
+            const half = !filled && i < rating;
+            
+            if (half) {
+              return (
+                <svg
+                  key={i}
+                  className="w-5 h-5"
+                  viewBox="0 0 24 24"
+                  fill="url(#halfStarGradient)"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+              );
+            }
+            
+            return (
+              <Star
+                key={i}
+                className={`w-5 h-5 ${
+                  filled ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                }`}
+              />
+            );
+          })}
         </div>
-        <span className="text-lg font-semibold">4.9</span>
+        <span className="text-lg font-semibold">4.4</span>
         <span className="text-neutral-500">(610 reviews)</span>
       </div>
 

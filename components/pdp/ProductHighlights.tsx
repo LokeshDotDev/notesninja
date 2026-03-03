@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 export function ProductHighlights() {
@@ -33,7 +33,7 @@ export function ProductHighlights() {
           <div className="order-2 lg:order-1">
             <div className="rounded-2xl overflow-hidden shadow-lg relative aspect-video">
               <Image
-                src="/assets/producthighlight images/IMG_2006.JPG.jpeg"
+                src="/assets/producthighlight images/IMG_2006.JPG.webp"
                 alt="MUJ online notes showcase with student using laptop"
                 fill
                 className="object-cover"
@@ -99,7 +99,7 @@ export function ProductHighlights() {
           <div>
             <div className="rounded-2xl overflow-hidden shadow-lg relative aspect-video">
               <Image
-                src="/assets/producthighlight images/IMG_2007.JPG.jpeg"
+                src="/assets/producthighlight images/IMG_2007.JPG.webp"
                 alt="Smart notes and mock papers for exam preparation"
                 fill
                 className="object-cover"
@@ -123,7 +123,7 @@ export function ProductHighlights() {
           <div className="order-2 lg:order-1">
             <div className="rounded-2xl overflow-hidden shadow-lg relative aspect-video">
               <Image
-                src="/assets/producthighlight images/IMG_2008.JPG.jpeg"
+                src="/assets/producthighlight images/IMG_2008.JPG.webp"
                 alt="Students collaborating and studying together"
                 fill
                 className="object-cover"
@@ -189,7 +189,7 @@ export function ProductHighlights() {
           <div>
             <div className="rounded-2xl overflow-hidden shadow-lg relative aspect-video">
               <Image
-                src="/assets/producthighlight images/IMG_2009.JPG.jpeg"
+                src="/assets/producthighlight images/IMG_2009.JPG.webp"
                 alt="Student success journey with books and campus background"
                 fill
                 className="object-cover"

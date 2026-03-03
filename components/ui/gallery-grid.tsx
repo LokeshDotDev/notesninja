@@ -6,6 +6,8 @@ import { ImageGalleryModal } from "@/components/ui/image-gallery-modal";
 import PurchaseDialog from "@/components/custom/PurchaseDialog";
 import DownloadDialog from "@/components/custom/DownloadDialog";
 import { formatPrice as formatPriceUtil, calculateDiscountPercentage } from '@/lib/pricing-utils';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { optimizeImageUrl } from "@/lib/image-optimization";
 
 interface PurchaseDialogState {
   open: boolean;

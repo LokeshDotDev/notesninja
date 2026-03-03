@@ -1,6 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 
-const prismaClientSignleton = () => {
+// NOTE: This file is deprecated. Use lib/prisma-optimized.ts for better performance
+// The optimized version includes connection pooling and better configuration for cross-region requests
+
+const prismaClientSingleton = () => {
   try {
     return new PrismaClient();
   } catch (error) {
@@ -9,13 +12,13 @@ const prismaClientSignleton = () => {
   }
 };
 
-type prismaClientSignleton = ReturnType<typeof prismaClientSignleton>;
+type prismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
 
 const globalforPrisma = global as unknown as {
-  prisma: prismaClientSignleton | undefined;
+  prisma: prismaClientSingleton | undefined;
 };
 
-const prisma = globalforPrisma.prisma ?? prismaClientSignleton();
+const prisma = globalforPrisma.prisma ?? prismaClientSingleton();
 
 if (process.env.NODE_ENV !== "production") {
   globalforPrisma.prisma = prisma;

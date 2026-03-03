@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Image from 'next/image'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar, Clock, ArrowLeft } from 'lucide-react'
 import { getArticleBySlug, getRelatedArticles } from '@/lib/articles'
 import ArticleEditButton from '@/components/articles/ArticleEditButton'
+import { CldImage } from 'next-cloudinary'
 
 interface ArticlePageProps {
   params: Promise<{
@@ -150,18 +152,29 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       </div>
 
-      {/* Cover Image */}
+      {/* Cover Image - Optimized with priority loading */}
       {article.coverImage && (
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-5xl mx-auto">
             <div className="relative h-[400px] md:h-[500px] lg:h-[600px] rounded-2xl overflow-hidden shadow-2xl">
-              <Image
+              <CldImage
                 src={article.coverImage}
                 alt={article.title}
-                fill
-                className="object-cover"
-                priority
+                width={1200}
+                height={600}
+                priority={true} // Priority loading for above-the-fold image
+                format="auto"
+                quality="auto"
+                sizes="(max-width: 1200px) 100vw, (max-width: 768px) 100vw, (max-width: 480px) 100vw"
+                className="w-full h-full object-cover"
+                crop="fill"
+                gravity="auto"
               />
+              {article.featured && (
+                <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground shadow-lg">
+                  ⭐ Featured
+                </Badge>
+              )}
             </div>
           </div>
         </div>
@@ -194,7 +207,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       </div>
 
-      {/* Related Articles */}
+      {/* Related Articles - Optimized with CldImage */}
       {relatedArticles.length > 0 && (
         <div className="border-t bg-muted/30">
           <div className="container mx-auto px-4 py-16">
@@ -210,11 +223,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                     <article className="h-full bg-card border rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
                       {relatedArticle.coverImage && (
                         <div className="relative h-48 w-full overflow-hidden bg-muted">
-                          <Image
+                          <CldImage
                             src={relatedArticle.coverImage}
                             alt={relatedArticle.title}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-110"
+                            width={400}
+                            height={300}
+                            priority={false} // Non-priority for below-fold images
+                            format="auto"
+                            quality="auto"
+                            sizes="(max-width: 400px) 100vw, (max-width: 768px) 50vw, (max-width: 480px) 100vw"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            crop="fill"
+                            gravity="auto"
                           />
                         </div>
                       )}

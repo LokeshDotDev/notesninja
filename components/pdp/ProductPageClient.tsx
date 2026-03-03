@@ -1,19 +1,48 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { AnnouncementBar } from '@/components/pdp/AnnouncementBar';
-import { MediaGallery } from '@/components/pdp/MediaGallery';
-import { ProductInfo } from '@/components/pdp/ProductInfo';
-import { ProductHighlights } from '@/components/pdp/ProductHighlights';
-import { AccordionSection } from '@/components/pdp/AccordionSection';
-import { RatingsAndReviews } from '@/components/pdp/RatingsAndReviews';
-import { TrustScreenshots } from '@/components/pdp/TrustScreenshots';
-import SeeInActionSection from '@/components/pdp/SeeInActionSection';
-import { PremiumPageLoader } from '@/components/ui/premium-loader';
+import dynamic from 'next/dynamic';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { trackViewItem } from '@/lib/analytics';
+
+// Dynamic imports for better performance
+const AnnouncementBar = dynamic(() => import('@/components/pdp/AnnouncementBar').then(mod => mod.AnnouncementBar), { 
+  loading: () => <div className="h-12 bg-blue-600 animate-pulse" />,
+  ssr: false 
+});
+const MediaGallery = dynamic(() => import('@/components/pdp/MediaGallery').then(mod => ({ default: mod.MediaGallery })), { 
+  loading: () => <div className="w-full h-96 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false 
+});
+const ProductInfo = dynamic(() => import('@/components/pdp/ProductInfo').then(mod => ({ default: mod.ProductInfo })), { 
+  loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false 
+});
+const ProductHighlights = dynamic(() => import('@/components/pdp/ProductHighlights').then(mod => ({ default: mod.ProductHighlights })), { 
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false 
+});
+const AccordionSection = dynamic(() => import('@/components/pdp/AccordionSection').then(mod => ({ default: mod.AccordionSection })), { 
+  loading: () => <div className="h-48 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false 
+});
+const RatingsAndReviews = dynamic(() => import('@/components/pdp/RatingsAndReviews').then(mod => ({ default: mod.RatingsAndReviews })), { 
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false 
+});
+const TrustScreenshots = dynamic(() => import('@/components/pdp/TrustScreenshots').then(mod => ({ default: mod.TrustScreenshots })), { 
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false 
+});
+const SeeInActionSection = dynamic(() => import('@/components/pdp/SeeInActionSection').then(mod => mod.default), { 
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false 
+});
+const PremiumPageLoader = dynamic(() => import('@/components/ui/premium-loader').then(mod => ({ default: mod.PremiumPageLoader })), { 
+  ssr: false 
+});
 
 interface PostImage {
   id: string;
@@ -23,6 +52,7 @@ interface PostImage {
   isCover: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Product {
   id: string;
   title: string;
@@ -110,9 +140,15 @@ const ugcVideos = [
   },
 ];
 
-export function ProductPageClient({ productId }: { productId: string }) {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
+interface ProductPageClientProps {
+  productId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  initialProduct?: any; // Server-fetched product data
+}
+
+export default function ProductPageClient({ productId, initialProduct }: ProductPageClientProps) {
+  const [product, setProduct] = useState(initialProduct || null);
+  const [loading, setLoading] = useState(!initialProduct);
   const [error, setError] = useState<string | null>(null);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [zoomData, setZoomData] = useState<{ isVisible: boolean; imageUrl: string; position: { x: number; y: number } }>({
@@ -131,6 +167,21 @@ export function ProductPageClient({ productId }: { productId: string }) {
   }, [productId]);
 
   useEffect(() => {
+    // Skip fetching if we already have product from server
+    if (initialProduct) {
+      setProduct(initialProduct);
+      // Track product view when loaded
+      trackViewItem({
+        id: initialProduct.id,
+        title: initialProduct.title,
+        price: initialProduct.price,
+        category: initialProduct.category?.name,
+        subcategory: initialProduct.subcategory?.name,
+        imageUrl: initialProduct.imageUrl
+      });
+      return;
+    }
+
     async function fetchProduct() {
       try {
         setLoading(true);
@@ -196,9 +247,10 @@ export function ProductPageClient({ productId }: { productId: string }) {
         setLoading(false);
       }
     }
-
-    fetchProduct();
-  }, [productId]);
+    if (productId) {
+      fetchProduct();
+    }
+  }, [productId, initialProduct]);
 
   const handlePurchase = () => {
     setIsPurchasing(true);

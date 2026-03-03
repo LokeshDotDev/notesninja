@@ -2,7 +2,9 @@
 
 import React, { useState, useRef } from "react";
 import { X, Star, Upload, Image as ImageIcon } from "lucide-react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Image from "next/image";
+import { CldImage } from "next-cloudinary";
 
 interface ProductGalleryProps {
   postId: string;
@@ -197,14 +199,21 @@ export default function ProductGallery({
               key={image.id}
               className="relative group aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-gray-300 transition-colors"
             >
-              {/* Image */}
-              <Image
-                src={image.imageUrl || ''}
-                alt={`Product image ${(image.order || 0) + 1}`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-              />
+              {/* Optimized Image with CldImage */}
+              {image.imageUrl && (
+                <CldImage
+                  src={image.imageUrl}
+                  alt={`Product image ${(image.order || 0) + 1}`}
+                  width={300}
+                  height={300}
+                  format="auto"
+                  quality="auto"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                  className="object-cover"
+                  crop="fill"
+                  gravity="auto"
+                />
+              )}
 
               {/* Cover Badge */}
               {image.isCover && (

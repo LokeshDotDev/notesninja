@@ -54,25 +54,40 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ["image/webp", "image/avif"],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    deviceSizes: [640, 750, 828, 1080, 1200],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60,
+    minimumCacheTTL: 86400, // 24 hours for optimized images
     // Enable image optimization
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    qualities: [75, 85, 90],
   },
   compress: true,
   poweredByHeader: false,
   // SWC minification is enabled by default in Next.js 15
-  // Add caching headers
+  // Add caching headers for cross-region optimization
   async headers() {
     return [
+      // Cache optimized images aggressively
+      {
+        source: '/_next/image(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
       {
         source: '/api/(.*)',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=300, s-maxage=300',
+            value: 'public, max-age=300, s-maxage=300, stale-while-revalidate=60',
+          },
+          {
+            key: 'Vary',
+            value: 'Accept-Encoding, Accept-Language',
           },
         ],
       },
@@ -90,6 +105,19 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Cache-Control',
+            value: 'public, max-age=86400, immutable',
+          },
+        ],
+      },
+      {
+        source: '/articles/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=1800, stale-while-revalidate=300',
+          },
+          {
+            key: 'CDN-Cache-Control',
             value: 'public, max-age=86400, immutable',
           },
         ],

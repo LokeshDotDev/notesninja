@@ -102,7 +102,7 @@ export async function getArticles(options: {
 } = {}): Promise<Article[]> {
   const {
     published = true,
-    featured = false,
+    featured,
     limit = 20,
     offset = 0,
     sortBy = 'latest',
@@ -122,8 +122,8 @@ export async function getArticles(options: {
     published,
   }
 
-  if (featured) {
-    where.featured = true
+  if (featured !== undefined) {
+    where.featured = featured
   }
 
   if (search) {
@@ -150,9 +150,9 @@ export async function getArticles(options: {
     case 'latest':
     default:
       orderBy.publishedAt = 'desc'
-      break
   }
 
+  // Optimized query with specific fields only
   const articles = await prisma.article.findMany({
     where,
     include: {

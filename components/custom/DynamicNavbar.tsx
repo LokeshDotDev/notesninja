@@ -238,14 +238,6 @@ export function DynamicNavbar() {
 											<User className="w-4 h-4 text-blue-600" />
 											Dashboard
 										</Link>
-										<Link
-											href="/articles/create"
-											className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-											onClick={() => setIsUserDropdownOpen(false)}
-										>
-											<User className="w-4 h-4 text-green-600" />
-											Write Article
-										</Link>
 										<button
 											onClick={() => {
 												signOut();
@@ -340,14 +332,6 @@ export function DynamicNavbar() {
 									>
 										<User className="w-4 h-4 inline mr-2" />
 										{isCurrentUserAdmin ? "Admin Dashboard" : "Dashboard"}
-									</Link>
-									<Link
-										href="/articles/create"
-										className={`block px-6 py-3 text-sm ${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
-										onClick={() => setIsMobileMenuOpen(false)}
-									>
-										<User className="w-4 h-4 inline mr-2" />
-										Write Article
 									</Link>
 									<button
 										onClick={() => {

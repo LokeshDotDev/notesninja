@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 
 interface Review {
   id: number;
@@ -336,7 +336,7 @@ export function RatingsAndReviews() {
               }
             }
             .review-scroll-animate {
-              animation: seamlessReviewScroll 30s linear infinite;
+              animation: seamlessReviewScroll 60s linear infinite;
             }
             .review-scroll-animate:hover {
               animation-play-state: paused;

@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { 
-  getArticleBySlug, 
-  updateArticle, 
-  deleteArticle 
-} from '@/lib/articles'
-import prisma from '@/lib/prisma'
+import { getArticleBySlug, updateArticle, deleteArticle } from '@/lib/articles'
+import prisma from '@/lib/prisma-optimized' // Use optimized version for better performance
+import { unstable_cache } from 'next/cache'
+
+// Cache article data for 1 hour to reduce cross-region round trips
+const getCachedArticle = unstable_cache(
+  async (slug: string) => {
+    return getArticleBySlug(slug)
+  },
+  ['article'], // Remove slug from cache key to avoid scoping issues
+  { revalidate: 3600, tags: ['articles'] }
+)
 
 export async function GET(
   request: NextRequest,
@@ -14,7 +20,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params
-    const article = await getArticleBySlug(slug)
+    const article = await getCachedArticle(slug)
     
     if (!article) {
       return NextResponse.json(
@@ -48,11 +54,17 @@ export async function PUT(
       )
     }
 
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true, role: true }
-    })
+    // Batch user lookup and article fetch to reduce round trips
+    const [user, existingArticle] = await Promise.all([
+      prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true, role: true }
+      }),
+      prisma.article.findUnique({
+        where: { slug },
+        select: { authorId: true, id: true }
+      })
+    ])
 
     if (!user) {
       return NextResponse.json(
@@ -68,12 +80,6 @@ export async function PUT(
         { status: 403 }
       )
     }
-
-    // Get the article first to check if it exists
-    const existingArticle = await prisma.article.findUnique({
-      where: { slug },
-      select: { authorId: true, id: true }
-    })
 
     if (!existingArticle) {
       return NextResponse.json(
@@ -134,11 +140,17 @@ export async function DELETE(
       )
     }
 
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true, role: true }
-    })
+    // Batch user lookup and article fetch to reduce round trips
+    const [user, existingArticle] = await Promise.all([
+      prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true, role: true }
+      }),
+      prisma.article.findUnique({
+        where: { slug },
+        select: { authorId: true, id: true }
+      })
+    ])
 
     if (!user) {
       return NextResponse.json(
@@ -154,12 +166,6 @@ export async function DELETE(
         { status: 403 }
       )
     }
-
-    // Get the article first to check if it exists
-    const existingArticle = await prisma.article.findUnique({
-      where: { slug },
-      select: { authorId: true, id: true }
-    })
 
     if (!existingArticle) {
       return NextResponse.json(

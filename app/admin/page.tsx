@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Loader2, Search, Trash2 } from "lucide-react";
 import FormDialog from "@/components/custom/FormDialog";
 import Notification from "@/components/custom/Notification";
 import { NestedCategoryList } from "@/components/custom/NestedCategoryList";
@@ -108,6 +109,28 @@ interface Visitor {
 	visitedAt: string;
 }
 
+interface UserLog {
+	id: string;
+	email: string;
+	firstName: string | null;
+	lastName: string | null;
+	phone: string | null;
+	productId: string;
+	productName: string;
+	productPrice: number | null;
+	userAgent: string | null;
+	ipAddress: string | null;
+	createdAt: string;
+	updatedAt: string;
+}
+
+interface LogsPagination {
+	page: number;
+	limit: number;
+	totalCount: number;
+	totalPages: number;
+}
+
 // Helper to extract country from location string
 function extractCountry(location: string = ""): string {
 	if (!location) return "Unknown";
@@ -169,6 +192,17 @@ export default function Dashboard() {
 		show: false,
 	});
 	const [parentForNewCategory, setParentForNewCategory] = useState<string | null>(null);
+	const [logs, setLogs] = useState<UserLog[]>([]);
+	const [logsPagination, setLogsPagination] = useState<LogsPagination>({
+		page: 1,
+		limit: 50,
+		totalCount: 0,
+		totalPages: 0,
+	});
+	const [logsSearch, setLogsSearch] = useState("");
+	const [logsLoading, setLogsLoading] = useState(false);
+	const [logsExporting, setLogsExporting] = useState(false);
+	const [logsError, setLogsError] = useState<string | null>(null);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -560,6 +594,117 @@ export default function Dashboard() {
 		fetchVisitors();
 	}, []);
 
+	const fetchUserLogs = useCallback(
+		async (page = 1, searchQuery = "") => {
+			setLogsLoading(true);
+			setLogsError(null);
+			try {
+				const res = await fetch(
+					`/api/admin/user-logs?page=${page}&limit=${logsPagination.limit}&search=${encodeURIComponent(searchQuery)}`
+				);
+
+				if (!res.ok) {
+					if (res.status === 401) {
+						router.push("/unauthorized");
+						return;
+					}
+					throw new Error("Failed to fetch user logs");
+				}
+
+				const data = await res.json();
+				setLogs(data.data || []);
+				setLogsPagination(
+					data.pagination || {
+						page,
+						limit: logsPagination.limit,
+						totalCount: 0,
+						totalPages: 0,
+					}
+				);
+			} catch (err) {
+				setLogsError(
+					err instanceof Error ? err.message : "Failed to fetch user logs"
+				);
+			} finally {
+				setLogsLoading(false);
+			}
+		},
+		[logsPagination.limit, router]
+	);
+
+	useEffect(() => {
+		if (status === "authenticated" && session?.user?.role === "ADMIN") {
+			fetchUserLogs(1, "");
+		}
+	}, [status, session, fetchUserLogs]);
+
+	const handleLogsSearch = (e: React.FormEvent) => {
+		e.preventDefault();
+		fetchUserLogs(1, logsSearch);
+	};
+
+	const handleLogsPageChange = (newPage: number) => {
+		if (newPage >= 1 && newPage <= logsPagination.totalPages) {
+			fetchUserLogs(newPage, logsSearch);
+		}
+	};
+
+	const handleLogsExport = async (format: "csv" | "json") => {
+		setLogsExporting(true);
+		try {
+			const res = await fetch(
+				`/api/admin/user-logs/export?format=${format}&search=${encodeURIComponent(logsSearch)}`
+			);
+			if (!res.ok) {
+				throw new Error("Failed to export logs");
+			}
+
+			if (format === "csv") {
+				const blob = await res.blob();
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = `user-logs-${new Date().toISOString().split("T")[0]}.csv`;
+				document.body.appendChild(a);
+				a.click();
+				window.URL.revokeObjectURL(url);
+				document.body.removeChild(a);
+			} else {
+				const data = await res.json();
+				const blob = new Blob([JSON.stringify(data.data, null, 2)], {
+					type: "application/json",
+				});
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = `user-logs-${new Date().toISOString().split("T")[0]}.json`;
+				document.body.appendChild(a);
+				a.click();
+				window.URL.revokeObjectURL(url);
+				document.body.removeChild(a);
+			}
+		} catch (err) {
+			setLogsError(err instanceof Error ? err.message : "Failed to export logs");
+		} finally {
+			setLogsExporting(false);
+		}
+	};
+
+	const formatLogDate = (dateString: string) => {
+		return new Date(dateString).toLocaleString("en-US", {
+			year: "numeric",
+			month: "short",
+			day: "numeric",
+			hour: "2-digit",
+			minute: "2-digit",
+		});
+	};
+
+	const truncateUserAgent = (ua: string | null) => {
+		if (!ua) return "-";
+		return ua.length > 50 ? `${ua.substring(0, 50)}...` : ua;
+	};
+
 	if (isLoading) {
 		return (
 			<div className='flex justify-center items-center h-screen bg-gray-100'>
@@ -625,21 +770,18 @@ export default function Dashboard() {
 							</p>
 						</CardContent>
 					</Card>
-					<Card className='shadow-xl border-0 bg-white/80 backdrop-blur-md hover:scale-[1.03] transition-transform duration-300 h-[280px] flex flex-col cursor-pointer'
-						onClick={() => router.push('/admin/logs')}
-					>
+					<Card className='shadow-xl border-0 bg-white/80 backdrop-blur-md hover:scale-[1.03] transition-transform duration-300 h-[280px] flex flex-col'>
 						<CardHeader className='flex-shrink-0'>
 							<CardTitle className='text-lg font-semibold flex items-center gap-2'>
 								<span className='inline-block w-2 h-2 bg-orange-500 rounded-full'></span>
 								User Logs
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 ml-auto">
-								  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-6 0V8.25A2.25 2.25 0 0112 6h6m-6 0l6-6m0 0v6m0-6h-6" />
-								</svg>
 							</CardTitle>
 						</CardHeader>
 						<CardContent className='flex-1 flex flex-col items-center justify-center'>
-							<p className='text-sm text-gray-500 mb-2'>View user activity logs</p>
-							<p className='text-sm text-orange-600 font-medium'>Click to view logs →</p>
+							<p className='text-4xl font-extrabold text-orange-600'>
+								{logsPagination.totalCount.toLocaleString()}
+							</p>
+							<p className='text-sm text-gray-500 mt-2'>Visible below in this panel</p>
 						</CardContent>
 					</Card>
 					<Card className='shadow-xl border-0 bg-white/80 backdrop-blur-md hover:scale-[1.03] transition-transform duration-300 h-[280px] flex flex-col'>
@@ -726,6 +868,7 @@ export default function Dashboard() {
 						</div>
 					</CardContent>
 				</Card>
+
 				{/* Posts Section */}
 				<Card className='mb-10 shadow-xl border-0 bg-white/90 backdrop-blur-md h-[400px] flex flex-col'>
 					<CardHeader className='flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-0 px-4 md:px-8 pt-6 pb-2 flex-shrink-0'>
@@ -1024,6 +1167,147 @@ export default function Dashboard() {
 								onCreateChild={handleCreateChildCategory}
 							/>
 						</div>
+					</CardContent>
+				</Card>
+				{/* User Logs Section */}
+				<Card className='mb-10 shadow-xl border-0 bg-white/90 backdrop-blur-md'>
+					<CardHeader className='px-4 md:px-8 pt-6 pb-2'>
+						<CardTitle className='text-lg font-bold'>User Activity Logs</CardTitle>
+					</CardHeader>
+					<CardContent className='px-4 md:px-8 pb-6'>
+						<div className='flex flex-col md:flex-row gap-4 justify-between items-start md:items-center'>
+							<form onSubmit={handleLogsSearch} className='flex gap-2 w-full md:w-auto'>
+								<div className='relative w-full md:w-80'>
+									<Search className='absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400' />
+									<Input
+										type='text'
+										placeholder='Search by email, name, product, IP...'
+										value={logsSearch}
+										onChange={(e) => setLogsSearch(e.target.value)}
+										className='pl-10 w-full'
+									/>
+								</div>
+								<Button type='submit' variant='secondary'>Search</Button>
+							</form>
+
+							<div className='flex gap-2'>
+								<Button
+									variant='outline'
+									onClick={() => handleLogsExport("csv")}
+									disabled={logsExporting}
+									className='flex items-center gap-2'>
+									{logsExporting ? (
+										<Loader2 className='w-4 h-4 animate-spin' />
+									) : (
+										<Download className='w-4 h-4' />
+									)}
+									Export CSV
+								</Button>
+								<Button
+									variant='outline'
+									onClick={() => handleLogsExport("json")}
+									disabled={logsExporting}
+									className='flex items-center gap-2'>
+									{logsExporting ? (
+										<Loader2 className='w-4 h-4 animate-spin' />
+									) : (
+										<Download className='w-4 h-4' />
+									)}
+									Export JSON
+								</Button>
+							</div>
+						</div>
+
+						{logsError && (
+							<p className='text-sm text-red-500 mt-4'>{logsError}</p>
+						)}
+
+						<div className='overflow-x-auto mt-4 border rounded-xl'>
+							<div className='min-w-[1100px]'>
+								<table className='w-full text-sm'>
+									<thead className='bg-gray-50'>
+										<tr className='border-b border-gray-200'>
+											<th className='text-left p-4 font-semibold'>Date</th>
+											<th className='text-left p-4 font-semibold'>User</th>
+											<th className='text-left p-4 font-semibold'>Email</th>
+											<th className='text-left p-4 font-semibold'>Phone</th>
+											<th className='text-left p-4 font-semibold'>Product</th>
+											<th className='text-left p-4 font-semibold'>Price</th>
+											<th className='text-left p-4 font-semibold'>IP Address</th>
+											<th className='text-left p-4 font-semibold'>User Agent</th>
+										</tr>
+									</thead>
+									<tbody>
+										{logsLoading ? (
+											<tr>
+												<td colSpan={8} className='p-8 text-center text-gray-500'>
+													Loading logs...
+												</td>
+											</tr>
+										) : logs.length === 0 ? (
+											<tr>
+												<td colSpan={8} className='p-8 text-center text-gray-500'>
+													No logs found
+												</td>
+											</tr>
+										) : (
+											logs.map((log) => (
+												<tr
+													key={log.id}
+													className='border-b border-gray-100 hover:bg-blue-50/40 transition-colors'>
+													<td className='p-4 whitespace-nowrap'>
+														{formatLogDate(log.createdAt)}
+													</td>
+													<td className='p-4'>
+														{log.firstName || log.lastName
+															? `${log.firstName || ""} ${log.lastName || ""}`.trim()
+															: "-"}
+													</td>
+													<td className='p-4 max-w-xs truncate'>{log.email}</td>
+													<td className='p-4 whitespace-nowrap'>{log.phone || "-"}</td>
+													<td className='p-4 max-w-xs truncate' title={log.productName}>
+														{log.productName}
+													</td>
+													<td className='p-4 whitespace-nowrap'>
+														{log.productPrice ? `₹${log.productPrice.toFixed(2)}` : "-"}
+													</td>
+													<td className='p-4 whitespace-nowrap font-mono text-xs'>
+														{log.ipAddress || "-"}
+													</td>
+													<td className='p-4 max-w-xs truncate text-xs text-gray-500' title={log.userAgent || ""}>
+														{truncateUserAgent(log.userAgent)}
+													</td>
+												</tr>
+											))
+										)}
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+						{logsPagination.totalPages > 1 && (
+							<div className='flex justify-center items-center gap-4 mt-6'>
+								<Button
+									variant='outline'
+									onClick={() => handleLogsPageChange(logsPagination.page - 1)}
+									disabled={logsPagination.page === 1 || logsLoading}
+									className='flex items-center gap-2'>
+									<ChevronLeft className='w-4 h-4' /> Previous
+								</Button>
+								<span className='text-sm text-gray-600'>
+									Page {logsPagination.page} of {logsPagination.totalPages}
+								</span>
+								<Button
+									variant='outline'
+									onClick={() => handleLogsPageChange(logsPagination.page + 1)}
+									disabled={
+										logsPagination.page === logsPagination.totalPages || logsLoading
+									}
+									className='flex items-center gap-2'>
+									Next <ChevronRight className='w-4 h-4' />
+								</Button>
+							</div>
+						)}
 					</CardContent>
 				</Card>
 				{/* Product Types Management Section */}

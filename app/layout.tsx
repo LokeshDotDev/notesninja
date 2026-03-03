@@ -90,9 +90,14 @@ export default function RootLayout({
       <html lang="en">
         <head>
           {/* Preconnect to critical domains */}
+          <link rel="preconnect" href="https://res.cloudinary.com" />
+          <link rel="dns-prefetch" href="https://res.cloudinary.com" />
           <link rel="preconnect" href="https://www.googletagmanager.com" />
           <link rel="preconnect" href="https://www.google-analytics.com" />
           <link rel="preconnect" href="https://connect.facebook.net" />
+          
+          {/* Preload Cloudinary with as="image" to prioritize */}
+          <link rel="prefetch" href="https://res.cloudinary.com" crossOrigin="anonymous" />
           
           <link rel="canonical" href={settings.site.url} />
           <link rel="icon" type="image/png" href="/assets/Notes ninja Logo.png" />
@@ -102,7 +107,7 @@ export default function RootLayout({
           <meta name="google-site-verification" content="mNmK_1WM8JiHujcMV8GhkRvaFpkm0q-1XPVzYzvAXK4" />
 
           {/* Google Tag Manager */}
-          <Script id="gtm-script" strategy="afterInteractive">
+          <Script id="gtm-script" strategy="lazyOnload">
             {`
               (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
               new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],

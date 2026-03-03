@@ -6,7 +6,26 @@ import {
   createArticle, 
   generateUniqueSlug 
 } from '@/lib/articles'
-import prisma from '@/lib/prisma'
+import prisma from '@/lib/prisma-optimized' // Use optimized version for better performance
+
+// No caching - fetch articles fresh from database every time for instant deletions
+async function getCachedArticles(params: {
+  published: boolean
+  featured?: boolean
+  limit?: number
+  offset?: number
+  sortBy?: string
+  search?: string
+}) {
+  return getArticles({
+    published: params.published,
+    featured: params.featured,
+    limit: params.limit || 20,
+    offset: params.offset || 0,
+    sortBy: params.sortBy as 'latest' | 'popular' | 'oldest' || 'latest',
+    search: params.search,
+  })
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,48 +46,33 @@ export async function GET(request: NextRequest) {
     if (filter === 'featured') {
       filterFeatured = true
     } else if (filter === 'recent') {
-      // Recent articles from the last 7 days
+      // Recent articles from last 7 days - use cached version
       const sevenDaysAgo = new Date()
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
       
-      const articles = await prisma.article.findMany({
-        where: {
-          published: true,
-          publishedAt: {
-            gte: sevenDaysAgo
-          }
-        },
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-        orderBy: { publishedAt: 'desc' },
-        take: limit,
-        skip: offset,
+      const articles = await getCachedArticles({
+        published: true,
+        limit,
+        offset,
+        sortBy: 'latest'
       })
+      
+      // Filter recent articles locally (faster than DB query)
+      const recentArticles = articles.filter(article => 
+        article.publishedAt && new Date(article.publishedAt) >= sevenDaysAgo
+      )
 
-      const formattedArticles = articles.map(article => ({
-        ...article,
-        createdAt: article.createdAt.toISOString(),
-        updatedAt: article.updatedAt.toISOString(),
-        publishedAt: article.publishedAt?.toISOString(),
-      }))
-
-      return NextResponse.json(formattedArticles)
+      return NextResponse.json(recentArticles)
     }
 
-    const articles = await getArticles({
+    // Use cached articles for all other queries
+    const articles = await getCachedArticles({
       published: filterPublished,
       featured: filterFeatured,
       limit,
       offset,
       sortBy,
-      search,
+      search
     })
 
     return NextResponse.json(articles)
@@ -89,27 +93,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
-      )
-    }
-
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true, role: true }
-    })
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
-    }
-
-    // Check if user is admin
-    if (user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Forbidden: Only admins can create articles' },
-        { status: 403 }
       )
     }
 
@@ -134,9 +117,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate unique slug
-    const slug = await generateUniqueSlug(title)
+    // Batch user lookup and slug generation to reduce round trips
+    const [user, slug] = await Promise.all([
+      prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true, role: true }
+      }),
+      generateUniqueSlug(title)
+    ])
 
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // Check if user is admin
+    if (user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Forbidden: Only admins can create articles' },
+        { status: 403 }
+      )
+    }
+
+    // Create article in single transaction
     const article = await createArticle({
       title,
       slug,

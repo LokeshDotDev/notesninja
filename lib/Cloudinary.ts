@@ -141,6 +141,70 @@ export function generateSignedUrl(publicId: string, resourceType: string = 'imag
 	return signedUrl;
 }
 
+/**
+ * Generate an optimized delivery URL for Cloudinary images
+ * Adds transformation parameters for automatic format conversion (WebP/AVIF)
+ * and quality optimization without modifying stored images
+ * 
+ * @param url - Original Cloudinary URL or public_id
+ * @param options - Optimization options
+ * @returns Optimized URL with transformation parameters
+ */
+export function getOptimizedImageUrl(
+	url: string | null | undefined,
+	options: {
+		width?: number;
+		quality?: string | number;
+		format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
+		crop?: 'limit' | 'fill' | 'scale' | 'fit';
+	} = {}
+): string {
+	if (!url) return '';
+	
+	const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+	if (!cloudName) return url;
+	
+	const width = options.width || 800;
+	const quality = options.quality || 'auto';
+	const format = options.format || 'auto';
+	const crop = options.crop || 'limit';
+	
+	// Check if it's already a full Cloudinary URL
+	if (url.includes('res.cloudinary.com')) {
+		const uploadIndex = url.indexOf('/upload/');
+		if (uploadIndex === -1) return url;
+		
+		// Extract base URL and asset path
+		const baseUrl = url.substring(0, uploadIndex + 8);
+		const assetPath = url.substring(uploadIndex + 8);
+		
+		// Remove existing transformation parameters
+		const pathParts = assetPath.split('/');
+		let cleanPath = assetPath;
+		
+		// Skip transformation params and version numbers
+		if (pathParts[0] && (pathParts[0].match(/^v\d+$/) || pathParts[0].includes('_') || pathParts[0].includes(','))) {
+			let assetStartIndex = 0;
+			for (let i = 0; i < pathParts.length; i++) {
+				if (pathParts[i].match(/^v\d+$/) || pathParts[i].includes('_') || pathParts[i].includes(',')) {
+					continue;
+				}
+				assetStartIndex = i;
+				break;
+			}
+			cleanPath = pathParts.slice(assetStartIndex).join('/');
+		}
+		
+		// Build optimized URL with transformation parameters
+		const params = [`f_${format}`, `q_${quality}`, `w_${width}`, `c_${crop}`].join(',');
+		return `${baseUrl}${params}/${cleanPath}`;
+	}
+	
+	// If it's just a public_id, build the full URL
+	const params = [`f_${format}`, `q_${quality}`, `w_${width}`, `c_${crop}`].join(',');
+	return `https://res.cloudinary.com/${cloudName}/image/upload/${params}/${url}`;
+}
+
 // Get accessible URL (use signed URLs for all files to ensure access)
 export function getAccessibleUrl(secureUrl: string, publicId: string, resourceType: string = 'image'): string {
 	console.log('Getting accessible URL for:', { secureUrl, publicId, resourceType });

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Play, Pause, Volume2, Maximize, Eye } from 'lucide-react';
 
 export function ProductDemo() {

@@ -21,6 +21,9 @@ interface MediaGalleryProps {
 }
 
 export function MediaGallery({ images = [], mainImage, title, onZoomChange }: MediaGalleryProps) {
+  // Debug: Log props
+  console.log('MediaGallery props:', { images: images.length, mainImage, title });
+  
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [visibleThumbnails, setVisibleThumbnails] = useState(5);
   const [mainSlideDirection, setMainSlideDirection] = useState<'left' | 'right'>('right');
@@ -51,6 +54,14 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
   }, [coverImage, allImages]);
 
   const currentImage = allImages[currentImageIndex] || null;
+
+  // Debug: Log image data
+  useEffect(() => {
+    if (currentImage) {
+      console.log('Current image:', currentImage);
+      console.log('Image URL:', currentImage.imageUrl);
+    }
+  }, [currentImage]);
 
   // Auto-scroll effect - cycles every 4 seconds, pauses on hover or zoom
   useEffect(() => {
@@ -135,6 +146,7 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
 
   return (
     <>
+      <main role="main" aria-label="Product image gallery">
       <motion.div
         initial={{ opacity: 0, x: -30 }}
         animate={{ opacity: 1, x: 0 }}
@@ -153,15 +165,29 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
                   ? 'border-orange-500 scale-105 shadow-lg'
                   : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500'
               }`}
+              aria-label={`View image ${index + 1}: ${title}`}
+              aria-current={index === currentImageIndex ? 'true' : 'false'}
+              title={`View ${title} - Image ${index + 1}`}
             >
-              <Image
-                src={image.imageUrl}
-                alt={`${title} - ${index + 1}`}
-                fill
-                className="object-cover"
-                quality={95}
-                sizes="80px"
-              />
+              {/* Optimized Thumbnail with Next.js Image - Immediate Loading Fix */}
+              {image.imageUrl?.toLowerCase().includes('.gif') ? (
+                <img 
+                  src={image.imageUrl}
+                  alt={`${title} - ${index + 1}`}
+                  className="w-full h-full object-contain"
+                  loading="lazy"
+                />
+              ) : (
+                <Image
+                  src={image.imageUrl}
+                  alt={`${title} - ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="80px"
+                  quality={75}
+                  loading="lazy"
+                />
+              )}
               {image.isCover && (
                 <div className="absolute top-1 left-1 bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded">
                   Cover
@@ -224,15 +250,28 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
                 }}
                 className="absolute inset-0"
               >
+                              {/* Optimized Main Image with Next.js Image - Immediate Loading Fix */}
+              {currentImage.imageUrl?.toLowerCase().includes('.gif') ? (
+                <img 
+                  src={currentImage.imageUrl}
+                  alt={title}
+                  className="w-full h-full object-contain"
+                  loading="eager"
+                  fetchPriority="high"
+                  style={{ width: '100%', height: '100%' }}
+                />
+              ) : (
                 <Image
                   src={currentImage.imageUrl}
                   alt={title}
                   fill
                   className="object-cover"
-                  quality={100}
-                  priority
+                  priority={true}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
+                  quality={85}
+                  fetchPriority="high"
                 />
+              )}
               </motion.div>
               </div>
               
@@ -247,6 +286,7 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
                     }}
                     className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-full p-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 hover:bg-white dark:hover:bg-neutral-800 shadow-lg z-20"
                     aria-label="Previous image"
+                    title="Previous image"
                   >
                     <ChevronLeft className="w-6 h-6 text-neutral-900 dark:text-white" />
                   </button>
@@ -259,6 +299,7 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
                     }}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-full p-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 hover:bg-white dark:hover:bg-neutral-800 shadow-lg z-20"
                     aria-label="Next image"
+                    title="Next image"
                   >
                     <ChevronRight className="w-6 h-6 text-neutral-900 dark:text-white" />
                   </button>
@@ -268,11 +309,16 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
           ) : (
             <div className="aspect-square flex items-center justify-center">
               <FileText className="w-32 h-32 text-neutral-300 dark:text-neutral-600" />
+              <div className="absolute bottom-4 text-center">
+                <p className="text-sm text-neutral-500">No images available</p>
+                <p className="text-xs text-neutral-400">Debug: {allImages.length} images found</p>
+              </div>
             </div>
           )}
         </div>
       </div>
     </motion.div>
+    </main>
     </>
   );
 }

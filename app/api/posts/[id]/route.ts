@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/prisma-optimized"; // Use optimized version for better performance
 import { getSession } from "@/lib/get-session";
 import {
   CloudinaryUploadResult,
@@ -7,6 +7,7 @@ import {
   uploadContent,
 } from "@/lib/Cloudinary";
 import { calculateDiscountPercentage } from "@/lib/pricing-utils";
+import { unstable_cache } from "next/cache";
 
 /* ------------------------------------------------ */
 /* Helper: Types                                   */
@@ -23,29 +24,91 @@ interface PostUpdateData {
 }
 
 /* ------------------------------------------------ */
-/* Helper: Find post by ID or Slug                 */
+/* Helper: Find post by ID or Slug - Optimized     */
 /* ------------------------------------------------ */
 async function findPost(identifier: string) {
   return prisma.post.findFirst({
     where: {
       OR: [{ id: identifier }, { slug: identifier }],
     },
-    include: {
-      images: true,
-      digitalFiles: true,
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      slug: true,
+      imageUrl: true,
+      publicId: true,
+      price: true,
+      compareAtPrice: true,
+      isDigital: true,
+      categoryId: true,
+      subcategoryId: true,
+      productTypeId: true,
+      createdAt: true,
+      updatedAt: true,
       category: {
-        include: {
-          parent: true,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          parent: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
         },
       },
-      subcategory: true,
-      productType: true,
+      subcategory: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      productType: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      images: {
+        select: {
+          id: true,
+          imageUrl: true,
+          publicId: true,
+          order: true,
+          isCover: true,
+        },
+        orderBy: {
+          order: 'asc',
+        },
+      },
+      digitalFiles: {
+        select: {
+          id: true,
+          fileName: true,
+          fileUrl: true,
+          publicId: true,
+          fileSize: true,
+          fileType: true,
+        },
+      },
     },
   });
 }
 
+// Aggressive caching for product data - 30 minutes cache
+const getCachedProduct = unstable_cache(
+  async (identifier: string) => {
+    return findPost(identifier);
+  },
+  ['product'],
+  { revalidate: 1800, tags: ['products'] }
+)
+
 /* ------------------------------------------------ */
-/* GET Single Post                                 */
+/* GET Single Post - Optimized with Caching       */
 /* ------------------------------------------------ */
 export async function GET(
   req: NextRequest,
@@ -54,7 +117,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const post = await findPost(id);
+    const post = await getCachedProduct(id);
 
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
@@ -78,7 +141,7 @@ export async function GET(
 
     response.headers.set(
       "Cache-Control",
-      "no-cache, no-store, must-revalidate",
+      "public, max-age=1800, stale-while-revalidate=300",
     );
 
     return response;

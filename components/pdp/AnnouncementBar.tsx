@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 
 export function AnnouncementBar() {
