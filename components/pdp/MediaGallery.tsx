@@ -171,9 +171,11 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
             >
               {/* Optimized Thumbnail with Next.js Image - Immediate Loading Fix */}
               {image.imageUrl?.toLowerCase().includes('.gif') ? (
-                <img 
+                <Image 
                   src={image.imageUrl}
                   alt={`${title} - ${index + 1}`}
+                  width={80}
+                  height={80}
                   className="w-full h-full object-contain"
                   loading="lazy"
                 />
@@ -252,13 +254,14 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
               >
                               {/* Optimized Main Image with Next.js Image - Immediate Loading Fix */}
               {currentImage.imageUrl?.toLowerCase().includes('.gif') ? (
-                <img 
+                <Image 
                   src={currentImage.imageUrl}
                   alt={title}
+                  width={800}
+                  height={800}
                   className="w-full h-full object-contain"
                   loading="eager"
                   fetchPriority="high"
-                  style={{ width: '100%', height: '100%' }}
                 />
               ) : (
                 <Image

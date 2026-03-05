@@ -267,7 +267,7 @@ export function ProductInfo({
       </div>
 
       {/* Action Buttons */}
-      <div className="space-y-4 pt-6 border-t border-neutral-200 dark:border-neutral-800">
+      <div className="space-y-4 pt-6 border-t border-neutral-200 dark:border-neutral-800 hidden lg:block">
         <div className="flex flex-col gap-3">
           <Button
             onClick={handlePurchase}

@@ -43,6 +43,9 @@ const SeeInActionSection = dynamic(() => import('@/components/pdp/SeeInActionSec
 const PremiumPageLoader = dynamic(() => import('@/components/ui/premium-loader').then(mod => ({ default: mod.PremiumPageLoader })), { 
   ssr: false 
 });
+const MobileStickyFooter = dynamic(() => import('@/components/pdp/MobileStickyFooter').then(mod => ({ default: mod.MobileStickyFooter })), { 
+  ssr: false 
+});
 
 interface PostImage {
   id: string;
@@ -374,11 +377,18 @@ export default function ProductPageClient({ productId, initialProduct }: Product
       <TrustScreenshots />
 
       {/* FAQ Accordion */}
-      <section className="py-12">
+      <section className="py-12 pb-24 lg:pb-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <AccordionSection />
         </div>
       </section>
+
+      {/* Mobile Sticky Footer */}
+      <MobileStickyFooter 
+        product={product}
+        onPurchase={handlePurchase}
+        isPurchasing={isPurchasing}
+      />
     </div>
   );
 }

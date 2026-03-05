@@ -8,6 +8,7 @@ import { useSession, signOut } from "next-auth/react";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { isAdmin } from "@/lib/admin";
 import settings from "@/lib/settings";
+import { MobileWhatsAppChat } from "@/components/ui/MobileWhatsAppChat";
 
 // Apple-inspired design system for navbar
 const appleNavbar = {
@@ -272,6 +273,9 @@ export function DynamicNavbar() {
 						>
 							<Phone className="w-5 h-5" />
 						</a>
+						
+						{/* Mobile WhatsApp Chat */}
+						<MobileWhatsAppChat />
 					</div>
 				</div>
 

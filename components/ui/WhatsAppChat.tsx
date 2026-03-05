@@ -26,7 +26,7 @@ export function WhatsAppChat() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-6 right-6 z-50 lg:fixed lg:bottom-6 lg:right-6 lg:z-50 hidden lg:block">
       {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
