@@ -2,7 +2,15 @@ import { Suspense } from 'react'
 import ArticleList from '@/components/articles/ArticleList'
 import { Skeleton } from '@/components/ui/skeleton'
 
-export default function ArticlesPage() {
+interface ArticlesPageProps {
+  searchParams?: {
+    sort?: string
+    filter?: string
+    search?: string
+  }
+}
+
+export default function ArticlesPage({ searchParams }: ArticlesPageProps) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       {/* Hero Section */}
@@ -22,7 +30,7 @@ export default function ArticlesPage() {
       {/* Articles Content */}
       <div className="container mx-auto px-4 py-12">
         <Suspense fallback={<ArticlesLoading />}>
-          <ArticleList />
+          <ArticleList searchParams={searchParams} />
         </Suspense>
       </div>
     </div>
