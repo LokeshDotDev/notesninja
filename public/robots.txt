@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://notesninja.inBREVO_SENDER_EMAIL=contact@notesninja.in
+Host: https://notesninja.in
 
 # Sitemaps
-Sitemap: https://notesninja.inBREVO_SENDER_EMAIL=contact@notesninja.in/sitemap.xml
+Sitemap: https://notesninja.in/sitemap.xml
