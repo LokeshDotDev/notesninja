@@ -48,11 +48,11 @@ export default function CreateArticlePage() {
         router.push(`/articles/${article.slug}`)
       } else {
         const error = await response.json()
-        alert(error.error || 'Failed to create article')
+        throw new Error(error.error || 'Failed to create article')
       }
     } catch (error) {
       console.error('Error creating article:', error)
-      alert('Failed to create article')
+      // Error is already handled in the component, but we log it for debugging
     }
   }
 

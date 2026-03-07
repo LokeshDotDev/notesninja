@@ -77,11 +77,11 @@ export default function EditArticlePage() {
         router.push(`/articles/${updatedArticle.slug}`)
       } else {
         const error = await response.json()
-        alert(error.error || 'Failed to update article')
+        throw new Error(error.error || 'Failed to update article')
       }
     } catch (error) {
       console.error('Error updating article:', error)
-      alert('Failed to update article')
+      // Error is already handled in the component, but we log it for debugging
     } finally {
       setIsLoading(false)
     }
@@ -124,6 +124,7 @@ export default function EditArticlePage() {
       <ArticleEditor
         initialData={{
           title: article.title,
+          slug: article.slug,
           excerpt: article.excerpt || '',
           content: article.content,
           coverImage: article.coverImage || '',

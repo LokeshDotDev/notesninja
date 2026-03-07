@@ -99,6 +99,7 @@ export async function POST(request: NextRequest) {
     const data = await request.json()
     const {
       title,
+      slug,
       excerpt,
       content,
       coverImage,
@@ -118,12 +119,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Batch user lookup and slug generation to reduce round trips
-    const [user, slug] = await Promise.all([
+    const [user, finalSlug] = await Promise.all([
       prisma.user.findUnique({
         where: { email: session.user.email },
         select: { id: true, role: true }
       }),
-      generateUniqueSlug(title)
+      slug ? Promise.resolve(slug) : generateUniqueSlug(title)
     ])
 
     if (!user) {
@@ -144,7 +145,7 @@ export async function POST(request: NextRequest) {
     // Create article in single transaction
     const article = await createArticle({
       title,
-      slug,
+      slug: finalSlug,
       excerpt: excerpt || '',
       content,
       coverImage,
