@@ -174,7 +174,7 @@ export function TrustScreenshots() {
                         fill
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        quality={80}
+                        quality={85}
                       />
                     </div>
 
@@ -236,3 +236,4 @@ export function TrustScreenshots() {
     </section>
   );
 }
+
