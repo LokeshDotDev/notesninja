@@ -478,7 +478,7 @@ export default function ArticleEditor({ initialData, onSave, onCancel }: Article
             This will be used in the URL: /articles/{slug || 'your-slug'}
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            💡 Tip: Use descriptive keywords for better SEO (e.g., "best-web-development-practices")
+            💡 Tip: Use descriptive keywords for better SEO (e.g., &quot;best-web-development-practices&quot;)
           </p>
         </div>
 

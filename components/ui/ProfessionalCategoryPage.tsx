@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { motion } from "motion/react";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { Button } from "@/components/ui/button";
@@ -155,6 +155,23 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
   const [sortBy, setSortBy] = useState<string>("semester-asc");
   const studyMaterialsRef = useRef<HTMLDivElement>(null);
 
+  const extractSemesterNumber = useCallback((title: string): number | null => {
+    const normalizedTitle = title.toLowerCase();
+    const patterns = [
+      /(?:^|\b)(?:semester|sem)\s*[-–—:]?\s*(\d+)\b/i,
+      /\b(\d+)\s*[-–—:]?\s*(?:semester|sem)\b/i,
+    ];
+
+    for (const pattern of patterns) {
+      const match = normalizedTitle.match(pattern);
+      if (match) {
+        return parseInt(match[1], 10);
+      }
+    }
+
+    return null;
+  }, []);
+
   // Helper function to build breadcrumb trail from category path
   const buildBreadcrumbs = (categoryPath: string) => {
     // Decode the category path first
@@ -180,10 +197,8 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
   const getUniqueSemesters = (posts: Post[]) => {
     const semesters = new Set<string>();
     posts.forEach(post => {
-      const title = post.title.toLowerCase();
-      const semesterMatch = title.match(/semester\s*(\d+)|sem\s*(\d+)/);
-      if (semesterMatch) {
-        const semesterNum = semesterMatch[1] || semesterMatch[2];
+      const semesterNum = extractSemesterNumber(post.title);
+      if (semesterNum !== null) {
         semesters.add(`Semester ${semesterNum}`);
       }
     });
@@ -195,8 +210,8 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
   };
 
   // Filter posts based on search query and semester
-  const filterPosts = (posts: Post[], query: string, semester: string, sort: string) => {
-    let filtered = posts;
+  const filterPosts = useCallback((posts: Post[], query: string, semester: string, sort: string) => {
+    let filtered = [...posts];
     
     // Filter by search query
     if (query.trim()) {
@@ -208,32 +223,15 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
     
     // Filter by semester
     if (semester !== "all") {
+      const selectedSemesterNum = parseInt(semester.split(' ')[1], 10);
       filtered = filtered.filter(post => {
-        const title = post.title.toLowerCase();
-        const semesterNum = semester.split(' ')[1];
-        return title.includes(`semester ${semesterNum}`) || title.includes(`sem ${semesterNum}`);
+        const postSemesterNum = extractSemesterNumber(post.title);
+        return postSemesterNum === selectedSemesterNum;
       });
     }
     
     // Simple semester-wise sorting
-    const getSemesterNumber = (title: string): number => {
-      // Try multiple patterns to extract semester number
-      const patterns = [
-        /semester\s*(\d+)/i,
-        /sem\s*(\d+)/i,
-        /(\d+)\s*semester/i,
-        /(\d+)\s*sem/i
-      ];
-      
-      for (const pattern of patterns) {
-        const match = title.toLowerCase().match(pattern);
-        if (match) {
-          return parseInt(match[1]);
-        }
-      }
-      
-      return 999; // High number for posts without semester
-    };
+    const getSemesterNumber = (title: string): number => extractSemesterNumber(title) ?? 999;
     
     if (sort === "semester-asc") {
       filtered.sort((a, b) => getSemesterNumber(a.title) - getSemesterNumber(b.title));
@@ -242,7 +240,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
     }
     
     return filtered;
-  };
+  }, [extractSemesterNumber]);
 
   // Scroll to Study Materials section when category changes
   useEffect(() => {
@@ -260,7 +258,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
   // Update filtered posts when posts, search query, semester, or sort changes
   useEffect(() => {
     setFilteredPosts(filterPosts(posts, searchQuery, selectedSemester, sortBy));
-  }, [posts, searchQuery, selectedSemester, sortBy]);
+  }, [posts, searchQuery, selectedSemester, sortBy, filterPosts]);
 
   useEffect(() => {
     if (!searchQuery.trim()) return;
@@ -285,9 +283,6 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
           const categoryData = JSON.parse(cachedCategory);
           setCategory(categoryData);
           setPosts(categoryData.posts || []);
-          // Apply default sorting to cached posts as well
-          const sortedCachedPosts = filterPosts(categoryData.posts || [], searchQuery, selectedSemester, sortBy);
-          setFilteredPosts(sortedCachedPosts);
           setLoading(false);
           
           // Track category view from cache
@@ -330,9 +325,6 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
               const postsData = await postsResponse.json();
               const postsArray = Array.isArray(postsData) ? postsData : postsData.posts || [];
               setPosts(postsArray);
-              // Apply default sorting immediately when posts are loaded
-              const sortedPosts = filterPosts(postsArray, searchQuery, selectedSemester, sortBy);
-              setFilteredPosts(sortedPosts);
               
               // Cache category with posts for faster subsequent loads
               try {

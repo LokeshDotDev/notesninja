@@ -171,7 +171,7 @@ const Footer: React.FC = () => {
 								<Facebook className="w-4 h-4 text-gray-600" />
 							</a>
 							<a
-								href="https://www.instagram.com/study_notesninja?igsh=b3YxdHhiYjBiNzl2"
+								href="https://www.instagram.com/notesninja.in/"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="w-8 h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors duration-200"
