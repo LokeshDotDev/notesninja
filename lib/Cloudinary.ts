@@ -50,6 +50,8 @@ export async function uploadContent(
 		const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
 		const videoTypes = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'];
 		const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
+		const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+		const sanitizedBaseName = sanitizedFileName.replace(/\.[^/.]+$/, '');
 		
 		let resourceType: "raw" | "video" | "image" | "auto";
 		if (isDigital || (!imageTypes.includes(fileExtension) && !videoTypes.includes(fileExtension))) {
@@ -80,7 +82,7 @@ const uploadingResult = await new Promise<CloudinaryUploadResult>(
 					folder: "Elevate-mortal", 
 					resource_type: resourceType,
 					type: 'upload', // Make file publicly accessible
-					public_id: file.name.replace(/[^a-zA-Z0-9.-]/g, '_'),
+					public_id: resourceType === 'raw' ? sanitizedFileName : sanitizedBaseName,
 					use_filename: true,
 					unique_filename: true,
 					access_mode: 'public', // Ensure public access

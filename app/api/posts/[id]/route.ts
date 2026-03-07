@@ -117,7 +117,10 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const post = await getCachedProduct(id);
+    // Check if this is an admin request (bypass cache for editing)
+    const isAdminRequest = req.headers.get('x-admin-request') === 'true';
+    
+    const post = isAdminRequest ? await findPost(id) : await getCachedProduct(id);
 
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
@@ -127,6 +130,14 @@ export async function GET(
     if (post.imageUrl) {
       const cacheBuster = Math.random().toString(36).substring(7);
       post.imageUrl = `${post.imageUrl}?v=${cacheBuster}`;
+    }
+
+    // Cache busting for product images array
+    if (post.images && Array.isArray(post.images)) {
+      post.images = post.images.map(img => ({
+        ...img,
+        imageUrl: img.imageUrl ? `${img.imageUrl}?v=${Math.random().toString(36).substring(7)}` : img.imageUrl,
+      }));
     }
 
     const discountPercentage = calculateDiscountPercentage(
@@ -139,10 +150,15 @@ export async function GET(
       discountPercentage,
     });
 
-    response.headers.set(
-      "Cache-Control",
-      "public, max-age=1800, stale-while-revalidate=300",
-    );
+    // Use different cache headers for admin requests
+    if (isAdminRequest) {
+      response.headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+    } else {
+      response.headers.set(
+        "Cache-Control",
+        "public, max-age=1800, stale-while-revalidate=300",
+      );
+    }
 
     return response;
   } catch (error) {
