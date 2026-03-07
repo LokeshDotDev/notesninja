@@ -280,7 +280,8 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                         {/* Apple-style Materials Grid */}
                         {filteredPosts.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
-                                {filteredPosts.map((post) => {
+                                {filteredPosts.map((post, index) => {
+                                    const isPriorityImage = index < 3;
                                     return (
                                         <React.Fragment key={post.id}>
                                             <Link href={`/${categoryName}/${post.slug}`}>
@@ -292,6 +293,9 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                                                                 src={toWebp(post.images.find(img => img.isCover)?.imageUrl || post.images[0].imageUrl)}
                                                                 alt={post.title || ""}
                                                                 fill
+                                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                                priority={isPriorityImage}
+                                                                loading={isPriorityImage ? "eager" : "lazy"}
                                                                 className="object-cover transition-transform duration-700 group-hover:scale-105"
                                                             />
                                                         ) : (
