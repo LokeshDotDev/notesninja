@@ -2,9 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { X, Star, Upload, Image as ImageIcon } from "lucide-react";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Image from "next/image";
-import { CldImage } from "next-cloudinary";
 
 interface ProductGalleryProps {
   postId: string;
@@ -53,6 +51,21 @@ export default function ProductGallery({
   const [deleting, setDeleting] = useState<string | null>(null);
   const [settingCover, setSettingCover] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Debug logging
+  console.log("ProductGallery render:", {
+    postId,
+    imagesCount: images.length,
+    images: images.map(img => ({
+      id: img.id,
+      hasImageUrl: !!img.imageUrl,
+      hasPublicId: !!img.publicId,
+      imageUrl: img.imageUrl,
+      publicId: img.publicId,
+      order: img.order,
+      isCover: img.isCover
+    }))
+  });
 
   const handleFileUpload = async (files: FileList) => {
     if (disabled || images.length >= maxImages) return;
@@ -199,19 +212,15 @@ export default function ProductGallery({
               key={image.id}
               className="relative group aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-gray-300 transition-colors"
             >
-              {/* Optimized Image with CldImage */}
+              {/* Render exact stored URL in admin to avoid public_id parsing issues */}
               {image.imageUrl && (
-                <CldImage
+                <Image
                   src={image.imageUrl}
                   alt={`Product image ${(image.order || 0) + 1}`}
-                  width={300}
-                  height={300}
-                  format="auto"
-                  quality="auto"
+                  fill
                   sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                   className="object-cover"
-                  crop="fill"
-                  gravity="auto"
+                  unoptimized={image.imageUrl.toLowerCase().includes('.svg')}
                 />
               )}
 

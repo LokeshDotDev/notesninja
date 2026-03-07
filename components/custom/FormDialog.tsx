@@ -194,21 +194,29 @@ export default function FormDialog({
 
       // Set current post for gallery
       if (type === "post" && initialData.id) {
+        const mappedImages = (initialData.images || []).map((img: {
+          id?: string;
+          imageUrl?: string;
+          publicId?: string;
+          order?: number;
+          isCover?: boolean;
+        }) => ({
+          id: img.id || '',
+          imageUrl: img.imageUrl || '',
+          publicId: img.publicId || '',
+          order: img.order || 0,
+          isCover: img.isCover || false
+        }));
+        
+        console.log("FormDialog setting currentPost:", {
+          postId: String(initialData.id),
+          imagesCount: mappedImages.length,
+          images: mappedImages
+        });
+        
         setCurrentPost({
           id: String(initialData.id),
-          images: (initialData.images || []).map((img: {
-            id?: string;
-            imageUrl?: string;
-            publicId?: string;
-            order?: number;
-            isCover?: boolean;
-          }) => ({
-            id: img.id || '',
-            imageUrl: img.imageUrl || '',
-            publicId: img.publicId || '',
-            order: img.order || 0,
-            isCover: img.isCover || false
-          }))
+          images: mappedImages
         });
       } else {
         setCurrentPost(null);

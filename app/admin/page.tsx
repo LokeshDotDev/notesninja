@@ -458,7 +458,11 @@ export default function Dashboard() {
 	// Function to fetch complete post data before opening edit dialog
 	const fetchPostForEdit = async (postId: string) => {
 		try {
-			const response = await fetch(`/api/posts/${postId}`);
+			const response = await fetch(`/api/posts/${postId}`, {
+				headers: {
+					'x-admin-request': 'true', // Bypass cache for admin editing
+				},
+			});
 			if (!response.ok) throw new Error("Failed to fetch post");
 			
 			const completePost = await response.json();
