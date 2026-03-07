@@ -1,7 +1,7 @@
 "use client";
+
+
 import React, { useEffect, useState, useRef } from "react";
-import { motion } from "motion/react";
-import { BlurFade } from "@/components/magicui/blur-fade";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -32,6 +32,12 @@ import { trackSearch } from "@/lib/analytics";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Category, Post } from "./ProfessionalCategoryPage";
+
+const toWebp = (url: string) => {
+    if (!url.includes("res.cloudinary.com") || !url.includes("/upload/")) return url;
+    if (url.includes("f_webp") || url.includes("f_auto")) return url;
+    return url.replace("/upload/", "/upload/f_webp,q_auto/");
+};
 
 // Function to get appropriate icon based on category name
 const getCategoryIcon = (categoryName: string) => {
@@ -189,12 +195,7 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                 <div className={`relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 ${appleDesign.spacing.hero}`}>
                     <div className="text-center max-w-7xl mx-auto">
                         {/* Apple-style breadcrumb */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-                            className="flex items-center justify-center space-x-2 text-sm text-[rgb(99, 99, 102)] dark:text-neutral-500 mb-8 flex-wrap font-medium"
-                        >
+                        <div className="flex items-center justify-center space-x-2 text-sm text-[rgb(99, 99, 102)] dark:text-neutral-500 mb-8 flex-wrap font-medium">
                             <Link href="/" className="hover:text-[rgb(0, 122, 255)] transition-colors duration-200">Home</Link>
                             {breadcrumbs.map((crumb, index) => (
                                 <React.Fragment key={crumb.path}>
@@ -208,27 +209,17 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                                     )}
                                 </React.Fragment>
                             ))}
-                        </motion.div>
+                        </div>
 
                         {/* Apple-style hero title */}
-                        <motion.h1
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-                            className={`${appleDesign.typography.heroTitle} text-[rgb(28, 28, 30)] dark:text-white mb-6 leading-[1.1]`}
-                        >
+                        <h1 className={`${appleDesign.typography.heroTitle} text-[rgb(28, 28, 30)] dark:text-white mb-6 leading-[1.1]`}>
                             {category.name}
-                        </motion.h1>
+                        </h1>
 
                         {/* Apple-style subtitle */}
-                        <motion.p
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-                            className={`${appleDesign.typography.body} text-[rgb(99, 99, 102)] dark:text-neutral-400 max-w-2xl mx-auto mb-12 text-xl`}
-                        >
+                        <p className={`${appleDesign.typography.body} text-[rgb(99, 99, 102)] dark:text-neutral-400 max-w-2xl mx-auto mb-12 text-xl`}>
                             Comprehensive study materials and resources for {category.name.toLowerCase()}
-                        </motion.p>
+                        </p>
                     </div>
                 </div>
             </section>
@@ -238,13 +229,7 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                 {/* Materials Section */}
                 {posts && posts.length > 0 && (
                     <>
-                        <motion.div
-                            ref={studyMaterialsRef}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-                            className="mb-16"
-                        >
+                        <div ref={studyMaterialsRef} className="mb-16">
                             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
                                 <div>
                                     <h2 className={`${appleDesign.typography.sectionTitle} text-[rgb(28, 28, 30)] dark:text-white mb-4`}>
@@ -290,31 +275,28 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                                     </Select>
                                 </div>
                             </div>
-                        </motion.div>
+                        </div>
 
                         {/* Apple-style Materials Grid */}
                         {filteredPosts.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-20">
                                 {filteredPosts.map((post, index) => {
+                                    const isPriorityImage = index < 3;
                                     return (
-                                        <BlurFade key={post.id} delay={0.25 + index * 0.1} inView>
+                                        <React.Fragment key={post.id}>
                                             <Link href={`/${categoryName}/${post.slug}`}>
-                                                <motion.div
-                                                    whileHover={{ y: -8, boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.15)" }}
-                                                    whileTap={{ scale: 0.98 }}
-                                                    transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-                                                    viewport={{ once: true }}
-                                                    className="group relative overflow-hidden rounded-3xl border border-neutral-200/50 dark:border-neutral-700/50 bg-white dark:bg-neutral-800/80 backdrop-blur-xl h-full"
-                                                >
+                                                <div className="group relative overflow-hidden rounded-3xl border border-neutral-200/50 dark:border-neutral-700/50 bg-white dark:bg-neutral-800/80 backdrop-blur-xl h-full transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-[rgb(0,122,255)]/30">
                                                     {/* Image Section */}
                                                     <div className="relative h-56 overflow-hidden rounded-t-3xl bg-neutral-100 dark:bg-neutral-900">
                                                         {post.images && post.images.length > 0 ? (
                                                             <Image
-                                                                src={post.images.find(img => img.isCover)?.imageUrl || post.images[0].imageUrl}
+                                                                src={toWebp(post.images.find(img => img.isCover)?.imageUrl || post.images[0].imageUrl)}
                                                                 alt={post.title || ""}
                                                                 fill
+                                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                                priority={isPriorityImage}
+                                                                loading={isPriorityImage ? "eager" : "lazy"}
                                                                 className="object-cover transition-transform duration-700 group-hover:scale-105"
-                                                                loading="lazy"
                                                             />
                                                         ) : (
                                                             <div className="w-full h-full bg-gradient-to-br from-[rgb(0, 122, 255)]/20 to-purple-500/20 flex items-center justify-center">
@@ -387,19 +369,14 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                                                             <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
                                                         </Button>
                                                     </div>
-                                                </motion.div>
+                                                </div>
                                             </Link>
-                                        </BlurFade>
+                                        </React.Fragment>
                                     );
                                 })}
                             </div>
                         ) : (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-                                className="text-center py-24"
-                            >
+                            <div className="text-center py-24">
                                 <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-[rgb(248, 248, 248)] dark:bg-neutral-800 flex items-center justify-center border border-[rgb(229, 229, 234)] dark:border-neutral-700">
                                     <Search className="w-16 h-16 text-[rgb(142, 142, 147)] dark:text-neutral-500" />
                                 </div>
@@ -446,7 +423,7 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                                         </Button>
                                     )}
                                 </div>
-                            </motion.div>
+                            </div>
                         )}
                     </>
                 )}
@@ -455,12 +432,7 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                 {category.children && category.children.length > 0 ? (
                     <>
                         {/* Section Header */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-                            className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12"
-                        >
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12">
                             <div>
                                 <h2 className={`${appleDesign.typography.sectionTitle} text-[rgb(28, 28, 30)] dark:text-white mb-4`}>
                                     Explore Topics
@@ -489,21 +461,16 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                                     <List className="w-4 h-4" />
                                 </Button>
                             </div>
-                        </motion.div>
+                        </div>
 
                         {/* Apple-style Topics Grid/List */}
                         <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" : "space-y-4"}>
-                            {category.children.map((subcategory, index) => (
-                                <BlurFade key={subcategory.id} delay={0.25 + index * 0.1} inView>
+                            {category.children.map((subcategory) => (
+                                <React.Fragment key={subcategory.id}>
                                     <Link href={`/${subcategory.path || subcategory.slug}`}>
                                         {viewMode === "grid" ? (
                                             /* Apple-style Grid View */
-                                            <motion.div
-                                                whileHover={{ y: -8, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.15)" }}
-                                                whileTap={{ scale: 0.98 }}
-                                                transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-                                                className="group relative overflow-hidden rounded-3xl bg-white dark:bg-neutral-800 border border-[rgb(229, 229, 234)] dark:border-neutral-700 h-96 flex flex-col justify-between cursor-pointer hover:border-[rgb(0, 122, 255)]/50 transition-all duration-300 shadow-sm hover:shadow-xl"
-                                            >
+                                            <div className="group relative overflow-hidden rounded-3xl bg-white dark:bg-neutral-800 border border-[rgb(229, 229, 234)] dark:border-neutral-700 h-96 flex flex-col justify-between cursor-pointer hover:border-[rgb(0, 122, 255)]/50 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-2">
                                                 {/* Subtle gradient overlay */}
                                                 <div className="absolute inset-0 bg-gradient-to-br from-[rgb(0, 122, 255)]/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
@@ -546,15 +513,10 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </motion.div>
+                                            </div>
                                         ) : (
                                             /* Apple-style List View */
-                                            <motion.div
-                                                whileHover={{ x: 8 }}
-                                                whileTap={{ scale: 0.98 }}
-                                                transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-                                                className="group bg-white dark:bg-neutral-800 border border-[rgb(229, 229, 234)] dark:border-neutral-700 rounded-2xl p-6 cursor-pointer hover:border-[rgb(0, 122, 255)]/50 hover:shadow-lg transition-all duration-300"
-                                            >
+                                            <div className="group bg-white dark:bg-neutral-800 border border-[rgb(229, 229, 234)] dark:border-neutral-700 rounded-2xl p-6 cursor-pointer hover:border-[rgb(0, 122, 255)]/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-6">
                                                         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[rgb(0, 122, 255)] to-[rgb(0, 94, 198)] flex items-center justify-center text-black font-bold text-xl shadow-md">
@@ -578,10 +540,10 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </motion.div>
+                                            </div>
                                         )}
                                     </Link>
-                                </BlurFade>
+                                </React.Fragment>
                             ))}
                         </div>
                     </>
@@ -590,12 +552,7 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                 {/* Empty State */}
                 {!posts || posts.length === 0 ? (
                     !category.children || category.children.length === 0 ? (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-                            className="text-center py-24"
-                        >
+                        <div className="text-center py-24">
                             <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-[rgb(248, 248, 248)] dark:bg-neutral-800 flex items-center justify-center border border-[rgb(229, 229, 234)] dark:border-neutral-700">
                                 <BookOpen className="w-16 h-16 text-[rgb(142, 142, 147)] dark:text-neutral-500" />
                             </div>
@@ -614,7 +571,7 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                                     Explore Other Categories
                                 </Link>
                             </Button>
-                        </motion.div>
+                        </div>
                     ) : null
                 ) : null}
             </section>
