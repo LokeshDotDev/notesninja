@@ -18,7 +18,7 @@ export function AnnouncementBar() {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-center text-center">
         <p className="text-sm font-medium">
-          2,000+ students prepared smarter and aced their exams this semester! Get your notes now.
+          🔥 LAST CHANCE! Only 1 day left - 2,000+ students just bought their notes. Get yours before it&apos;s too late!
         </p>
         <button
           onClick={() => setIsVisible(false)}

@@ -25,7 +25,8 @@ import {
   Target,
   Award,
   CheckCircle,
-  Filter
+  Filter,
+  ArrowUpDown
 } from "lucide-react";
 import { PremiumLoader } from "@/components/ui/premium-loader";
 import Image from "next/image";
@@ -112,6 +113,7 @@ interface Post {
   url?: string;
   price?: number | null;
   compareAtPrice?: number | null;
+  createdAt?: string | Date;
   images?: Array<{
     id: string;
     imageUrl: string;
@@ -150,6 +152,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
   const [breadcrumbs, setBreadcrumbs] = useState<{ name: string; path: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSemester, setSelectedSemester] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("semester-asc");
   const studyMaterialsRef = useRef<HTMLDivElement>(null);
 
   // Helper function to build breadcrumb trail from category path
@@ -192,7 +195,7 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
   };
 
   // Filter posts based on search query and semester
-  const filterPosts = (posts: Post[], query: string, semester: string) => {
+  const filterPosts = (posts: Post[], query: string, semester: string, sort: string) => {
     let filtered = posts;
     
     // Filter by search query
@@ -212,6 +215,32 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
       });
     }
     
+    // Simple semester-wise sorting
+    const getSemesterNumber = (title: string): number => {
+      // Try multiple patterns to extract semester number
+      const patterns = [
+        /semester\s*(\d+)/i,
+        /sem\s*(\d+)/i,
+        /(\d+)\s*semester/i,
+        /(\d+)\s*sem/i
+      ];
+      
+      for (const pattern of patterns) {
+        const match = title.toLowerCase().match(pattern);
+        if (match) {
+          return parseInt(match[1]);
+        }
+      }
+      
+      return 999; // High number for posts without semester
+    };
+    
+    if (sort === "semester-asc") {
+      filtered.sort((a, b) => getSemesterNumber(a.title) - getSemesterNumber(b.title));
+    } else if (sort === "semester-desc") {
+      filtered.sort((a, b) => getSemesterNumber(b.title) - getSemesterNumber(a.title));
+    }
+    
     return filtered;
   };
 
@@ -228,10 +257,10 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
     }
   }, [loading]);
 
-  // Update filtered posts when posts, search query, or semester changes
+  // Update filtered posts when posts, search query, semester, or sort changes
   useEffect(() => {
-    setFilteredPosts(filterPosts(posts, searchQuery, selectedSemester));
-  }, [posts, searchQuery, selectedSemester]);
+    setFilteredPosts(filterPosts(posts, searchQuery, selectedSemester, sortBy));
+  }, [posts, searchQuery, selectedSemester, sortBy]);
 
   useEffect(() => {
     if (!searchQuery.trim()) return;
@@ -256,8 +285,9 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
           const categoryData = JSON.parse(cachedCategory);
           setCategory(categoryData);
           setPosts(categoryData.posts || []);
-          setFilteredPosts(categoryData.posts || []);
-          setBreadcrumbs(buildBreadcrumbs(categoryName));
+          // Apply default sorting to cached posts as well
+          const sortedCachedPosts = filterPosts(categoryData.posts || [], searchQuery, selectedSemester, sortBy);
+          setFilteredPosts(sortedCachedPosts);
           setLoading(false);
           
           // Track category view from cache
@@ -300,7 +330,9 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
               const postsData = await postsResponse.json();
               const postsArray = Array.isArray(postsData) ? postsData : postsData.posts || [];
               setPosts(postsArray);
-              setFilteredPosts(postsArray);
+              // Apply default sorting immediately when posts are loaded
+              const sortedPosts = filterPosts(postsArray, searchQuery, selectedSemester, sortBy);
+              setFilteredPosts(sortedPosts);
               
               // Cache category with posts for faster subsequent loads
               try {
@@ -485,6 +517,20 @@ export function ProfessionalCategoryPage({ categoryName }: ProfessionalCategoryP
                           {semester}
                         </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Sort Filter */}
+                <div className="relative min-w-[180px]">
+                  <ArrowUpDown className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[rgb(142, 142, 147)] dark:text-neutral-500 w-5 h-5 pointer-events-none" />
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="pl-12 pr-8 py-3 rounded-2xl border border-[rgb(229, 229, 234)] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-[rgb(28, 28, 30)] dark:text-white focus:border-[rgb(0, 122, 255)] focus:ring-2 focus:ring-[rgb(0, 122, 255)]/20 transition-all duration-200 w-full">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl border border-[rgb(229, 229, 234)] dark:border-neutral-700 bg-white dark:bg-neutral-800">
+                      <SelectItem value="semester-asc" className="rounded-xl">Semester: Ascending</SelectItem>
+                      <SelectItem value="semester-desc" className="rounded-xl">Semester: Descending</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

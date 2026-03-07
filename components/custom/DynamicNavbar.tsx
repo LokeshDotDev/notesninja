@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, X, User, LogOut, ChevronDown as ChevronDownIcon, Phone } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronDown, Menu, X, User, LogOut, ChevronDown as ChevronDownIcon, Phone, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
@@ -40,10 +41,14 @@ interface Category {
 
 export function DynamicNavbar() {
 	const { data: session } = useSession();
+	const router = useRouter();
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 	const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+	const [searchQuery, setSearchQuery] = useState("");
+	const [searchSuggestions, setSearchSuggestions] = useState<Array<{ id: string; title: string; description: string; slug: string; category: { path?: string } }>>([]);
+	const [showSuggestions, setShowSuggestions] = useState(false);
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [loading, setLoading] = useState(true);
 	const dropdownRef = useRef<HTMLDivElement>(null);
@@ -51,6 +56,102 @@ export function DynamicNavbar() {
 
 	// Check if current user is admin
 	const isCurrentUserAdmin = session?.user?.email ? isAdmin(session.user.email) : false;
+
+	const handleSearch = async (query: string, directProduct?: { id: string; title: string; description: string; slug: string; category: { path?: string } }) => {
+		if (!query.trim()) return;
+		
+		const lowerQuery = query.toLowerCase().trim();
+		
+		// If clicked on suggestion, go directly to product page
+		if (directProduct) {
+			const categoryPath = directProduct.category?.path || 'online-manipal-university/notes-and-mockpaper';
+			router.push(`/${categoryPath}/${directProduct.slug}`);
+			setSearchQuery("");
+			setShowSuggestions(false);
+			return;
+		}
+		
+		// Check for exact course matches first
+		if (lowerQuery === "mba") {
+			router.push("/online-manipal-university/notes-and-mockpaper/mba");
+			return;
+		}
+		
+		if (lowerQuery === "bca") {
+			router.push("/online-manipal-university/notes-and-mockpaper/bca");
+			return;
+		}
+		
+		if (lowerQuery === "bba") {
+			router.push("/online-manipal-university/notes-and-mockpaper/bba");
+			return;
+		}
+		
+		// Search for exact product match
+		try {
+			const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+			if (response.ok) {
+				const results = await response.json();
+				
+				// Check for exact product title match
+				const exactMatch = results.find((post: { title: string; slug: string; category: { path?: string } }) => 
+					post.title.toLowerCase() === lowerQuery
+				);
+				
+				if (exactMatch) {
+					// Go to exact product page
+					const categoryPath = exactMatch.category?.path || 'online-manipal-university/notes-and-mockpaper';
+					router.push(`/${categoryPath}/${exactMatch.slug}`);
+					return;
+				}
+				
+				// Check for partial course match
+				if (lowerQuery.includes("mba")) {
+					router.push("/online-manipal-university/notes-and-mockpaper/mba");
+					return;
+				}
+				
+				if (lowerQuery.includes("bca")) {
+					router.push("/online-manipal-university/notes-and-mockpaper/bca");
+					return;
+				}
+				
+				if (lowerQuery.includes("bba")) {
+					router.push("/online-manipal-university/notes-and-mockpaper/bba");
+					return;
+				}
+				
+				// No match found, go to main category
+				router.push("/online-manipal-university/notes-and-mockpaper");
+			}
+		} catch {
+			// Fallback to main category
+			router.push("/online-manipal-university/notes-and-mockpaper");
+		}
+		
+		// Reset search
+		setSearchQuery("");
+		setShowSuggestions(false);
+	};
+
+	const fetchSuggestions = async (query: string) => {
+		if (query.trim().length < 2) {
+			setSearchSuggestions([]);
+			setShowSuggestions(false);
+			return;
+		}
+
+		try {
+			const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+			if (response.ok) {
+				const results = await response.json();
+				setSearchSuggestions(results.slice(0, 5)); // Show max 5 suggestions
+				setShowSuggestions(true);
+			}
+		} catch {
+			console.error("Error fetching suggestions:");
+		}
+	};
 
 	useEffect(() => {
 		// Fetch categories from database with caching
@@ -191,18 +292,62 @@ export function DynamicNavbar() {
 						>
 							Articles
 						</Link>
-						<Link
-							href="/privacy-policy"
-							className={`${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
-						>
-							Privacy Policy
-						</Link>
-						<Link
-							href="/terms-conditions"
-							className={`${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
-						>
-							Terms & Conditions
-						</Link>
+
+						{/* Search - Always Visible */}
+						<div className="relative">
+							<div className="flex items-center gap-2 bg-white dark:bg-neutral-800 rounded-full border border-[rgb(229, 229, 234)] dark:border-neutral-700 px-3 py-2">
+								<Search className="w-4 h-4 text-gray-400" />
+								<input
+									type="text"
+									placeholder="Search products..."
+									value={searchQuery}
+									onChange={(e) => {
+										setSearchQuery(e.target.value);
+										fetchSuggestions(e.target.value);
+									}}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter') {
+											handleSearch(searchQuery);
+										} else if (e.key === 'Escape') {
+											setSearchQuery("");
+											setShowSuggestions(false);
+										}
+									}}
+									className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm w-64 md:w-96 outline-none"
+								/>
+								{searchQuery && (
+									<button
+										onClick={() => {
+											setSearchQuery("");
+											setShowSuggestions(false);
+										}}
+										className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
+									>
+										<X className="w-3 h-3 text-gray-400" />
+									</button>
+								)}
+								
+								{/* Suggestions Dropdown */}
+								{showSuggestions && searchSuggestions.length > 0 && (
+									<div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-[rgb(229, 229, 234)] dark:border-neutral-700 overflow-hidden z-[120]">
+										{searchSuggestions.map((suggestion) => (
+											<button
+												key={suggestion.id}
+												onClick={() => handleSearch(searchQuery, suggestion)}
+												className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors border-b border-gray-100 dark:border-neutral-700 last:border-b-0"
+											>
+												<div className="text-sm font-medium text-gray-900 dark:text-white">
+													{suggestion.title}
+												</div>
+												<div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+													{suggestion.description}
+												</div>
+											</button>
+										))}
+									</div>
+								)}
+							</div>
+						</div>
 					</div>
 
 					{/* User Authentication Section */}
@@ -311,20 +456,63 @@ export function DynamicNavbar() {
 							>
 								Articles
 							</Link>
-							<Link
-								href="/privacy-policy"
-								className={`block px-6 py-3 text-sm ${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
-								onClick={() => setIsMobileMenuOpen(false)}
-							>
-								Privacy Policy
-							</Link>
-							<Link
-								href="/terms-conditions"
-								className={`block px-6 py-3 text-sm ${appleNavbar.text.secondary} ${appleNavbar.text.hover} transition-all duration-200 font-medium`}
-								onClick={() => setIsMobileMenuOpen(false)}
-							>
-								Terms & Conditions
-							</Link>
+
+							{/* Mobile Search */}
+							<div className="px-6 py-3 border-t border-[rgb(229, 229, 234)] dark:border-neutral-700">
+								<div className="flex items-center gap-2 bg-white dark:bg-neutral-800 rounded-full border border-[rgb(229, 229, 234)] dark:border-neutral-700 px-3 py-2">
+									<Search className="w-4 h-4 text-gray-400" />
+									<input
+										type="text"
+										placeholder="Search products..."
+										value={searchQuery}
+										onChange={(e) => {
+											setSearchQuery(e.target.value);
+											fetchSuggestions(e.target.value);
+										}}
+										onKeyDown={(e) => {
+											if (e.key === 'Enter') {
+												handleSearch(searchQuery);
+												setIsMobileMenuOpen(false);
+											}
+										}}
+										className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm flex-1 outline-none"
+									/>
+									{searchQuery && (
+										<button
+											onClick={() => {
+												setSearchQuery("");
+												setShowSuggestions(false);
+											}}
+											className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
+										>
+											<X className="w-3 h-3 text-gray-400" />
+										</button>
+									)}
+								</div>
+								
+								{/* Mobile Suggestions */}
+								{showSuggestions && searchSuggestions.length > 0 && (
+									<div className="mt-2 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-[rgb(229, 229, 234)] dark:border-neutral-700 overflow-hidden">
+										{searchSuggestions.map((suggestion) => (
+											<button
+												key={suggestion.id}
+												onClick={() => {
+													handleSearch(searchQuery, suggestion);
+													setIsMobileMenuOpen(false);
+												}}
+												className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors border-b border-gray-100 dark:border-neutral-700 last:border-b-0"
+											>
+												<div className="text-sm font-medium text-gray-900 dark:text-white">
+													{suggestion.title}
+												</div>
+												<div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+													{suggestion.description}
+												</div>
+											</button>
+										))}
+									</div>
+								)}
+							</div>
 
 							{/* Mobile Authentication Section */}
 							{session ? (
