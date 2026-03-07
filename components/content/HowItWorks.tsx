@@ -1,7 +1,7 @@
 "use client";
 import { motion } from "motion/react";
 import { Search, Download, CreditCard, Sparkles, Shield, BookOpen, Library, ShoppingCart, Wallet, CloudDownload, Smartphone, FileDown, Headphones, RefreshCw, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 
@@ -78,7 +78,7 @@ export const AceternityCardSkeletonContainer = ({
         "h-[15rem] md:h-[20rem] rounded-xl z-40",
         className,
         showGradient &&
-          "bg-neutral-300 dark:bg-[rgba(40,40,40,0.70)] [mask-image:radial-gradient(50%_50%_at_50%_50%,white_0%,transparent_100%)]"
+        "bg-neutral-300 dark:bg-[rgba(40,40,40,0.70)] [mask-image:radial-gradient(50%_50%_at_50%_50%,white_0%,transparent_100%)]"
       )}
     >
       {children}
@@ -88,36 +88,51 @@ export const AceternityCardSkeletonContainer = ({
 
 // Sparkles animation component
 const SparklesAnimation = () => {
-  const randomMove = () => Math.random() * 2 - 1;
-  const randomOpacity = () => Math.random();
-  const random = () => Math.random();
+  const [mounted, setMounted] = useState(false);
+  const [particles] = useState(() =>
+    [...Array(12)].map(() => ({
+      top: Math.random() * 100,
+      left: Math.random() * 100,
+      moveTop: Math.random() * 2 - 1,
+      moveLeft: Math.random() * 2 - 1,
+      opacity: Math.random(),
+      duration: Math.random() * 2 + 4,
+    }))
+  );
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
   return (
     <div className="absolute inset-0">
-      {[...Array(12)].map((_, i) => (
+      {particles.map((p, i) => (
         <motion.span
           key={`star-${i}`}
           animate={{
-            top: `calc(${random() * 100}% + ${randomMove()}px)`,
-            left: `calc(${random() * 100}% + ${randomMove()}px)`,
-            opacity: randomOpacity(),
+            top: `calc(${p.top}% + ${p.moveTop}px)`,
+            left: `calc(${p.left}% + ${p.moveLeft}px)`,
+            opacity: p.opacity,
             scale: [1, 1.2, 0],
           }}
           transition={{
-            duration: random() * 2 + 4,
+            duration: p.duration,
             repeat: Infinity,
             ease: "linear",
           }}
           style={{
             position: "absolute",
-            top: `${random() * 100}%`,
-            left: `${random() * 100}%`,
-            width: `2px`,
-            height: `2px`,
+            top: `${p.top}%`,
+            left: `${p.left}%`,
+            width: "2px",
+            height: "2px",
             borderRadius: "50%",
             zIndex: 1,
           }}
           className="inline-block bg-black dark:bg-white"
-        ></motion.span>
+        />
       ))}
     </div>
   );
@@ -252,16 +267,16 @@ const steps = [
 
 export function HowItWorks() {
   const [, setHoveredStep] = useState<number | null>(null);
-  
+
   return (
     <section className="relative py-32 px-6 bg-white dark:bg-black overflow-hidden">
       {/* Subtle background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/20 dark:to-black"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgb(0_0_0_/_0.02)_0%,transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgb(255_255_255_/_0.02)_0%,transparent_70%)]"></div>
-      
+
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Premium Section Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -272,13 +287,13 @@ export function HowItWorks() {
             <Sparkles className="w-3 h-3 text-gray-600 dark:text-gray-400" />
             <span className="text-xs font-medium text-gray-600 dark:text-gray-400 tracking-wide uppercase">Simple Process</span>
           </div>
-          
+
           <h2 className="text-4xl md:text-8xl font-semibold text-gray-900 dark:text-white mb-8 leading-tight tracking-tight">
             How It Works
           </h2>
-          
+
           <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed font-normal">
-            Get premium study materials in three simple steps. 
+            Get premium study materials in three simple steps.
             <span className="font-semibold text-gray-900 dark:text-white"> No subscriptions, just one-time payments.</span>
           </p>
         </motion.div>
@@ -297,7 +312,7 @@ export function HowItWorks() {
               className="relative group"
             >
               {/* Connection Line Removed */}
-              
+
               <AceternityCard className="h-full cursor-pointer group-hover:shadow-lg transition-all duration-300">
                 {/* Step Number */}
                 <motion.div
@@ -309,11 +324,11 @@ export function HowItWorks() {
                 >
                   {index + 1}
                 </motion.div>
-                
+
                 <AceternityCardSkeletonContainer>
                   {step.skeleton}
                 </AceternityCardSkeletonContainer>
-                
+
                 <AceternityCardTitle>{step.title}</AceternityCardTitle>
                 <AceternityCardDescription>{step.description}</AceternityCardDescription>
               </AceternityCard>
@@ -321,41 +336,41 @@ export function HowItWorks() {
           ))}
         </div>
 
-         {/* Premium Why Choose Section */}
-         <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-3xl p-6 sm:p-10 md:p-16 lg:p-24 relative overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
-          
-            
-            <div className="relative z-10 max-w-4xl mx-auto">
-              {/* Clean icon */}
-              <div className="flex justify-center mb-10">
-                <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-lg border border-slate-200/50 dark:border-slate-700/50">
-                  <Download className="w-7 h-7 text-slate-700 dark:text-slate-300" />
-                </div>
+        {/* Premium Why Choose Section */}
+        <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-3xl p-6 sm:p-10 md:p-16 lg:p-24 relative overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
+
+
+          <div className="relative z-10 max-w-4xl mx-auto">
+            {/* Clean icon */}
+            <div className="flex justify-center mb-10">
+              <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-lg border border-slate-200/50 dark:border-slate-700/50">
+                <Download className="w-7 h-7 text-slate-700 dark:text-slate-300" />
               </div>
-              
-              {/* Clean typography */}
-              <h3 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl text-center font-bold text-slate-900 dark:text-white mb-6 sm:mb-8 leading-tight">
-                Can&apos;t find what you&apos;re looking for?
-              </h3>
-              
-              <p className="text-base sm:text-lg md:text-xl text-center text-slate-600 dark:text-slate-400 mb-8 sm:mb-12 leading-relaxed">
-                We&apos;re constantly adding new study materials for different courses. Request specific materials and we&apos;ll prioritize them for our next update!
-              </p>
-              
-              {/* Clean button layout */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10 sm:mb-16">
-                <Button size="lg" className="bg-slate-900 hover:bg-slate-800 text-white font-medium px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
-                  <a
-                    href="https://wa.me/6378990158"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center"
-                  >
-                    Request Resources
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </a>
-                </Button>
-                {/* <Button size="lg" variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium px-8 py-4 rounded-2xl transition-all duration-300">
+            </div>
+
+            {/* Clean typography */}
+            <h3 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl text-center font-bold text-slate-900 dark:text-white mb-6 sm:mb-8 leading-tight">
+              Can&apos;t find what you&apos;re looking for?
+            </h3>
+
+            <p className="text-base sm:text-lg md:text-xl text-center text-slate-600 dark:text-slate-400 mb-8 sm:mb-12 leading-relaxed">
+              We&apos;re constantly adding new study materials for different courses. Request specific materials and we&apos;ll prioritize them for our next update!
+            </p>
+
+            {/* Clean button layout */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10 sm:mb-16">
+              <Button size="lg" className="bg-slate-900 hover:bg-slate-800 text-white font-medium px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+                <a
+                  href="https://wa.me/6378990158"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center"
+                >
+                  Request Resources
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </a>
+              </Button>
+              {/* <Button size="lg" variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium px-8 py-4 rounded-2xl transition-all duration-300">
                   <a
                     href={`${settings.site.url}/online-manipal-university/notes-and-mockpaper`}
                     className="flex items-center"
@@ -364,31 +379,31 @@ export function HowItWorks() {
                     <ChevronRight className="w-4 h-4 ml-2" />
                   </a>
                 </Button> */}
+            </div>
+
+            {/* Clean feature indicators */}
+            <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-8 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <span className="font-medium">Expert Verified</span>
               </div>
-              
-              {/* Clean feature indicators */}
-              <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-8 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                    <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <span className="font-medium">Expert Verified</span>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                  <RefreshCw className="w-4 h-4 text-green-600 dark:text-green-400" />
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                    <RefreshCw className="w-4 h-4 text-green-600 dark:text-green-400" />
-                  </div>
-                  <span className="font-medium">Regular Updates</span>
+                <span className="font-medium">Regular Updates</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                  <Headphones className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                    <Headphones className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <span className="font-medium">Active Support</span>
-                </div>
+                <span className="font-medium">Active Support</span>
               </div>
             </div>
           </div>
+        </div>
       </div>
     </section>
   );
