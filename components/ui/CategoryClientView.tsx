@@ -33,6 +33,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Category, Post } from "./ProfessionalCategoryPage";
 
+const toWebp = (url: string) => {
+    if (!url.includes("res.cloudinary.com") || !url.includes("/upload/")) return url;
+    if (url.includes("f_webp") || url.includes("f_auto")) return url;
+    return url.replace("/upload/", "/upload/f_webp,q_auto/");
+};
+
 // Function to get appropriate icon based on category name
 const getCategoryIcon = (categoryName: string) => {
     const name = categoryName.toLowerCase();
@@ -283,11 +289,10 @@ export function CategoryClientView({ category, posts, categoryName, breadcrumbs 
                                                     <div className="relative h-56 overflow-hidden rounded-t-3xl bg-neutral-100 dark:bg-neutral-900">
                                                         {post.images && post.images.length > 0 ? (
                                                             <Image
-                                                                src={post.images.find(img => img.isCover)?.imageUrl || post.images[0].imageUrl}
+                                                                src={toWebp(post.images.find(img => img.isCover)?.imageUrl || post.images[0].imageUrl)}
                                                                 alt={post.title || ""}
                                                                 fill
                                                                 className="object-cover transition-transform duration-700 group-hover:scale-105"
-                                                                unoptimized={true}
                                                             />
                                                         ) : (
                                                             <div className="w-full h-full bg-gradient-to-br from-[rgb(0, 122, 255)]/20 to-purple-500/20 flex items-center justify-center">
