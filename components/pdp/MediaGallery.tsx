@@ -5,6 +5,12 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 
+const toWebp = (url: string) => {
+  if (!url.includes("res.cloudinary.com") || !url.includes("/upload/")) return url;
+  if (url.includes("f_webp") || url.includes("f_auto")) return url;
+  return url.replace("/upload/", "/upload/f_webp,q_auto/");
+};
+
 interface PostImage {
   id: string;
   imageUrl: string;
@@ -54,6 +60,7 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
   }, [coverImage, allImages]);
 
   const currentImage = allImages[currentImageIndex] || null;
+  const optimizedCurrentImageUrl = currentImage?.imageUrl ? toWebp(currentImage.imageUrl) : '';
 
   // Debug: Log image data
   useEffect(() => {
@@ -122,7 +129,7 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
     if (onZoomChange && currentImage) {
       onZoomChange({
         isVisible: true,
-        imageUrl: currentImage.imageUrl,
+        imageUrl: optimizedCurrentImageUrl,
         position: { x: adjustedX, y: adjustedY }
       });
     }
@@ -172,7 +179,7 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
               {/* Optimized Thumbnail with Next.js Image - Immediate Loading Fix */}
               {image.imageUrl?.toLowerCase().includes('.gif') ? (
                 <Image 
-                  src={image.imageUrl}
+                  src={toWebp(image.imageUrl)}
                   alt={`${title} - ${index + 1}`}
                   width={80}
                   height={80}
@@ -181,7 +188,7 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
                 />
               ) : (
                 <Image
-                  src={image.imageUrl}
+                  src={toWebp(image.imageUrl)}
                   alt={`${title} - ${index + 1}`}
                   fill
                   className="object-cover"
@@ -252,10 +259,10 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
                 }}
                 className="absolute inset-0"
               >
-                              {/* Optimized Main Image with Next.js Image - Immediate Loading Fix */}
+              {/* Optimized Main Image with Next.js Image - Immediate Loading Fix */}
               {currentImage.imageUrl?.toLowerCase().includes('.gif') ? (
                 <Image 
-                  src={currentImage.imageUrl}
+                  src={optimizedCurrentImageUrl}
                   alt={title}
                   width={800}
                   height={800}
@@ -265,7 +272,7 @@ export function MediaGallery({ images = [], mainImage, title, onZoomChange }: Me
                 />
               ) : (
                 <Image
-                  src={currentImage.imageUrl}
+                  src={optimizedCurrentImageUrl}
                   alt={title}
                   fill
                   className="object-cover"

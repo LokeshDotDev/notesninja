@@ -148,6 +148,8 @@ export function DynamicNavbar() {
 								width={150}
 								height={48}
 								priority
+								fetchPriority="high"
+								loading="eager"
 								className="h-10 lg:h-14 w-auto"
 							/>
 						</Link>

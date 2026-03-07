@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 
 interface Screenshot {
   id: number;
@@ -167,12 +168,13 @@ export function TrustScreenshots() {
 
                     {/* Image */}
                     <div className="relative aspect-[9/16] bg-white rounded-2xl overflow-hidden mb-6">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={screenshot.image}
                         alt={`Student testimonial ${screenshot.id}`}
-                        className="w-full h-full object-cover "
-                        loading="lazy"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        quality={80}
                       />
                     </div>
 
@@ -180,7 +182,7 @@ export function TrustScreenshots() {
                     <p className="text-gray-800 text-base leading-relaxed mb-6 font-normal flex-1">
                       {screenshot.title}
                     </p>
-                    
+
                     {/* Verified Badge */}
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -202,11 +204,10 @@ export function TrustScreenshots() {
               <button
                 key={index}
                 onClick={() => setCurrentPage(index)}
-                className={`transition-all duration-300 ${
-                  currentPage === index
-                    ? 'w-8 h-2 bg-gray-900 rounded-full'
-                    : 'w-2 h-2 bg-gray-300 rounded-full hover:bg-gray-400'
-                }`}
+                className={`transition-all duration-300 ${currentPage === index
+                  ? 'w-8 h-2 bg-gray-900 rounded-full'
+                  : 'w-2 h-2 bg-gray-300 rounded-full hover:bg-gray-400'
+                  }`}
                 aria-label={`Go to page ${index + 1}`}
               />
             ))}

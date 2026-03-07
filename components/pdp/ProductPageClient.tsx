@@ -8,44 +8,26 @@ import Link from 'next/link';
 import { trackViewItem } from '@/lib/analytics';
 
 // Dynamic imports for better performance
-const AnnouncementBar = dynamic(() => import('@/components/pdp/AnnouncementBar').then(mod => mod.AnnouncementBar), { 
-  loading: () => <div className="h-12 bg-blue-600 animate-pulse" />,
-  ssr: false 
+import { AnnouncementBar } from '@/components/pdp/AnnouncementBar';
+import { MediaGallery } from '@/components/pdp/MediaGallery';
+import { ProductInfo } from '@/components/pdp/ProductInfo';
+const ProductHighlights = dynamic(() => import('@/components/pdp/ProductHighlights').then(mod => ({ default: mod.ProductHighlights })), {
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
 });
-const MediaGallery = dynamic(() => import('@/components/pdp/MediaGallery').then(mod => ({ default: mod.MediaGallery })), { 
-  loading: () => <div className="w-full h-96 bg-gray-100 animate-pulse rounded-lg" />,
-  ssr: false 
+const AccordionSection = dynamic(() => import('@/components/pdp/AccordionSection').then(mod => ({ default: mod.AccordionSection })), {
+  loading: () => <div className="h-48 bg-gray-100 animate-pulse rounded-lg" />
 });
-const ProductInfo = dynamic(() => import('@/components/pdp/ProductInfo').then(mod => ({ default: mod.ProductInfo })), { 
-  loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-lg" />,
-  ssr: false 
+const RatingsAndReviews = dynamic(() => import('@/components/pdp/RatingsAndReviews').then(mod => ({ default: mod.RatingsAndReviews })), {
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
 });
-const ProductHighlights = dynamic(() => import('@/components/pdp/ProductHighlights').then(mod => ({ default: mod.ProductHighlights })), { 
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
-  ssr: false 
+const TrustScreenshots = dynamic(() => import('@/components/pdp/TrustScreenshots').then(mod => ({ default: mod.TrustScreenshots })), {
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
 });
-const AccordionSection = dynamic(() => import('@/components/pdp/AccordionSection').then(mod => ({ default: mod.AccordionSection })), { 
-  loading: () => <div className="h-48 bg-gray-100 animate-pulse rounded-lg" />,
-  ssr: false 
+const SeeInActionSection = dynamic(() => import('@/components/pdp/SeeInActionSection').then(mod => mod.default), {
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
 });
-const RatingsAndReviews = dynamic(() => import('@/components/pdp/RatingsAndReviews').then(mod => ({ default: mod.RatingsAndReviews })), { 
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
-  ssr: false 
-});
-const TrustScreenshots = dynamic(() => import('@/components/pdp/TrustScreenshots').then(mod => ({ default: mod.TrustScreenshots })), { 
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
-  ssr: false 
-});
-const SeeInActionSection = dynamic(() => import('@/components/pdp/SeeInActionSection').then(mod => mod.default), { 
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
-  ssr: false 
-});
-const PremiumPageLoader = dynamic(() => import('@/components/ui/premium-loader').then(mod => ({ default: mod.PremiumPageLoader })), { 
-  ssr: false 
-});
-const MobileStickyFooter = dynamic(() => import('@/components/pdp/MobileStickyFooter').then(mod => ({ default: mod.MobileStickyFooter })), { 
-  ssr: false 
-});
+const PremiumPageLoader = dynamic(() => import('@/components/ui/premium-loader').then(mod => ({ default: mod.PremiumPageLoader })));
+const MobileStickyFooter = dynamic(() => import('@/components/pdp/MobileStickyFooter').then(mod => ({ default: mod.MobileStickyFooter })));
 
 interface PostImage {
   id: string;
@@ -188,18 +170,18 @@ export default function ProductPageClient({ productId, initialProduct }: Product
     async function fetchProduct() {
       try {
         setLoading(true);
-        
+
         // Check cache first for instant loading
         const cachedData = sessionStorage.getItem(`product_${productId}`);
         const cacheTimestamp = sessionStorage.getItem(`product_${productId}_timestamp`);
         const now = Date.now();
-        
+
         // Use cache if less than 5 minutes old
         if (cachedData && cacheTimestamp && (now - parseInt(cacheTimestamp)) < 300000) {
           const productData = JSON.parse(cachedData);
           setProduct(productData);
           setLoading(false);
-          
+
           // Track product view from cache
           trackViewItem({
             id: productData.id,
@@ -211,9 +193,9 @@ export default function ProductPageClient({ productId, initialProduct }: Product
           });
           return;
         }
-        
+
         const response = await fetch(`/api/posts/${productId}`);
-        
+
         if (!response.ok) {
           if (response.status === 404) {
             setError("Product not found");
@@ -225,7 +207,7 @@ export default function ProductPageClient({ productId, initialProduct }: Product
 
         const productData = await response.json();
         setProduct(productData);
-        
+
         // Track product view when loaded
         trackViewItem({
           id: productData.id,
@@ -235,7 +217,7 @@ export default function ProductPageClient({ productId, initialProduct }: Product
           subcategory: productData.subcategory?.name,
           imageUrl: productData.imageUrl
         });
-        
+
         // Cache product data for faster subsequent loads
         try {
           sessionStorage.setItem(`product_${productId}`, JSON.stringify(productData));
@@ -268,7 +250,7 @@ export default function ProductPageClient({ productId, initialProduct }: Product
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-white">
         <div className="text-center">
-          <PremiumPageLoader 
+          <PremiumPageLoader
             isLoading={true}
           />
           <p className="mt-6 text-lg font-medium text-neutral-700">
@@ -313,19 +295,19 @@ export default function ProductPageClient({ productId, initialProduct }: Product
   return (
     <div className="bg-white">
       <AnnouncementBar />
-      
+
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Left Side - Media Gallery (Sticky) */}
           <div className="lg:sticky lg:top-28 self-start">
-            <MediaGallery 
+            <MediaGallery
               images={product.images}
               mainImage={product.imageUrl}
               title={product.title}
               onZoomChange={handleZoomChange}
             />
           </div>
-          
+
           {/* Right Side - Product Info (Scrollable) */}
           <div className="relative">
             {/* Zoom Preview - Overlay that doesn't shift content */}
@@ -335,7 +317,7 @@ export default function ProductPageClient({ productId, initialProduct }: Product
                   <span className="text-sm font-medium text-gray-700">Zoom Preview</span>
                   <span className="bg-black/70 text-white text-xs px-2 py-1 rounded">2x</span>
                 </div>
-                <div 
+                <div
                   className="relative w-full h-[28rem] bg-gray-50"
                   style={{
                     backgroundImage: `url(${zoomData.imageUrl})`,
@@ -346,8 +328,8 @@ export default function ProductPageClient({ productId, initialProduct }: Product
                 />
               </div>
             )}
-            
-            <ProductInfo 
+
+            <ProductInfo
               product={product}
               onPurchase={handlePurchase}
               isPurchasing={isPurchasing}
@@ -355,7 +337,7 @@ export default function ProductPageClient({ productId, initialProduct }: Product
           </div>
         </div>
       </div>
-      
+
       {/* See It In Action - UGC Video Reels */}
       <SeeInActionSection videos={ugcVideos} />
 
@@ -384,7 +366,7 @@ export default function ProductPageClient({ productId, initialProduct }: Product
       </section>
 
       {/* Mobile Sticky Footer */}
-      <MobileStickyFooter 
+      <MobileStickyFooter
         product={product}
         onPurchase={handlePurchase}
         isPurchasing={isPurchasing}
