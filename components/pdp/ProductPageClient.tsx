@@ -43,9 +43,6 @@ const SeeInActionSection = dynamic(() => import('@/components/pdp/SeeInActionSec
 const PremiumPageLoader = dynamic(() => import('@/components/ui/premium-loader').then(mod => ({ default: mod.PremiumPageLoader })), { 
   ssr: false 
 });
-const MobileStickyFooter = dynamic(() => import('@/components/pdp/MobileStickyFooter').then(mod => ({ default: mod.MobileStickyFooter })), { 
-  ssr: false 
-});
 
 interface PostImage {
   id: string;
@@ -153,7 +150,6 @@ export default function ProductPageClient({ productId, initialProduct }: Product
   const [product, setProduct] = useState(initialProduct || null);
   const [loading, setLoading] = useState(!initialProduct);
   const [error, setError] = useState<string | null>(null);
-  const [isPurchasing, setIsPurchasing] = useState(false);
   const [zoomData, setZoomData] = useState<{ isVisible: boolean; imageUrl: string; position: { x: number; y: number } }>({
     isVisible: false,
     imageUrl: '',
@@ -255,10 +251,7 @@ export default function ProductPageClient({ productId, initialProduct }: Product
     }
   }, [productId, initialProduct]);
 
-  const handlePurchase = () => {
-    setIsPurchasing(true);
-    window.location.href = `/checkout/${productId}`;
-  };
+
 
   const handleZoomChange = (zoomInfo: { isVisible: boolean; imageUrl: string; position: { x: number; y: number } }) => {
     setZoomData(zoomInfo);
@@ -349,8 +342,6 @@ export default function ProductPageClient({ productId, initialProduct }: Product
             
             <ProductInfo 
               product={product}
-              onPurchase={handlePurchase}
-              isPurchasing={isPurchasing}
             />
           </div>
         </div>
@@ -383,12 +374,7 @@ export default function ProductPageClient({ productId, initialProduct }: Product
         </div>
       </section>
 
-      {/* Mobile Sticky Footer */}
-      <MobileStickyFooter 
-        product={product}
-        onPurchase={handlePurchase}
-        isPurchasing={isPurchasing}
-      />
+
     </div>
   );
 }

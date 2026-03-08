@@ -65,7 +65,6 @@ export default function ProductDetailPage({ params, initialProduct }: ProductPag
   const [product, setProduct] = useState<Product | null>(initialProduct || null);
   const [loading, setLoading] = useState(!initialProduct);
   const [error, setError] = useState<string | null>(null);
-  const [isPurchasing, setIsPurchasing] = useState(false);
 
   // UGC Video Data - Using actual student review videos
   const ugcVideos = [
@@ -182,20 +181,7 @@ export default function ProductDetailPage({ params, initialProduct }: ProductPag
     }
   }, [id, initialProduct]);
 
-  const handlePurchase = async () => {
-    if (!product) return;
-    
-    setIsPurchasing(true);
-    try {
-      // Simulate processing time before redirect
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      // Redirect to checkout page
-      window.location.href = `/checkout/${product.id}`;
-    } catch (error) {
-      console.error("Failed to process purchase:", error);
-      setIsPurchasing(false);
-    }
-  };
+
 
 
   if (loading) {
@@ -252,8 +238,6 @@ export default function ProductDetailPage({ params, initialProduct }: ProductPag
           <div>
             <ProductInfo 
               product={product}
-              onPurchase={handlePurchase}
-              isPurchasing={isPurchasing}
             />
           </div>
         </div>
