@@ -60,7 +60,7 @@ const nextConfig: NextConfig = {
     // Enable image optimization
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    qualities: [75, 85, 90],
+    qualities: [60, 75, 85, 90],
   },
   compress: true,
   poweredByHeader: false,

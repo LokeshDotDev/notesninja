@@ -1,33 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
-import { AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import { trackViewItem } from '@/lib/analytics';
-
-// Dynamic imports for better performance
-import { AnnouncementBar } from '@/components/pdp/AnnouncementBar';
 import { MediaGallery } from '@/components/pdp/MediaGallery';
 import { ProductInfo } from '@/components/pdp/ProductInfo';
-const ProductHighlights = dynamic(() => import('@/components/pdp/ProductHighlights').then(mod => ({ default: mod.ProductHighlights })), {
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
-});
-const AccordionSection = dynamic(() => import('@/components/pdp/AccordionSection').then(mod => ({ default: mod.AccordionSection })), {
-  loading: () => <div className="h-48 bg-gray-100 animate-pulse rounded-lg" />
-});
-const RatingsAndReviews = dynamic(() => import('@/components/pdp/RatingsAndReviews').then(mod => ({ default: mod.RatingsAndReviews })), {
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
-});
-const TrustScreenshots = dynamic(() => import('@/components/pdp/TrustScreenshots').then(mod => ({ default: mod.TrustScreenshots })), {
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
-});
-const SeeInActionSection = dynamic(() => import('@/components/pdp/SeeInActionSection').then(mod => mod.default), {
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
-});
-const PremiumPageLoader = dynamic(() => import('@/components/ui/premium-loader').then(mod => ({ default: mod.PremiumPageLoader })));
-const MobileStickyFooter = dynamic(() => import('@/components/pdp/MobileStickyFooter').then(mod => ({ default: mod.MobileStickyFooter })));
+import { MobileStickyFooter } from '@/components/pdp/MobileStickyFooter';
 
 interface PostImage {
   id: string;
@@ -37,104 +14,35 @@ interface PostImage {
   isCover: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Product {
   id: string;
   title: string;
   description: string;
-  imageUrl?: string;
-  price?: number;
-  compareAtPrice?: number;
-  isDigital?: boolean;
+  imageUrl?: string | null;
+  price?: number | null;
+  compareAtPrice?: number | null;
+  isDigital?: boolean | null;
   categoryId: string;
-  subcategoryId?: string;
-  productTypeId?: string;
+  subcategoryId?: string | null;
+  productTypeId?: string | null;
   images?: PostImage[];
   category?: {
     id: string;
     name: string;
     slug: string;
-  };
+  } | null;
   subcategory?: {
     id: string;
     name: string;
-    slug: string;
-  };
-  productType?: {
-    id: string;
-    name: string;
-  };
+    slug?: string;
+  } | null;
 }
-
-const ugcVideos = [
-  {
-    id: "1",
-    thumbnail: "/assets/reviews-thumbnails/student2.webp",
-    embedSrc: "https://play.gumlet.io/embed/69a41a6d825d3351d56a73e8",
-    aspectRatio: "9/16",
-    title: "Student Success Story - Interview Experience",
-  },
-  {
-    id: "2",
-    thumbnail: "/assets/reviews-thumbnails/student3.webp",
-    embedSrc: "https://play.gumlet.io/embed/69a41a6d98dac99517915c0a",
-    aspectRatio: "9/16",
-    title: "Academic Achievement Journey",
-  },
-  {
-    id: "3",
-    thumbnail: "/assets/reviews-thumbnails/student7.webp",
-    embedSrc: "https://play.gumlet.io/embed/69a41a6d825d3351d56a73ea",
-    aspectRatio: "9/16",
-    title: "Study Techniques That Work",
-  },
-  {
-    id: "4",
-    thumbnail: "/assets/reviews-thumbnails/student6.webp",
-    embedSrc: "https://play.gumlet.io/embed/69a41a6d825d3351d56a73e6",
-    aspectRatio: "9/16",
-    title: "Exam Preparation Success",
-  },
-  {
-    id: "5",
-    thumbnail: "/assets/reviews-thumbnails/student1.webp",
-    embedSrc: "https://play.gumlet.io/embed/69a41a6de9610ba04ec142aa",
-    aspectRatio: "9/16",
-    title: "Real Results from Real Students",
-  },
-  {
-    id: "6",
-    thumbnail: "/assets/reviews-thumbnails/student5.webp",
-    embedSrc: "https://play.gumlet.io/embed/69a41a6d825d3351d56a73df",
-    aspectRatio: "9/16",
-    title: "Student Achievement Showcase",
-  },
-  {
-    id: "7",
-    thumbnail: "/assets/reviews-thumbnails/student8.webp",
-    embedSrc: "https://play.gumlet.io/embed/69a41a6de9610ba04ec142b1",
-    aspectRatio: "9/16",
-    title: "Learning Success Stories",
-  },
-  {
-    id: "8",
-    thumbnail: "/assets/reviews-thumbnails/student4.webp",
-    embedSrc: "https://play.gumlet.io/embed/69a41a6d98dac99517915c0d",
-    aspectRatio: "9/16",
-    title: "Academic Excellence Journey",
-  },
-];
 
 interface ProductPageClientProps {
-  productId: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  initialProduct?: any; // Server-fetched product data
+  product: Product;
 }
 
-export default function ProductPageClient({ productId, initialProduct }: ProductPageClientProps) {
-  const [product, setProduct] = useState(initialProduct || null);
-  const [loading, setLoading] = useState(!initialProduct);
-  const [error, setError] = useState<string | null>(null);
+export default function ProductPageClient({ product }: ProductPageClientProps) {
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [zoomData, setZoomData] = useState<{ isVisible: boolean; imageUrl: string; position: { x: number; y: number } }>({
     isVisible: false,
@@ -142,175 +50,44 @@ export default function ProductPageClient({ productId, initialProduct }: Product
     position: { x: 0, y: 0 }
   });
 
-  // Scroll to top on page load
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-      left: 0
+    window.scrollTo({ top: 0, behavior: 'smooth', left: 0 });
+  }, [product.id]);
+
+  useEffect(() => {
+    trackViewItem({
+      id: product.id,
+      title: product.title,
+      price: product.price ?? undefined,
+      category: product.category?.name,
+      subcategory: product.subcategory?.name,
+      imageUrl: product.imageUrl ?? undefined,
     });
-  }, [productId]);
-
-  useEffect(() => {
-    // Skip fetching if we already have product from server
-    if (initialProduct) {
-      setProduct(initialProduct);
-      // Track product view when loaded
-      trackViewItem({
-        id: initialProduct.id,
-        title: initialProduct.title,
-        price: initialProduct.price,
-        category: initialProduct.category?.name,
-        subcategory: initialProduct.subcategory?.name,
-        imageUrl: initialProduct.imageUrl
-      });
-      return;
-    }
-
-    async function fetchProduct() {
-      try {
-        setLoading(true);
-
-        // Check cache first for instant loading
-        const cachedData = sessionStorage.getItem(`product_${productId}`);
-        const cacheTimestamp = sessionStorage.getItem(`product_${productId}_timestamp`);
-        const now = Date.now();
-
-        // Use cache if less than 5 minutes old
-        if (cachedData && cacheTimestamp && (now - parseInt(cacheTimestamp)) < 300000) {
-          const productData = JSON.parse(cachedData);
-          setProduct(productData);
-          setLoading(false);
-
-          // Track product view from cache
-          trackViewItem({
-            id: productData.id,
-            title: productData.title,
-            price: productData.price,
-            category: productData.category?.name,
-            subcategory: productData.subcategory?.name,
-            imageUrl: productData.imageUrl
-          });
-          return;
-        }
-
-        const response = await fetch(`/api/posts/${productId}`);
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError("Product not found");
-          } else {
-            setError("Failed to load product");
-          }
-          return;
-        }
-
-        const productData = await response.json();
-        setProduct(productData);
-
-        // Track product view when loaded
-        trackViewItem({
-          id: productData.id,
-          title: productData.title,
-          price: productData.price,
-          category: productData.category?.name,
-          subcategory: productData.subcategory?.name,
-          imageUrl: productData.imageUrl
-        });
-
-        // Cache product data for faster subsequent loads
-        try {
-          sessionStorage.setItem(`product_${productId}`, JSON.stringify(productData));
-          sessionStorage.setItem(`product_${productId}_timestamp`, Date.now().toString());
-        } catch {
-          // SessionStorage might be full, ignore error
-        }
-      } catch (err) {
-        setError("Failed to load product");
-        console.error("Error fetching product:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    if (productId) {
-      fetchProduct();
-    }
-  }, [productId, initialProduct]);
+  }, [product]);
 
   const handlePurchase = () => {
     setIsPurchasing(true);
-    window.location.href = `/checkout/${productId}`;
+    window.location.href = `/checkout/${product.id}`;
   };
 
   const handleZoomChange = (zoomInfo: { isVisible: boolean; imageUrl: string; position: { x: number; y: number } }) => {
     setZoomData(zoomInfo);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-white">
-        <div className="text-center">
-          <PremiumPageLoader
-            isLoading={true}
-          />
-          <p className="mt-6 text-lg font-medium text-neutral-700">
-            Loading product details...
-          </p>
-          <p className="text-sm text-neutral-500 mt-2">
-            Preparing your study material
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !product) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="text-center max-w-md">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {error || "Product not found"}
-          </h1>
-          <p className="text-gray-600 mb-6">
-            The product you are looking for does not exist or has been removed.
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Button asChild>
-              <Link href="/categories">
-                Browse Categories
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/">
-                Back to Home
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-white">
-      <AnnouncementBar />
-
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          {/* Left Side - Media Gallery (Sticky) */}
           <div className="lg:sticky lg:top-28 self-start">
             <MediaGallery
               images={product.images}
-              mainImage={product.imageUrl}
+              mainImage={product.imageUrl ?? undefined}
               title={product.title}
               onZoomChange={handleZoomChange}
             />
           </div>
 
-          {/* Right Side - Product Info (Scrollable) */}
           <div className="relative">
-            {/* Zoom Preview - Overlay that doesn't shift content */}
             {zoomData.isVisible && (
               <div className="absolute top-0 left-0 right-0 z-50 bg-white border-2 border-gray-300 rounded-lg shadow-xl overflow-hidden hidden md:block">
                 <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
@@ -338,34 +115,6 @@ export default function ProductPageClient({ productId, initialProduct }: Product
         </div>
       </div>
 
-      {/* See It In Action - UGC Video Reels */}
-      <SeeInActionSection videos={ugcVideos} />
-
-      {/* Product Highlights */}
-      <section className="bg-gray-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ProductHighlights />
-        </div>
-      </section>
-
-      {/* Ratings and Reviews */}
-      <section className="bg-gray-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <RatingsAndReviews />
-        </div>
-      </section>
-
-      {/* Trust Screenshots - Student Success Stories */}
-      <TrustScreenshots />
-
-      {/* FAQ Accordion */}
-      <section className="py-12 pb-24 lg:pb-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <AccordionSection />
-        </div>
-      </section>
-
-      {/* Mobile Sticky Footer */}
       <MobileStickyFooter
         product={product}
         onPurchase={handlePurchase}
