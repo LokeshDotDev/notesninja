@@ -563,7 +563,7 @@ export function ProductInfo({
                       {selectedSubjects.length} Subject{selectedSubjects.length > 1 ? 's' : ''} Selected
                     </h4>
                     <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                      You&apos;ll receive the complete bundle with all subjects. Payment is based on your selection.
+                     Payment is based on your selection.
                     </p>
                   </div>
                 </div>
