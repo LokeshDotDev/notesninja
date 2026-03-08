@@ -79,7 +79,7 @@ export async function uploadContent(
 const uploadingResult = await new Promise<CloudinaryUploadResult>(
 			(resolve, reject) => {
 				const uploadOptions: UploadOptions = { 
-					folder: "Elevate-mortal", 
+					folder: isDigital ? "Elevate-mortal/sample-files" : "Elevate-mortal", 
 					resource_type: resourceType,
 					type: 'upload', // Make file publicly accessible
 					public_id: resourceType === 'raw' ? sanitizedFileName : sanitizedBaseName,
@@ -104,12 +104,6 @@ const uploadingResult = await new Promise<CloudinaryUploadResult>(
 						if (error || !result) {
 							reject(error || new Error("Cloudinary upload failed"));
 						} else {
-							// For raw files, generate signed URL manually
-							if (resourceType === 'raw') {
-								const signedUrl = generateSignedUrl(result.public_id, 'raw');
-								result.secure_url = signedUrl;
-								console.log('Generated signed URL for raw file:', signedUrl);
-							}
 							resolve(result as CloudinaryUploadResult);
 						}
 					}
@@ -211,24 +205,32 @@ export function getOptimizedImageUrl(
 export function getAccessibleUrl(secureUrl: string, publicId: string, resourceType: string = 'image'): string {
 	console.log('Getting accessible URL for:', { secureUrl, publicId, resourceType });
 	
-	// For all files, generate a proper signed URL to ensure access
-	const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-	if (!cloudName) {
-		console.error('Missing Cloudinary cloud name');
-		return secureUrl; // Fallback to original
+	if (!publicId) return secureUrl;
+
+	// Raw delivery can be blocked by ACL/strict delivery rules on direct URLs.
+	// Use Cloudinary's signed download API URL for raw assets.
+	if (resourceType === 'raw') {
+		const expiresAt = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour
+		// Extract format from publicId (e.g., 'pdf' from 'file.pdf')
+		const format = publicId.split('.').pop() || '';
+		const privateDownloadUrl = cloudinary.utils.private_download_url(publicId, format, {
+			resource_type: 'raw',
+			type: 'upload',
+			attachment: true,
+			expires_at: expiresAt,
+		});
+		console.log('Generated private download URL:', privateDownloadUrl);
+		return privateDownloadUrl || secureUrl;
 	}
-	
-	// Generate signed URL using Cloudinary utils
-	const signedUrl = cloudinary.utils.url(publicId, {
+
+	const deliveryUrl = cloudinary.utils.url(publicId, {
 		resource_type: resourceType,
 		type: 'upload',
 		secure: true,
-		sign_url: true, // Ensure we get a signed URL
-		expire_at: Math.floor(Date.now() / 1000) + 3600 // Expire in 1 hour
 	});
-	
-	console.log('Generated signed URL:', signedUrl);
-	return signedUrl;
+
+	console.log('Generated delivery URL:', deliveryUrl);
+	return deliveryUrl || secureUrl;
 }
 
 export async function deleteContent(

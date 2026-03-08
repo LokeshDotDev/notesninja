@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -116,14 +116,14 @@ export function ProfessionalCheckout({ productId, subjects, customPrice }: Profe
   console.log('ProfessionalCheckout received customPrice:', customPrice);
 
   // Helper function to get the correct price
-  const getCurrentPrice = () => {
+  const getCurrentPrice = useCallback(() => {
     if (customPrice) {
       console.log('Using custom price:', customPrice);
       return parseInt(customPrice);
     }
     console.log('Using product price:', product?.price);
     return product?.price || 0;
-  };
+  }, [customPrice, product?.price]);
   const [formData, setFormData] = useState({
     email: "",
     firstName: "",
@@ -1265,7 +1265,7 @@ export function ProfessionalCheckout({ productId, subjects, customPrice }: Profe
                         onClick={() => setPaymentStep("payment")}
                         className="w-full bg-black hover:bg-gray-800 text-white h-11 rounded-lg font-medium text-sm"
                       >
-                        Continue to Payment
+                        Proceed Securely
                         <ChevronRight className="w-4 h-4 ml-1" />
                       </Button>
                     </div>

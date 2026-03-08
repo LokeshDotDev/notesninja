@@ -733,6 +733,14 @@ export default function Dashboard() {
 						Admin Dashboard
 					</h1>
 					<div className='flex items-center gap-2'>
+						<Button
+							onClick={() => router.push('/admin/sample-files')}
+							variant='outline'
+							className='border-blue-600 text-blue-600 hover:bg-blue-50'
+						>
+							<Download className='w-4 h-4 mr-2' />
+							Manage Sample Files
+						</Button>
 						<span
 							className={`h-2 w-2 rounded-full ${
 								session ? "bg-green-500" : "bg-red-500"

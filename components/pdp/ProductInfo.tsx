@@ -20,6 +20,7 @@ import { calculateDiscountPercentage } from '@/lib/pricing-utils';
 import Link from 'next/link';
 import settings from '@/lib/settings';
 import { DescriptionRenderer } from '@/components/ui/DescriptionRenderer';
+import { SampleDownloadModal } from './SampleDownloadModal';
 
 interface Product {
   id: string;
@@ -97,6 +98,7 @@ export function ProductInfo({
 }: ProductInfoProps) {
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>(['full_bundle']);
   const [internalIsPurchasing, setInternalIsPurchasing] = useState(false);
+  const [isSampleModalOpen, setIsSampleModalOpen] = useState(false);
   
   // Use external isPurchasing if provided, otherwise use internal state
   const isPurchasing = externalIsPurchasing || internalIsPurchasing;
@@ -223,6 +225,58 @@ export function ProductInfo({
         console.error("Failed to process purchase:", error);
         setInternalIsPurchasing(false);
       }
+    }
+  };
+
+  const handleSampleDownload = async (formData: { name: string; email: string; phone: string }) => {
+    try {
+      const response = await fetch('/api/sample-downloads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          productId: product.id,
+        }),
+      });
+
+      const result = await response.json();
+
+      // Check if sample file is not available (404)
+      if (!response.ok) {
+        if (response.status === 404) {
+          alert('Sample is not available for this product.');
+          return;
+        }
+        throw new Error(result.error || 'Failed to process download request');
+      }
+      
+      // Trigger file download
+      if (result.downloadUrl) {
+        // Create a temporary link and force download
+        const link = document.createElement('a');
+        link.href = result.downloadUrl;
+        link.download = result.fileName || 'sample.pdf';
+        link.style.display = 'none';
+        
+        // Add to DOM, click, and remove
+        document.body.appendChild(link);
+        link.click();
+        
+        // Small delay before cleanup to ensure download starts
+        setTimeout(() => {
+          document.body.removeChild(link);
+        }, 100);
+        
+        // Show success message
+        alert('Sample file download started! Check your downloads folder.');
+      }
+    } catch (error) {
+      console.error('Sample download error:', error);
+      throw error;
     }
   };
 
@@ -594,6 +648,17 @@ export function ProductInfo({
       {/* Action Buttons */}
       <div className="space-y-4 pt-6 border-t border-neutral-200 dark:border-neutral-800">
         <div className="flex flex-col gap-3">
+          {/* Download Sample Button */}
+          <Button
+            onClick={() => setIsSampleModalOpen(true)}
+            variant="outline"
+            size="lg"
+            className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:border-blue-400 dark:text-blue-400 py-3 rounded-xl font-medium text-base transition-all duration-200"
+          >
+            <Download className="w-5 h-5 mr-2" />
+            Download Sample
+          </Button>
+          
           <Button
             onClick={handlePurchase}
             disabled={isPurchasing || (isMbaSem1Product && selectedSubjects.length === 0)}
@@ -715,6 +780,14 @@ export function ProductInfo({
           {isPurchasing ? 'Processing...' : `Buy Now - ${formatPrice(currentPricing.price)}`}
         </Button>
       </div>
+
+      {/* Sample Download Modal */}
+      <SampleDownloadModal
+        isOpen={isSampleModalOpen}
+        onClose={() => setIsSampleModalOpen(false)}
+        productTitle={product.title}
+        onFormSubmit={handleSampleDownload}
+      />
     </motion.div>
   );
 }
