@@ -62,6 +62,28 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Also record in UserLog for marketing tracking
+    const post = await prisma.post.findUnique({
+      where: { id: validatedData.productId },
+      select: { title: true, price: true }
+    });
+
+    if (post) {
+      await prisma.userLog.create({
+        data: {
+          email: validatedData.email,
+          firstName: validatedData.name.split(' ')[0],
+          lastName: validatedData.name.split(' ').slice(1).join(' ') || null,
+          phone: validatedData.phone,
+          productId: validatedData.productId,
+          productName: post.title,
+          productPrice: post.price,
+          userAgent,
+          ipAddress,
+        },
+      });
+    }
+
     // Resolve correct Cloudinary resource type. Some legacy sample files were uploaded as image.
     const isImageSample = sampleFile.fileType?.startsWith('image/') ||
       sampleFile.fileUrl?.includes('/image/upload/') ||
