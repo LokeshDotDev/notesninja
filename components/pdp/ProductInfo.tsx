@@ -187,7 +187,10 @@ export function ProductInfo({
         const response = await fetch(`/api/posts/${product.id}/subjects`);
         if (response.ok) {
           const data = await response.json();
-          setProductSubjects(data.subjects || []);
+          console.log('Fetched subjects:', data);
+          setProductSubjects(data || []);
+        } else {
+          console.error('Failed to fetch subjects:', response.status);
         }
       } catch (error) {
         console.error('Error fetching subjects:', error);
@@ -218,6 +221,8 @@ export function ProductInfo({
   
   // Check if this product has subjects configured
   const hasProductSubjects = productSubjects.length > 0;
+  console.log('Product subjects:', productSubjects);
+  console.log('Has product subjects:', hasProductSubjects);
 
   // Get current pricing based on selection
   const getCurrentPricing = () => {
