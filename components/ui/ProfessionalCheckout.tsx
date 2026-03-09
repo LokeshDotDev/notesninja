@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -102,14 +102,28 @@ interface Post {
 
 interface ProfessionalCheckoutProps {
   productId: string;
+  subjects?: string | null; // Comma-separated list of subject IDs
+  customPrice?: string | null;
 }
 
-export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
+export function ProfessionalCheckout({ productId, subjects, customPrice }: ProfessionalCheckoutProps) {
   const { data: session } = useSession();
   const [product, setProduct] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [paymentStep, setPaymentStep] = useState<"details" | "payment" | "processing" | "success" | "error">("details");
+
+  console.log('ProfessionalCheckout received customPrice:', customPrice);
+
+  // Helper function to get the correct price
+  const getCurrentPrice = useCallback(() => {
+    if (customPrice) {
+      console.log('Using custom price:', customPrice);
+      return parseInt(customPrice);
+    }
+    console.log('Using product price:', product?.price);
+    return product?.price || 0;
+  }, [customPrice, product?.price]);
   const [formData, setFormData] = useState({
     email: "",
     firstName: "",
@@ -158,14 +172,14 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
       trackBeginCheckout({
         id: product.id,
         title: product.title,
-        price: product.price,
+        price: getCurrentPrice(),
         category: product.category?.name,
         subcategory: product.subcategory?.name,
         imageUrl: product.imageUrl,
       });
       hasTrackedBeginCheckout.current = true;
     }
-  }, [product]);
+  }, [product, getCurrentPrice]);
 
   useEffect(() => {
     if (!product) return;
@@ -194,14 +208,14 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
           phone: userData.phone,
           productId: product?.id,
           productName: product?.title || '',
-          productPrice: product?.price,
+          productPrice: getCurrentPrice(),
         }),
       });
     } catch (error) {
       console.error('Failed to store user data:', error);
       // Don't show error to user as this is background operation
     }
-  }, [product]);
+  }, [product, getCurrentPrice]);
 
   // Pre-fill form data for authenticated users and store initial data
   useEffect(() => {
@@ -303,7 +317,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
       trackAddPaymentInfo({
         id: product.id,
         title: product.title,
-        price: product.price,
+        price: getCurrentPrice(),
         category: product.category?.name,
         subcategory: product.subcategory?.name,
         imageUrl: product.imageUrl,
@@ -325,7 +339,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
             body: JSON.stringify({
               postId: product.id,
               userEmail: formData.email,
-              amount: product.price || 0,
+              amount: getCurrentPrice(),
               paymentId: mockTransactionId
             })
           });
@@ -342,13 +356,13 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
 
         trackPurchase({
           transactionId: mockTransactionId,
-          value: product.price || 0,
+          value: getCurrentPrice(),
           currency: 'INR',
           products: [
             {
               id: product.id,
               title: product.title,
-              price: product.price,
+              price: getCurrentPrice(),
               category: product.category?.name,
               subcategory: product.subcategory?.name,
               imageUrl: product.imageUrl,
@@ -375,13 +389,14 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: product.price,
+          amount: getCurrentPrice(),
           currency: 'INR',
           receipt: shortReceipt,
           notes: {
             productId,
             customerEmail: formData.email,
-            customerName: `${formData.firstName} ${formData.lastName}`
+            customerName: `${formData.firstName} ${formData.lastName}`,
+            ...(subjects && { selectedSubjects: subjects })
           }
         })
       });
@@ -471,13 +486,13 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
               // Track purchase event
               trackPurchase({
                 transactionId: response.razorpay_payment_id,
-                value: product.price || 0,
+                value: getCurrentPrice(),
                 currency: "INR",
                 products: [
                   {
                     id: product.id,
                     title: product.title,
-                    price: product.price,
+                    price: getCurrentPrice(),
                     category: product.category?.name,
                     subcategory: product.subcategory?.name,
                     imageUrl: product.imageUrl,
@@ -812,7 +827,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                       <div>
                         <p className="text-gray-600 text-sm mb-1">Amount Paid</p>
                         <p className="text-green-600 font-bold text-2xl">
-                          {formatPrice(product.price || 0)}
+                          {formatPrice(getCurrentPrice())}
                         </p>
                       </div>
                       <div>
@@ -981,7 +996,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                     <div className="flex justify-between items-center">
                       <span className="font-semibold text-gray-900">Total</span>
                       <span className="font-bold text-lg text-gray-900">
-                        {formatPrice(product.price || 0)}
+                        {formatPrice(getCurrentPrice())}
                       </span>
                     </div>
                   </div>
@@ -1007,6 +1022,31 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                         <h3 className="font-medium text-gray-900 text-sm mb-1 leading-tight line-clamp-2">
                           {product.title}
                         </h3>
+                        
+                        {/* Show selected subjects for MBA Sem 1 */}
+                        {subjects && subjects !== 'full_bundle' && (
+                          <div className="mb-2">
+                            <p className="text-xs text-gray-600 font-medium mb-1.5">Selected Subjects:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {subjects.split(',').map((subjectId, idx) => {
+                                const subjectNames: Record<string, string> = {
+                                  'business_communication': 'Business Communication',
+                                  'financial_accounting': 'Financial & Mgmt Accounting',
+                                  'human_resource': 'Human Resource Management',
+                                  'management_process': 'Mgmt Process & Org Behaviour',
+                                  'managerial_economics': 'Managerial Economics',
+                                  'statistics': 'Statistics for Management'
+                                };
+                                return (
+                                  <span key={idx} className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 text-blue-800 text-[10px] font-medium">
+                                    {subjectNames[subjectId] || subjectId}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                        
                         <div className="flex items-center gap-1 flex-wrap">
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-green-100 text-green-800 text-[10px] font-medium">
                             Digital
@@ -1025,7 +1065,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="font-medium text-gray-900">
-                      {formatPrice(product.price || 0)}
+                      {formatPrice(getCurrentPrice())}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
@@ -1037,7 +1077,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                     <div className="flex justify-between items-center">
                       <span className="font-semibold text-gray-900">Total</span>
                       <span className="font-bold text-lg text-gray-900">
-                        {formatPrice(product.price || 0)}
+                        {formatPrice(getCurrentPrice())}
                       </span>
                     </div>
                   </div>
@@ -1225,7 +1265,7 @@ export function ProfessionalCheckout({ productId }: ProfessionalCheckoutProps) {
                         onClick={() => setPaymentStep("payment")}
                         className="w-full bg-black hover:bg-gray-800 text-white h-11 rounded-lg font-medium text-sm"
                       >
-                        Continue to Payment
+                        Proceed Securely
                         <ChevronRight className="w-4 h-4 ml-1" />
                       </Button>
                     </div>

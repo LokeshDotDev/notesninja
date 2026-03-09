@@ -6,6 +6,43 @@ import { MediaGallery } from '@/components/pdp/MediaGallery';
 import { ProductInfo } from '@/components/pdp/ProductInfo';
 import { MobileStickyFooter } from '@/components/pdp/MobileStickyFooter';
 
+// Dynamic imports for better performance
+const AnnouncementBar = dynamic(() => import('@/components/pdp/AnnouncementBar').then(mod => mod.AnnouncementBar), { 
+  loading: () => <div className="h-12 bg-blue-600 animate-pulse" />,
+  ssr: false 
+});
+const MediaGallery = dynamic(() => import('@/components/pdp/MediaGallery').then(mod => ({ default: mod.MediaGallery })), { 
+  loading: () => <div className="w-full h-96 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false 
+});
+const ProductInfo = dynamic(() => import('@/components/pdp/ProductInfo').then(mod => ({ default: mod.ProductInfo })), { 
+  loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false 
+});
+const ProductHighlights = dynamic(() => import('@/components/pdp/ProductHighlights').then(mod => ({ default: mod.ProductHighlights })), { 
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false 
+});
+const AccordionSection = dynamic(() => import('@/components/pdp/AccordionSection').then(mod => ({ default: mod.AccordionSection })), { 
+  loading: () => <div className="h-48 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false 
+});
+const RatingsAndReviews = dynamic(() => import('@/components/pdp/RatingsAndReviews').then(mod => ({ default: mod.RatingsAndReviews })), { 
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false 
+});
+const TrustScreenshots = dynamic(() => import('@/components/pdp/TrustScreenshots').then(mod => ({ default: mod.TrustScreenshots })), { 
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false 
+});
+const SeeInActionSection = dynamic(() => import('@/components/pdp/SeeInActionSection').then(mod => mod.default), { 
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />,
+  ssr: false 
+});
+const PremiumPageLoader = dynamic(() => import('@/components/ui/premium-loader').then(mod => ({ default: mod.PremiumPageLoader })), { 
+  ssr: false 
+});
+
 interface PostImage {
   id: string;
   imageUrl: string;
@@ -44,6 +81,10 @@ interface ProductPageClientProps {
 
 export default function ProductPageClient({ product }: ProductPageClientProps) {
   const [isPurchasing, setIsPurchasing] = useState(false);
+export default function ProductPageClient({ productId, initialProduct }: ProductPageClientProps) {
+  const [product, setProduct] = useState(initialProduct || null);
+  const [loading, setLoading] = useState(!initialProduct);
+  const [error, setError] = useState<string | null>(null);
   const [zoomData, setZoomData] = useState<{ isVisible: boolean; imageUrl: string; position: { x: number; y: number } }>({
     isVisible: false,
     imageUrl: '',
@@ -65,10 +106,7 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
     });
   }, [product]);
 
-  const handlePurchase = () => {
-    setIsPurchasing(true);
-    window.location.href = `/checkout/${product.id}`;
-  };
+
 
   const handleZoomChange = (zoomInfo: { isVisible: boolean; imageUrl: string; position: { x: number; y: number } }) => {
     setZoomData(zoomInfo);
@@ -108,18 +146,39 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
 
             <ProductInfo
               product={product}
-              onPurchase={handlePurchase}
-              isPurchasing={isPurchasing}
             />
           </div>
         </div>
       </div>
+      
+      {/* See It In Action - UGC Video Reels */}
+      <SeeInActionSection videos={ugcVideos} />
 
-      <MobileStickyFooter
-        product={product}
-        onPurchase={handlePurchase}
-        isPurchasing={isPurchasing}
-      />
+      {/* Product Highlights */}
+      <section className="bg-gray-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ProductHighlights />
+        </div>
+      </section>
+
+      {/* Ratings and Reviews */}
+      <section className="bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <RatingsAndReviews />
+        </div>
+      </section>
+
+      {/* Trust Screenshots - Student Success Stories */}
+      <TrustScreenshots />
+
+      {/* FAQ Accordion */}
+      <section className="py-12 pb-24 lg:pb-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AccordionSection />
+        </div>
+      </section>
+
+
     </div>
   );
 }

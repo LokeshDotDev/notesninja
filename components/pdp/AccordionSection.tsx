@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, HelpCircle, BookOpen, Download, CreditCard } from 'lucide-react';
+import { ChevronDown, HelpCircle, BookOpen, Download, CreditCard, Award } from 'lucide-react';
 
 interface AccordionItem {
   id: string;
@@ -35,12 +35,18 @@ export function AccordionSection() {
     },
     {
       id: 'faq4',
+      question: "Who creates these amazing notes?",
+      answer: "Our premium study materials are created by highly qualified professionals with 4+ years of experience in their respective fields. These include subject matter experts, experienced faculty members, and industry professionals who have deep knowledge of the curriculum and exam patterns. Each note is carefully crafted to ensure clarity, accuracy, and comprehensive coverage of the subject matter.",
+      icon: Award
+    },
+    {
+      id: 'faq5',
       question: "Are the materials updated regularly?",
       answer: "Absolutely! Our team of experts regularly updates all study materials to reflect the latest curriculum changes and exam patterns. You&apos;ll get free updates for 1 year from your purchase date.",
       icon: HelpCircle
     },
     {
-      id: 'faq5',
+      id: 'faq6',
       question: "Can I share the materials with my friends?",
       answer: "Our study materials are licensed for individual use only. Sharing or distributing the materials violates our terms of service. However, we do offer group discounts for multiple purchases.",
       icon: HelpCircle

@@ -1,16 +1,65 @@
+const { PrismaClient } = require('@prisma/client');
+
+function getSiteUrl() {
+  const rawSiteUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://notesninja.in';
+  const matchedUrl = rawSiteUrl.match(/https?:\/\/(?:[a-z0-9-]+\.)+[a-z]{2,}(?::\d+)?(?:\/[^\s]*)?/);
+  const parsed = matchedUrl ? matchedUrl[0] : 'https://notesninja.in';
+  return parsed.replace(/\/+$/, '');
+}
+
+function normalizePath(path = '') {
+  if (!path) return '';
+  return path
+    .trim()
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '');
+}
+
+function flattenCategoryPaths(categories = []) {
+  const paths = [];
+
+  const walk = (nodes = []) => {
+    for (const category of nodes) {
+      const categoryPath = normalizePath(category.path || category.slug || '');
+      if (categoryPath) {
+        paths.push({
+          loc: `/${categoryPath}`,
+          changefreq: 'weekly',
+          priority: 0.8,
+          lastmod: category.updatedAt || new Date().toISOString(),
+        });
+      }
+
+      if (Array.isArray(category.children) && category.children.length > 0) {
+        walk(category.children);
+      }
+    }
+  };
+
+  walk(categories);
+  return paths;
+}
+
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: process.env.NEXT_PUBLIC_BASE_URL || 'https://notesninja.in',
+  siteUrl: getSiteUrl(),
   generateRobotsTxt: true,
   exclude: [
-    '/admin', 
-    '/dashboard', 
-    '/debug', 
+    '/admin',
+    '/admin/*',
+    '/dashboard',
+    '/dashboard/*',
+    '/debug',
+    '/debug/*',
     '/loading-demo',
-    '/api/admin',
-    '/api/debug',
-    '/auth/callback',
-    '/auth/error'
+    '/api/*',
+    '/auth/*',
+    '/login',
+    '/register',
+    '/signup',
+    '/unauthorized',
+    '/articles/create',
+    '/pdp/*'
   ],
   transform: async (config, path) => {
     // Custom priority for different page types
@@ -41,38 +90,113 @@ module.exports = {
       lastmod: new Date().toISOString(),
     };
   },
-  additionalPaths: async (config) => {
+  additionalPaths: async () => {
+    const prisma = new PrismaClient();
     const paths = [];
-    
+
     try {
-      // Fetch categories from your API
-      const response = await fetch(`${config.siteUrl}/api/categories`);
-      const categories = await response.json();
-      
-      // Add category paths
-      function addCategoryPaths(cats, basePath = '') {
-        cats.forEach(category => {
-          const categoryPath = basePath ? `${basePath}/${category.slug}` : `/${category.slug}`;
-          paths.push({
-            loc: categoryPath,
-            changefreq: 'weekly',
-            priority: basePath ? 0.7 : 0.8, // Subcategories get slightly lower priority
-            lastmod: category.updatedAt || new Date().toISOString(),
-          });
-          
-          // Add children recursively
-          if (category.children && category.children.length > 0) {
-            addCategoryPaths(category.children, categoryPath);
-          }
+      // 1) Category pages
+      const categories = await prisma.category.findMany({
+        where: { parentId: null },
+        select: {
+          slug: true,
+          path: true,
+          updatedAt: true,
+          children: {
+            select: {
+              slug: true,
+              path: true,
+              updatedAt: true,
+              children: {
+                select: {
+                  slug: true,
+                  path: true,
+                  updatedAt: true,
+                  children: {
+                    select: {
+                      slug: true,
+                      path: true,
+                      updatedAt: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      paths.push(...flattenCategoryPaths(categories));
+
+      // 2) Product detail pages (SEO URLs)
+      const products = await prisma.post.findMany({
+        where: {
+          slug: { not: null },
+        },
+        select: {
+          slug: true,
+          updatedAt: true,
+          category: {
+            select: {
+              slug: true,
+              path: true,
+            },
+          },
+        },
+      });
+
+      const productUrlSet = new Set();
+      for (const product of products) {
+        const slug = normalizePath(product.slug || '');
+        const categoryPath = normalizePath(product.category?.path || product.category?.slug || '');
+        if (!slug || !categoryPath) continue;
+
+        const loc = `/${categoryPath}/${slug}`;
+        if (productUrlSet.has(loc)) continue;
+        productUrlSet.add(loc);
+
+        paths.push({
+          loc,
+          changefreq: 'weekly',
+          priority: 0.9,
+          lastmod: product.updatedAt || new Date().toISOString(),
         });
       }
-      
-      addCategoryPaths(categories);
-      
+
+      // 3) Published article pages
+      const articles = await prisma.article.findMany({
+        where: {
+          published: true,
+        },
+        select: {
+          slug: true,
+          updatedAt: true,
+          publishedAt: true,
+        },
+      });
+
+      const articleUrlSet = new Set();
+      for (const article of articles) {
+        const slug = normalizePath(article.slug || '');
+        if (!slug) continue;
+
+        const loc = `/articles/${slug}`;
+        if (articleUrlSet.has(loc)) continue;
+        articleUrlSet.add(loc);
+
+        paths.push({
+          loc,
+          changefreq: 'weekly',
+          priority: 0.85,
+          lastmod: article.updatedAt || article.publishedAt || new Date().toISOString(),
+        });
+      }
     } catch (error) {
-      console.warn('Could not fetch categories for sitemap:', error.message);
+      console.warn('Could not build dynamic sitemap paths:', error.message);
+    } finally {
+      await prisma.$disconnect();
     }
-    
+
     return paths;
   },
 };

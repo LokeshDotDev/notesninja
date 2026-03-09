@@ -25,6 +25,7 @@ export interface Post {
   url?: string;
   price?: number | null;
   compareAtPrice?: number | null;
+  createdAt?: string | Date;
   images?: Array<{
     id: string;
     imageUrl: string;

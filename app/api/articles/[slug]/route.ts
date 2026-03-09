@@ -91,6 +91,7 @@ export async function PUT(
     const data = await request.json()
     const {
       title,
+      slug: newSlug,
       excerpt,
       content,
       coverImage,
@@ -104,6 +105,7 @@ export async function PUT(
 
     const article = await updateArticle(existingArticle.id, {
       title,
+      slug: newSlug,
       excerpt,
       content,
       coverImage,

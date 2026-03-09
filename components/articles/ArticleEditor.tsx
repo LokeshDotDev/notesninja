@@ -229,6 +229,7 @@ const MenuBar = ({ editor, onImageUpload, onLinkClick, uploadingMedia }: { edito
 interface ArticleEditorProps {
   initialData?: {
     title?: string
+    slug?: string
     excerpt?: string
     content?: string
     coverImage?: string
@@ -245,6 +246,7 @@ interface ArticleEditorProps {
 
 export default function ArticleEditor({ initialData, onSave, onCancel }: ArticleEditorProps) {
   const [title, setTitle] = useState(initialData?.title || '')
+  const [slug, setSlug] = useState(initialData?.slug || '')
   const [excerpt, setExcerpt] = useState(initialData?.excerpt || '')
   const [coverImage, setCoverImage] = useState(initialData?.coverImage || '')
   const [coverImagePublicId, setCoverImagePublicId] = useState(initialData?.coverImagePublicId || '')
@@ -263,6 +265,27 @@ export default function ArticleEditor({ initialData, onSave, onCancel }: Article
   const [uploadingMedia, setUploadingMedia] = useState(false)
 
   useEffect(() => { setIsMounted(true) }, [])
+
+  // Auto-generate slug from title when slug is empty and title changes
+  useEffect(() => {
+    if (!slug && title) {
+      const generatedSlug = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
+      setSlug(generatedSlug)
+    }
+  }, [title, slug])
+
+  // Format slug input to be URL-friendly
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedSlug = e.target.value
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/(^-|-$)/g, '')
+    setSlug(formattedSlug)
+  }
 
   const editor = useEditor({
     extensions: [
@@ -380,25 +403,39 @@ export default function ArticleEditor({ initialData, onSave, onCancel }: Article
     setTags(tags.filter(tag => tag !== tagToRemove))
   }
 
-  const handleSave = (forcePublished?: boolean) => {
+  const handleSave = async (forcePublished?: boolean) => {
     if (!title.trim() || !editor?.getHTML()) {
       alert('Please fill in the title and content')
       return
     }
 
+    if (!slug.trim()) {
+      alert('Please provide a URL slug')
+      return
+    }
+
     const htmlContent = editor.getHTML()
-    onSave({
-      title: title.trim(),
-      excerpt: excerpt.trim(),
-      content: htmlContent,
-      coverImage: coverImage.trim() || undefined,
-      coverImagePublicId: coverImagePublicId.trim() || undefined,
-      published: forcePublished !== undefined ? forcePublished : published,
-      featured,
-      tags,
-      metaTitle: metaTitle.trim() || undefined,
-      metaDescription: metaDescription.trim() || undefined,
-    })
+    try {
+      onSave({
+        title: title.trim(),
+        slug: slug.trim(),
+        excerpt: excerpt.trim(),
+        content: htmlContent,
+        coverImage: coverImage.trim() || undefined,
+        coverImagePublicId: coverImagePublicId.trim() || undefined,
+        published: forcePublished !== undefined ? forcePublished : published,
+        featured,
+        tags,
+        metaTitle: metaTitle.trim() || undefined,
+        metaDescription: metaDescription.trim() || undefined,
+      })
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Slug already exists')) {
+        alert('This URL slug is already taken. Please choose a different slug.')
+      } else {
+        alert(error instanceof Error ? error.message : 'Failed to save article')
+      }
+    }
   }
 
   if (!isMounted) return <div className="p-6">Loading editor...</div>
@@ -425,6 +462,24 @@ export default function ArticleEditor({ initialData, onSave, onCancel }: Article
             placeholder="Enter article title..."
             className="text-xl font-semibold mt-2"
           />
+        </div>
+
+        {/* Slug */}
+        <div>
+          <Label htmlFor="slug" className="text-sm font-semibold">URL Slug</Label>
+          <Input
+            id="slug"
+            value={slug}
+            onChange={handleSlugChange}
+            placeholder="url-friendly-slug"
+            className="mt-2"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            This will be used in the URL: /articles/{slug || 'your-slug'}
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            💡 Tip: Use descriptive keywords for better SEO (e.g., &quot;best-web-development-practices&quot;)
+          </p>
         </div>
 
         {/* Excerpt */}

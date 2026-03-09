@@ -29,6 +29,10 @@ const HowItWorks = dynamic(() => import("@/components/content/HowItWorks").then(
   loading: () => <div className="h-96 bg-gray-50 animate-pulse" />
 });
 
+const FAQSection = dynamic(() => import("@/components/pdp/AccordionSection").then(mod => ({ default: mod.AccordionSection })), {
+  loading: () => <div className="h-96 bg-gray-50 animate-pulse" />
+});
+
 export const metadata: Metadata = {
   title: `${settings.site.name} | Premium Digital Academic Materials & Study Resources`,
   description: settings.site.description,
@@ -104,6 +108,7 @@ export default function Home() {
       <EducationalFeatures />
       <RatingsAndReviews />
       <HowItWorks />
+      <FAQSection />
       {/* <CallToAction /> */}
     </>
   );

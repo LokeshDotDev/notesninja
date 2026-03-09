@@ -368,6 +368,18 @@ export async function createArticle(data: {
   metaDescription?: string
   authorId: string
 }): Promise<Article> {
+  // Validate slug uniqueness
+  if (data.slug) {
+    const existingArticle = await prisma.article.findFirst({
+      where: { slug: data.slug },
+      select: { id: true },
+    })
+
+    if (existingArticle) {
+      throw new Error('Slug already exists. Please choose a different slug.')
+    }
+  }
+
   // Calculate reading time (average 200 words per minute)
   const wordCount = data.content.split(/\s+/).length
   const readingTime = Math.ceil(wordCount / 200)
@@ -420,8 +432,31 @@ export async function updateArticle(
     readingTime = Math.ceil(wordCount / 200)
   }
 
+  // Handle slug validation and uniqueness
+  let finalSlug = data.slug
+  if (data.slug) {
+    // Check if slug is unique (exclude current article)
+    const existingArticle = await prisma.article.findFirst({
+      where: {
+        slug: data.slug,
+        id: { not: id },
+      },
+      select: { id: true },
+    })
+
+    if (existingArticle) {
+      throw new Error('Slug already exists. Please choose a different slug.')
+    }
+  } else if (data.title) {
+    // Generate slug from title if slug is not provided but title is updated
+    finalSlug = await generateUniqueSlug(data.title, id)
+  }
+
   // Set publishedAt if article is being published for the first time
-  const updateData: typeof data & { readingTime?: number; publishedAt?: Date } = { ...data }
+  const updateData: typeof data & { readingTime?: number; publishedAt?: Date; slug?: string } = { 
+    ...data,
+    ...(finalSlug && { slug: finalSlug })
+  }
   if (data.published && readingTime !== undefined) {
     updateData.readingTime = readingTime
     updateData.publishedAt = new Date()

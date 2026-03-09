@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Post {
-  id             String        @id @default(cuid())
+  id             String          @id @default(cuid())
   title          String
   slug           String?
   description    String
@@ -16,29 +16,31 @@ model Post {
   publicId       String?
   price          Float?
   compareAtPrice Float?
-  isDigital      Boolean       @default(false)
-  isDiscounted   Boolean?      @default(false)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  isDigital      Boolean         @default(false)
+  isDiscounted   Boolean?        @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
   categoryId     String
   subcategoryId  String?
   productTypeId  String?
   digitalFiles   DigitalFile[]
-  category       Category      @relation(fields: [categoryId], references: [id])
-  productType    ProductType?  @relation(fields: [productTypeId], references: [id])
-  subcategory    Subcategory?  @relation(fields: [subcategoryId], references: [id])
+  sampleFiles    SampleFile[]
+  sampleDownloads SampleDownload[]
+  category       Category        @relation(fields: [categoryId], references: [id])
+  productType    ProductType?    @relation(fields: [productTypeId], references: [id])
+  subcategory    Subcategory?    @relation(fields: [subcategoryId], references: [id])
   images         PostImage[]
   purchases      Purchase[]
 }
 
 model PostImage {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   imageUrl String
   publicId String
-  order    Int    @default(0)
+  order    Int     @default(0)
   isCover  Boolean @default(false)
   postId   String
-  post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post     Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model Category {
@@ -109,7 +111,7 @@ model Purchase {
   id            String   @id @default(cuid())
   postId        String
   userEmail     String
-  userId        String?  // Optional user ID for authenticated users
+  userId        String?
   paymentId     String?
   amount        Float
   currency      String   @default("USD")
@@ -122,24 +124,19 @@ model Purchase {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String?
-  email         String    @unique
+  email         String     @unique
   emailVerified DateTime?
   password      String
   image         String?
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  role          Role       @default(USER)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   accounts      Account[]
-  sessions      Session[]
-  purchases     Purchase[]
   articles      Article[]
-}
-
-enum Role {
-  USER
-  ADMIN
+  purchases     Purchase[]
+  sessions      Session[]
 }
 
 model Account {
@@ -148,15 +145,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -185,38 +181,72 @@ model Visitor {
 }
 
 model UserLog {
-  id          String   @id @default(cuid())
-  email       String
-  firstName   String?
-  lastName    String?
-  phone       String?
-  productId   String
-  productName String
+  id           String   @id @default(cuid())
+  email        String
+  firstName    String?
+  lastName     String?
+  phone        String?
+  productId    String
+  productName  String
   productPrice Float?
-  userAgent   String?
-  ipAddress   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  userAgent    String?
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Article {
-  id          String    @id @default(cuid())
-  title       String
-  slug        String    @unique
-  excerpt     String?
-  content     String    @db.Text
-  coverImage  String?
+  id                 String    @id @default(cuid())
+  title              String
+  slug               String    @unique
+  excerpt            String?
+  content            String
+  coverImage         String?
   coverImagePublicId String?
-  published   Boolean   @default(false)
-  featured    Boolean   @default(false)
-  views       Int       @default(0)
-  readingTime Int       @default(0)
-  tags        String[]
-  metaTitle   String?
-  metaDescription String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  publishedAt DateTime?
-  authorId    String
-  author      User      @relation(fields: [authorId], references: [id])
+  published          Boolean   @default(false)
+  featured           Boolean   @default(false)
+  views              Int       @default(0)
+  readingTime        Int       @default(0)
+  tags               String[]
+  metaTitle          String?
+  metaDescription    String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  publishedAt        DateTime?
+  authorId           String
+  author             User      @relation(fields: [authorId], references: [id])
+}
+
+model SampleFile {
+  id          String   @id @default(cuid())
+  fileName    String
+  fileUrl     String
+  publicId    String
+  fileSize    Int
+  fileType    String
+  postId      String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  downloads   SampleDownload[]
+}
+
+model SampleDownload {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  phone       String
+  postId      String
+  sampleFileId String
+  ipAddress   String?
+  userAgent   String?
+  downloadedAt DateTime @default(now())
+  post        Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  sampleFile  SampleFile @relation(fields: [sampleFileId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  USER
+  ADMIN
 }

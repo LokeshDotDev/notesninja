@@ -1,8 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface Slide {
   id: number;
@@ -62,14 +63,28 @@ const infiniteSlides = [slides[slides.length - 1], ...slides, slides[0]];
 export function GiantSlider() {
   const [currentSlide, setCurrentSlide] = useState(1); // Start at 1 to show first real slide
   const [isTransitioning, setIsTransitioning] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      goToNext();
-    }, 3000);
+    if (!isPaused) {
+      intervalRef.current = setInterval(() => {
+        goToNext();
+      }, 3000);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isPaused]);
 
   useEffect(() => {
     // Handle infinite loop boundaries
@@ -90,11 +105,8 @@ export function GiantSlider() {
     }
   }, [currentSlide]);
 
-  const goToSlide = (index: number) => {
-    setCurrentSlide(index + 1); // Add 1 to account for cloned first slide
-  };
-
-  const goToPrevious = () => {
+  const goToPrevious = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setCurrentSlide((prev) => prev - 1);
   };
 
@@ -102,11 +114,33 @@ export function GiantSlider() {
     setCurrentSlide((prev) => prev + 1);
   };
 
+  const goToSlide = (index: number, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setCurrentSlide(index + 1); // Add 1 to account for cloned first slide
+  };
+
+  const handleSlideClick = () => {
+    router.push('/online-manipal-university/notes-and-mockpaper');
+  };
+
+  const handleMouseEnter = () => {
+    setIsPaused(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsPaused(false);
+  };
+
   return (
     <section 
       className="relative w-full overflow-hidden bg-white aspect-[2/1] md:aspect-[16/9] lg:aspect-video"
     >
-      <div className="relative h-full overflow-hidden">
+      <div 
+        className="relative h-full overflow-hidden cursor-pointer"
+        onClick={handleSlideClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <div 
           className={`flex h-full ${isTransitioning ? 'transition-transform duration-700 ease-in-out' : ''}`}
           style={{
@@ -143,7 +177,7 @@ export function GiantSlider() {
 
       {/* Navigation Arrows */}
       <button
-        onClick={goToPrevious}
+        onClick={(e) => goToPrevious(e)}
         className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 bg-black/10 backdrop-blur-sm text-black p-2 md:p-3 rounded-full hover:bg-black/20 transition-colors"
         aria-label="Previous slide"
       >
@@ -163,7 +197,7 @@ export function GiantSlider() {
         {slides.map((_, index) => (
           <button
             key={index}
-            onClick={() => goToSlide(index)}
+            onClick={(e) => goToSlide(index, e)}
             className={cn(
               "h-2 md:h-3 rounded-full transition-all duration-300",
               currentSlide === index + 1
