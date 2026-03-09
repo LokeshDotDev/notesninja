@@ -656,7 +656,7 @@ export function ProductInfo({
             className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:border-blue-400 dark:text-blue-400 py-3 rounded-xl font-medium text-base transition-all duration-200"
           >
             <Download className="w-5 h-5 mr-2" />
-            Download Sample
+            Download Free Sample
           </Button>
           
           <Button
@@ -678,11 +678,14 @@ export function ProductInfo({
             href={settings.whatsapp.url()}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full px-6 py-4 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white rounded-xl font-medium text-base transition-all duration-200"
+            className="flex items-center justify-center gap-1 w-full px-6 py-3 bg-green-500 dark:bg-neutral-800 hover:bg-green-200 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white rounded-xl font-medium text-white transition-all duration-200"
           >
             <MessageCircle className="w-5 h-5" />
-            <span>Contact us for more enquiry</span>
+            <span>Ask Questions on WhatsApp</span>
           </a>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center">
+            Instant reply • No waiting • Study experts available
+          </p>
         </div>
 
         {/* Product Specifications Table */}
