@@ -31,6 +31,7 @@ model Post {
   subcategory    Subcategory?    @relation(fields: [subcategoryId], references: [id])
   images         PostImage[]
   purchases      Purchase[]
+  productSubjects ProductSubject[]
 }
 
 model PostImage {
@@ -117,6 +118,7 @@ model Purchase {
   currency      String   @default("USD")
   status        String   @default("pending")
   downloadCount Int      @default(0)
+  selectedSubjects String? // JSON string of selected subject IDs
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   post          Post     @relation(fields: [postId], references: [id])
@@ -249,4 +251,21 @@ model SampleDownload {
 enum Role {
   USER
   ADMIN
+}
+
+model ProductSubject {
+  id          String   @id @default(cuid())
+  postId      String
+  subjectId   String   // Unique identifier for the subject (e.g., 'business_communication')
+  name        String   // Display name (e.g., 'Business Communication')
+  description String?  // Optional description
+  price       Float    // Price for this individual subject
+  isBundle    Boolean  @default(false) // Whether this is a bundle option
+  sortOrder   Int      @default(0) // Order in which to display
+  isActive    Boolean  @default(true) // Whether this subject is available
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  @@unique([postId, subjectId])
 }

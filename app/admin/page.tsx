@@ -12,7 +12,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, Download, Loader2, Search, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Loader2, Package, Search, Trash2 } from "lucide-react";
 import FormDialog from "@/components/custom/FormDialog";
 import Notification from "@/components/custom/Notification";
 import { NestedCategoryList } from "@/components/custom/NestedCategoryList";
@@ -866,6 +866,14 @@ export default function Dashboard() {
 						Admin Dashboard
 					</h1>
 					<div className='flex items-center gap-2'>
+						<Button
+							onClick={() => router.push('/admin/product-subjects')}
+							variant='outline'
+							className='border-green-600 text-green-600 hover:bg-green-50'
+						>
+							<Package className='w-4 h-4 mr-2' />
+							Manage Subjects
+						</Button>
 						<Button
 							onClick={() => router.push('/admin/sample-files')}
 							variant='outline'

@@ -17,6 +17,7 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import { calculateDiscountPercentage } from '@/lib/pricing-utils';
+import { trackLead } from '@/lib/analytics';
 import Link from 'next/link';
 import settings from '@/lib/settings';
 import { DescriptionRenderer } from '@/components/ui/DescriptionRenderer';
@@ -43,11 +44,84 @@ interface Product {
   };
 }
 
+interface ProductSubject {
+  id: string;
+  postId: string;
+  subjectId: string;
+  name: string;
+  description?: string;
+  price: number;
+  isBundle: boolean;
+  sortOrder: number;
+  isActive: boolean;
+}
+
 interface ProductInfoProps {
   product: Product;
   onPurchase?: () => void;
   isPurchasing?: boolean;
 }
+
+// Function to extract program and semester from product title
+const extractProgramAndSemester = (title: string) => {
+  const patterns = [
+    // MBA patterns
+    { regex: /^(MBA\s*SEM\s*\d+(?:\s*–\s*.+)?)$/i, program: 'MBA' },
+    { regex: /^(MBA\s*–\s*.+?\s*SEM\s*\d+)$/i, program: 'MBA' },
+    
+    // BBA patterns
+    { regex: /^(BBA\s*SEM\s*\d+)$/i, program: 'BBA' },
+    
+    // BCom patterns
+    { regex: /^(BCOM\s*SEM\s*\d+)$/i, program: 'B.Com' },
+    
+    // BCA patterns
+    { regex: /^(BCA\s*SEM\s*\d+)$/i, program: 'BCA' },
+    
+    // MCom patterns
+    { regex: /^(MCOM\s*SEM\s*\d+)$/i, program: 'M.Com' },
+    
+    // MA Economics patterns
+    { regex: /^(MA\s*IN\s*ECONOMICS\s*–\s*SEM\s*\d+)$/i, program: 'MA in Economics' },
+    
+    // MAJMC patterns
+    { regex: /^(MAJMC\s*SEM\s*\d+)$/i, program: 'MAJMC' },
+    
+    // MCA patterns
+    { regex: /^(MCA\s*SEM\s*\d+)$/i, program: 'MCA' },
+  ];
+
+  for (const pattern of patterns) {
+    const match = title.match(pattern.regex);
+    if (match) {
+      const matchedText = match[1];
+      
+      // Extract semester
+      const semesterMatch = matchedText.match(/SEM\s*(\d+)/i);
+      const semester = semesterMatch ? `Semester ${semesterMatch[1]}` : '';
+      
+      // Extract specialization if present
+      const specializationMatch = matchedText.match(/–\s*(.+?)\s*SEM\s*\d+$/i);
+      const specialization = specializationMatch ? specializationMatch[1] : '';
+      
+      return {
+        program: pattern.program + (specialization ? ` – ${specialization}` : ''),
+        semester
+      };
+    }
+  }
+
+  // Fallback for other patterns
+  const fallbackSemMatch = title.match(/SEM\s*(\d+)/i);
+  if (fallbackSemMatch) {
+    return {
+      program: title.replace(/SEM\s*\d+/i, '').trim(),
+      semester: `Semester ${fallbackSemMatch[1]}`
+    };
+  }
+
+  return { program: title, semester: '' };
+};
 
 interface CollapsibleSectionProps {
   title: string;
@@ -96,13 +170,33 @@ export function ProductInfo({
   onPurchase, 
   isPurchasing: externalIsPurchasing = false
 }: ProductInfoProps) {
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(['full_bundle']);
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [internalIsPurchasing, setInternalIsPurchasing] = useState(false);
   const [isSampleModalOpen, setIsSampleModalOpen] = useState(false);
+  const [productSubjects, setProductSubjects] = useState<ProductSubject[]>([]);
   
   // Use external isPurchasing if provided, otherwise use internal state
   const isPurchasing = externalIsPurchasing || internalIsPurchasing;
   
+  // Fetch product subjects from database
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      if (!product?.id) return;
+      
+      try {
+        const response = await fetch(`/api/posts/${product.id}/subjects`);
+        if (response.ok) {
+          const data = await response.json();
+          setProductSubjects(data.subjects || []);
+        }
+      } catch (error) {
+        console.error('Error fetching subjects:', error);
+      }
+    };
+
+    fetchSubjects();
+  }, [product.id]);
+
   // Check if URL parameters are passed (for direct checkout access)
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -122,58 +216,48 @@ export function ProductInfo({
     console.log('Current selectedSubjects state:', selectedSubjects);
   }, [selectedSubjects]);
   
-  // MBA Sem 1 subject pricing configuration
-  const mbaSem1Subjects = [
-    { id: 'full_bundle', name: 'Complete Bundle (All Subjects)', price: 3999, isBundle: true },
-    { id: 'business_communication', name: 'Business Communication', price: 999, isBundle: false },
-    { id: 'financial_accounting', name: 'Financial and Management Accounting', price: 999, isBundle: false },
-    { id: 'human_resource', name: 'Human Resource Management', price: 999, isBundle: false },
-    { id: 'management_process', name: 'Management Process and Organisational Behaviour', price: 999, isBundle: false },
-    { id: 'managerial_economics', name: 'Managerial Economics', price: 999, isBundle: false },
-    { id: 'statistics', name: 'Statistics for Management', price: 999, isBundle: false }
-  ];
-
-  // Check if this is an MBA Sem 1 product (check both title and ID/slug)
-  const isMbaSem1Product = (product.title.toLowerCase().includes('mba') && 
-                          product.title.toLowerCase().includes('sem 1')) ||
-                          product.id.toLowerCase().includes('mba-sem-1');
-  
-  console.log('Product title:', product.title);
-  console.log('Product ID:', product.id);
-  console.log('Is MBA Sem 1 Product:', isMbaSem1Product);
+  // Check if this product has subjects configured
+  const hasProductSubjects = productSubjects.length > 0;
 
   // Get current pricing based on selection
   const getCurrentPricing = () => {
-    if (!isMbaSem1Product) {
+    // If this product has subjects configured, use subject-based pricing
+    if (hasProductSubjects) {
+      // If any bundle is selected, use bundle price
+      const selectedBundle = productSubjects.find(s => 
+        s.isBundle && selectedSubjects.includes(s.subjectId)
+      );
+      
+      if (selectedBundle) {
+        return {
+          price: selectedBundle.price,
+          compareAtPrice: product.compareAtPrice
+        };
+      }
+
+      // Calculate total price for selected individual subjects
+      const totalPrice = selectedSubjects.reduce((sum, subjectId) => {
+        const subject = productSubjects.find(s => s.subjectId === subjectId && !s.isBundle);
+        return sum + (subject?.price || 0);
+      }, 0);
+      
+      // If subjects selected, show calculated price vs bundle price for comparison
+      if (selectedSubjects.length > 0) {
+        const bundlePrice = productSubjects.find(s => s.isBundle)?.price;
+        return {
+          price: totalPrice,
+          compareAtPrice: bundlePrice || product.compareAtPrice
+        };
+      }
+      
+      // Default fallback
       return {
         price: product.price || 0,
         compareAtPrice: product.compareAtPrice
       };
     }
 
-    // If full bundle is selected, show bundle price
-    if (selectedSubjects.includes('full_bundle')) {
-      return {
-        price: 3999,
-        compareAtPrice: product.compareAtPrice
-      };
-    }
-
-    // Calculate total price for selected individual subjects
-    const totalPrice = selectedSubjects.reduce((sum, subjectId) => {
-      const subject = mbaSem1Subjects.find(s => s.id === subjectId);
-      return sum + (subject?.price || 0);
-    }, 0);
-    
-    // If subjects selected, show calculated price vs bundle price for comparison
-    if (selectedSubjects.length > 0) {
-      return {
-        price: totalPrice,
-        compareAtPrice: 3999 // Show bundle price as comparison
-      };
-    }
-    
-    // Default fallback
+    // Fallback to original product pricing
     return {
       price: product.price || 0,
       compareAtPrice: product.compareAtPrice
@@ -195,7 +279,7 @@ export function ProductInfo({
     console.log('=== PURCHASE CLICKED ===');
     console.log('Selected subjects at click:', selectedSubjects);
     console.log('Current pricing at click:', pricingAtClick);
-    console.log('Is MBA Sem 1 Product:', isMbaSem1Product);
+    console.log('Product has subjects:', hasProductSubjects);
     
     trackBeginCheckout({
       id: product.id,
@@ -215,8 +299,8 @@ export function ProductInfo({
         // Simulate processing time before redirect
         await new Promise(resolve => setTimeout(resolve, 1500));
         
-        // Pass selected subjects info to checkout for MBA Sem 1 products
-        const checkoutUrl = isMbaSem1Product 
+        // Pass selected subjects info to checkout for products with subjects
+        const checkoutUrl = hasProductSubjects 
           ? `/checkout/${product.id}?subjects=${selectedSubjects.join(',')}&price=${pricingAtClick.price}`
           : `/checkout/${product.id}`;
         console.log('Final checkout URL:', checkoutUrl);
@@ -253,6 +337,17 @@ export function ProductInfo({
         }
         throw new Error(result.error || 'Failed to process download request');
       }
+      
+      // Track lead generation event for sample download
+      await trackLead({
+        leadType: 'sample_download',
+        productName: product.title,
+        productId: product.id,
+        userEmail: formData.email,
+        userName: formData.name,
+        userPhone: formData.phone,
+        value: product.price || 999 // Estimated value of the lead
+      });
       
       // Trigger file download
       if (result.downloadUrl) {
@@ -406,14 +501,17 @@ export function ProductInfo({
           </span>
         )}
 
-        {/* Premium Apple-Style Subject Selection for MBA Sem 1 */}
-        {isMbaSem1Product && (
+        {/* Dynamic Subject Selection for Products with Subjects */}
+        {hasProductSubjects && (
           <div className="mt-6 space-y-4">
             <div className="flex items-baseline justify-between">
               <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
                 Choose your subjects
               </h3>
-              {selectedSubjects.length > 0 && !selectedSubjects.includes('full_bundle') && (
+              {selectedSubjects.length > 0 && !selectedSubjects.some(id => {
+                const subject = productSubjects.find(s => s.subjectId === id);
+                return subject?.isBundle;
+              }) && (
                 <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
                   {selectedSubjects.length} selected
                 </span>
@@ -421,10 +519,13 @@ export function ProductInfo({
             </div>
             
             <div className="space-y-3">
-              {/* Full Bundle Option - Premium Card */}
-              {mbaSem1Subjects.filter(s => s.isBundle).map((subject) => {
-                const isSelected = selectedSubjects.includes(subject.id);
-                const hasIndividualSubjects = selectedSubjects.some(id => id !== 'full_bundle');
+              {/* Bundle Options - Premium Cards */}
+              {productSubjects.filter(s => s.isBundle).map((subject) => {
+                const isSelected = selectedSubjects.includes(subject.subjectId);
+                const hasIndividualSubjects = selectedSubjects.some(id => {
+                  const s = productSubjects.find(sub => sub.subjectId === id);
+                  return s && !s.isBundle;
+                });
                 const isDisabled = hasIndividualSubjects;
                 
                 return (
@@ -441,7 +542,7 @@ export function ProductInfo({
                     }`}
                     onClick={() => {
                       if (!isDisabled) {
-                        setSelectedSubjects(isSelected ? [] : ['full_bundle']);
+                        setSelectedSubjects(isSelected ? [] : [subject.subjectId]);
                       }
                     }}
                   >
@@ -460,22 +561,19 @@ export function ProductInfo({
                               </span>
                             )}
                           </div>
-                          <p className={`text-xs ${
-                            isSelected ? 'text-white/80' : isDisabled ? 'text-neutral-500' : 'text-white/70'
-                          }`}>
-                            All 6 subjects included
-                          </p>
+                          {subject.description && (
+                            <p className={`text-xs ${
+                              isSelected ? 'text-white/80' : isDisabled ? 'text-neutral-500' : 'text-white/70'
+                            }`}>
+                              {subject.description}
+                            </p>
+                          )}
                         </div>
                         <div className="text-right">
                           <div className={`text-xl font-bold ${
                             isSelected ? 'text-white' : isDisabled ? 'text-neutral-500' : 'text-white'
                           }`}>
                             {formatPrice(subject.price)}
-                          </div>
-                          <div className={`text-xs line-through ${
-                            isSelected ? 'text-white/60' : isDisabled ? 'text-neutral-500' : 'text-white/50'
-                          }`}>
-                            ₹5,994
                           </div>
                         </div>
                       </div>
@@ -497,93 +595,114 @@ export function ProductInfo({
                 );
               })}
               
-              {/* Divider with OR */}
-              <div className="relative py-2">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-neutral-200 dark:border-neutral-700"></div>
+              {/* Divider with OR - Show only if both bundles and individual subjects exist */}
+              {productSubjects.some(s => s.isBundle) && productSubjects.some(s => !s.isBundle) && (
+                <div className="relative py-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-neutral-200 dark:border-neutral-700"></div>
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-white dark:bg-neutral-900 px-4 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                      OR SELECT INDIVIDUAL SUBJECTS
+                    </span>
+                  </div>
                 </div>
-                <div className="relative flex justify-center">
-                  <span className="bg-white dark:bg-neutral-900 px-4 text-xs font-medium text-neutral-500 dark:text-neutral-400">
-                    OR SELECT INDIVIDUAL SUBJECTS
-                  </span>
-                </div>
-              </div>
+              )}
               
               {/* Individual Subjects - Premium Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {mbaSem1Subjects.filter(s => !s.isBundle).map((subject) => {
-                  const isSelected = selectedSubjects.includes(subject.id);
-                  const isFullBundleSelected = selectedSubjects.includes('full_bundle');
-                  const isDisabled = isFullBundleSelected;
-                  
-                  return (
-                    <motion.div
-                      key={subject.id}
-                      whileHover={!isDisabled ? { y: -2 } : {}}
-                      whileTap={!isDisabled ? { scale: 0.98 } : {}}
-                      className={`relative rounded-lg transition-all duration-200 ${
-                        isSelected
-                          ? 'bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-500 shadow-sm'
-                          : isDisabled
-                          ? 'bg-neutral-50 dark:bg-neutral-800 opacity-50 cursor-not-allowed'
-                          : 'bg-white dark:bg-neutral-800 ring-1 ring-neutral-200 dark:ring-neutral-700 hover:ring-neutral-300 dark:hover:ring-neutral-600 hover:shadow-md cursor-pointer'
-                      }`}
-                      onClick={() => {
-                        if (!isDisabled) {
-                          console.log('Card clicked:', subject.id, !isSelected);
-                          
-                          if (isSelected) {
-                            setSelectedSubjects(prev => prev.filter(id => id !== subject.id));
-                          } else {
-                            setSelectedSubjects(prev => 
-                              prev.filter(id => id !== 'full_bundle').concat(subject.id)
-                            );
+              {productSubjects.filter(s => !s.isBundle).length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {productSubjects.filter(s => !s.isBundle).map((subject) => {
+                    const isSelected = selectedSubjects.includes(subject.subjectId);
+                    const isBundleSelected = selectedSubjects.some(id => {
+                      const s = productSubjects.find(sub => sub.subjectId === id);
+                      return s?.isBundle;
+                    });
+                    const isDisabled = isBundleSelected;
+                    
+                    return (
+                      <motion.div
+                        key={subject.id}
+                        whileHover={!isDisabled ? { y: -2 } : {}}
+                        whileTap={!isDisabled ? { scale: 0.98 } : {}}
+                        className={`relative rounded-lg transition-all duration-200 ${
+                          isSelected
+                            ? 'bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-500 shadow-sm'
+                            : isDisabled
+                            ? 'bg-neutral-50 dark:bg-neutral-800 opacity-50 cursor-not-allowed'
+                            : 'bg-white dark:bg-neutral-800 ring-1 ring-neutral-200 dark:ring-neutral-700 hover:ring-neutral-300 dark:hover:ring-neutral-600 hover:shadow-md cursor-pointer'
+                        }`}
+                        onClick={() => {
+                          if (!isDisabled) {
+                            console.log('Card clicked:', subject.subjectId, !isSelected);
+                            
+                            if (isSelected) {
+                              setSelectedSubjects(prev => prev.filter(id => id !== subject.subjectId));
+                            } else {
+                              setSelectedSubjects(prev => 
+                                prev.filter(id => {
+                                  const s = productSubjects.find(sub => sub.subjectId === id);
+                                  return !s?.isBundle;
+                                }).concat(subject.subjectId)
+                              );
+                            }
                           }
-                        }
-                      }}
-                    >
-                      <div className="p-3.5">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <h4 className={`text-sm font-medium leading-snug flex-1 ${
-                            isSelected 
-                              ? 'text-neutral-900 dark:text-white' 
-                              : isDisabled
-                              ? 'text-neutral-400 dark:text-neutral-600'
-                              : 'text-neutral-700 dark:text-neutral-300'
-                          }`}>
-                            {subject.name}
-                          </h4>
-                          {isSelected && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                              className="flex-shrink-0"
-                            >
-                              <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                              </div>
-                            </motion.div>
+                        }}
+                      >
+                        <div className="p-3.5">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <h4 className={`text-sm font-medium leading-snug flex-1 ${
+                              isSelected 
+                                ? 'text-neutral-900 dark:text-white' 
+                                : isDisabled
+                                ? 'text-neutral-400 dark:text-neutral-600'
+                                : 'text-neutral-700 dark:text-neutral-300'
+                            }`}>
+                              {subject.name}
+                            </h4>
+                            {isSelected && (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                className="flex-shrink-0"
+                              >
+                                <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                </div>
+                              </motion.div>
+                            )}
+                          </div>
+                          {subject.description && (
+                            <p className={`text-xs mb-2 ${
+                              isSelected 
+                                ? 'text-blue-700 dark:text-blue-300' 
+                                : isDisabled
+                                ? 'text-neutral-400 dark:text-neutral-600'
+                                : 'text-neutral-600 dark:text-neutral-400'
+                            }`}>
+                              {subject.description}
+                            </p>
                           )}
+                          <div className="flex items-baseline gap-1">
+                            <span className={`text-lg font-bold ${
+                              isSelected 
+                                ? 'text-blue-600 dark:text-blue-400' 
+                                : isDisabled
+                                ? 'text-neutral-400 dark:text-neutral-600'
+                                : 'text-neutral-900 dark:text-white'
+                            }`}>
+                              {formatPrice(subject.price)}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-baseline gap-1">
-                          <span className={`text-lg font-bold ${
-                            isSelected 
-                              ? 'text-blue-600 dark:text-blue-400' 
-                              : isDisabled
-                              ? 'text-neutral-400 dark:text-neutral-600'
-                              : 'text-neutral-900 dark:text-white'
-                          }`}>
-                            {formatPrice(subject.price)}
-                          </span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             
             {/* Selection Summary */}
@@ -600,7 +719,10 @@ export function ProductInfo({
               </motion.div>
             )}
             
-            {selectedSubjects.length > 0 && !selectedSubjects.includes('full_bundle') && (
+            {selectedSubjects.length > 0 && !selectedSubjects.some(id => {
+              const subject = productSubjects.find(s => s.subjectId === id);
+              return subject?.isBundle;
+            }) && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -661,7 +783,7 @@ export function ProductInfo({
           
           <Button
             onClick={handlePurchase}
-            disabled={isPurchasing || (isMbaSem1Product && selectedSubjects.length === 0)}
+            disabled={isPurchasing || (hasProductSubjects && selectedSubjects.length === 0)}
             size="lg"
             className="w-full bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 py-4 rounded-xl font-medium text-base transition-all duration-200 border-0 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -692,25 +814,62 @@ export function ProductInfo({
         <div className="mt-6">
           <table className="w-full text-sm">
             <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
+              {/* Dynamic Program and Semester Rows */}
+              {(() => {
+                const { program, semester } = extractProgramAndSemester(product.title);
+                return (
+                  <>
+                    {program && (
+                      <tr className="flex justify-between py-2">
+                        <td className="text-neutral-500 dark:text-neutral-400">Program</td>
+                        <td className="font-medium text-neutral-900 dark:text-white">{program}</td>
+                      </tr>
+                    )}
+                    {semester && (
+                      <tr className="flex justify-between py-2">
+                        <td className="text-neutral-500 dark:text-neutral-400">Semester</td>
+                        <td className="font-medium text-neutral-900 dark:text-white">{semester}</td>
+                      </tr>
+                    )}
+                  </>
+                );
+              })()}
+              
               <tr className="flex justify-between py-2">
                 <td className="text-neutral-500 dark:text-neutral-400">University</td>
-                <td className="font-medium text-neutral-900 dark:text-white">Manipal University</td>
+                <td className="font-medium text-neutral-900 dark:text-white">Manipal University Jaipur</td>
               </tr>
               <tr className="flex justify-between py-2">
                 <td className="text-neutral-500 dark:text-neutral-400">Format</td>
-                <td className="font-medium text-neutral-900 dark:text-white">Digital PDF</td>
+                <td className="font-medium text-neutral-900 dark:text-white">Digital PDF Notes</td>
               </tr>
               <tr className="flex justify-between py-2">
                 <td className="text-neutral-500 dark:text-neutral-400">Compatible Devices</td>
-                <td className="font-medium text-neutral-900 dark:text-white">All Devices</td>
+                <td className="font-medium text-neutral-900 dark:text-white">Mobile • Laptop • Tablet (All Devices Supported)</td>
               </tr>
               <tr className="flex justify-between py-2">
                 <td className="text-neutral-500 dark:text-neutral-400">Access Type</td>
-                <td className="font-medium text-neutral-900 dark:text-white">Instant Download</td>
+                <td className="font-medium text-neutral-900 dark:text-white">Instant Download After Payment</td>
+              </tr>
+              <tr className="flex justify-between py-2">
+                <td className="text-neutral-500 dark:text-neutral-400">Delivery Method</td>
+                <td className="font-medium text-neutral-900 dark:text-white">Download Link + Email Copy</td>
               </tr>
               <tr className="flex justify-between py-2">
                 <td className="text-neutral-500 dark:text-neutral-400">Validity</td>
                 <td className="font-medium text-neutral-900 dark:text-white">Lifetime Access</td>
+              </tr>
+              <tr className="flex justify-between py-2">
+                <td className="text-neutral-500 dark:text-neutral-400">Language</td>
+                <td className="font-medium text-neutral-900 dark:text-white">Easy & Exam-Oriented Language</td>
+              </tr>
+              <tr className="flex justify-between py-2">
+                <td className="text-neutral-500 dark:text-neutral-400">Coverage</td>
+                <td className="font-medium text-neutral-900 dark:text-white">Complete Syllabus Covered</td>
+              </tr>
+              <tr className="flex justify-between py-2">
+                <td className="text-neutral-500 dark:text-neutral-400">Best For</td>
+                <td className="font-medium text-neutral-900 dark:text-white">Exam Preparation • Assignments • Quick Revision</td>
               </tr>
             </tbody>
           </table>
@@ -771,7 +930,7 @@ export function ProductInfo({
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 px-4 py-3 z-50 lg:hidden">
         <Button
           onClick={handlePurchase}
-          disabled={isPurchasing || (isMbaSem1Product && selectedSubjects.length === 0)}
+          disabled={isPurchasing || (hasProductSubjects && selectedSubjects.length === 0)}
           size="lg"
           className="w-full bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 py-4 rounded-xl font-medium text-base transition-all duration-200 border-0 disabled:opacity-50 disabled:cursor-not-allowed"
         >

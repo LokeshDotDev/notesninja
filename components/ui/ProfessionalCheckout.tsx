@@ -81,6 +81,7 @@ interface Post {
   imageUrl?: string;
   price?: number;
   compareAtPrice?: number;
+  discountPercentage?: number | null;
   isDigital?: boolean;
   digitalFiles?: Array<{
     id: string;
@@ -93,11 +94,25 @@ interface Post {
   category?: {
     id: string;
     name: string;
+    slug: string;
   };
   subcategory?: {
     id: string;
     name: string;
+    slug: string;
   };
+}
+
+interface ProductSubject {
+  id: string;
+  postId: string;
+  subjectId: string;
+  name: string;
+  description?: string;
+  price: number;
+  isBundle: boolean;
+  sortOrder: number;
+  isActive: boolean;
 }
 
 interface ProfessionalCheckoutProps {
@@ -109,6 +124,7 @@ interface ProfessionalCheckoutProps {
 export function ProfessionalCheckout({ productId, subjects, customPrice }: ProfessionalCheckoutProps) {
   const { data: session } = useSession();
   const [product, setProduct] = useState<Post | null>(null);
+  const [productSubjects, setProductSubjects] = useState<ProductSubject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [paymentStep, setPaymentStep] = useState<"details" | "payment" | "processing" | "success" | "error">("details");
@@ -140,20 +156,36 @@ export function ProfessionalCheckout({ productId, subjects, customPrice }: Profe
   const RAZORPAY_DISABLED_FOR_TESTING = false;
 
   useEffect(() => {
-    async function fetchProduct() {
+    async function fetchProductAndSubjects() {
       try {
         setLoading(true);
-        const response = await fetch(`/api/posts/${productId}`);
         
-        if (!response.ok) {
+        // Fetch product details
+        const productResponse = await fetch(`/api/posts/${productId}`);
+        
+        if (!productResponse.ok) {
           setError("Product not found");
           trackError("Product not found", "checkout_product_fetch");
           return;
         }
 
-        const productData = await response.json();
+        const productData = await productResponse.json();
         console.log('Fetched product data:', productData);
         setProduct(productData);
+        
+        // Fetch product subjects
+        try {
+          const subjectsResponse = await fetch(`/api/posts/${productId}/subjects`);
+          if (subjectsResponse.ok) {
+            const subjectsData = await subjectsResponse.json();
+            setProductSubjects(subjectsData);
+            console.log('Fetched product subjects:', subjectsData);
+          }
+        } catch (subjectsError) {
+          console.error('Error fetching product subjects:', subjectsError);
+          // Continue without subjects - not all products may have subjects
+        }
+        
       } catch (err) {
         setError("Failed to load product");
         console.error("Error fetching product:", err);
@@ -163,7 +195,7 @@ export function ProfessionalCheckout({ productId, subjects, customPrice }: Profe
       }
     }
 
-    fetchProduct();
+    fetchProductAndSubjects();
   }, [productId]);
 
   useEffect(() => {
@@ -1023,23 +1055,16 @@ export function ProfessionalCheckout({ productId, subjects, customPrice }: Profe
                           {product.title}
                         </h3>
                         
-                        {/* Show selected subjects for MBA Sem 1 */}
-                        {subjects && subjects !== 'full_bundle' && (
+                        {/* Show selected subjects for products with subjects */}
+                        {subjects && productSubjects.length > 0 && (
                           <div className="mb-2">
                             <p className="text-xs text-gray-600 font-medium mb-1.5">Selected Subjects:</p>
                             <div className="flex flex-wrap gap-1">
                               {subjects.split(',').map((subjectId, idx) => {
-                                const subjectNames: Record<string, string> = {
-                                  'business_communication': 'Business Communication',
-                                  'financial_accounting': 'Financial & Mgmt Accounting',
-                                  'human_resource': 'Human Resource Management',
-                                  'management_process': 'Mgmt Process & Org Behaviour',
-                                  'managerial_economics': 'Managerial Economics',
-                                  'statistics': 'Statistics for Management'
-                                };
+                                const subject = productSubjects.find(s => s.subjectId === subjectId);
                                 return (
                                   <span key={idx} className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 text-blue-800 text-[10px] font-medium">
-                                    {subjectNames[subjectId] || subjectId}
+                                    {subject?.name || subjectId}
                                   </span>
                                 );
                               })}

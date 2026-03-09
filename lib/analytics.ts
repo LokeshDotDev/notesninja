@@ -249,7 +249,82 @@ export const trackDownload = (fileName: string, productId: string) => {
   });
 };
 
-// 9. Login/Register Events
+// 9. Lead Generation - When users download samples or sign up for newsletters
+export const trackLead = async (leadData: {
+  leadType: 'sample_download' | 'newsletter' | 'contact' | 'other';
+  productName?: string;
+  productId?: string;
+  userEmail?: string;
+  userName?: string;
+  userPhone?: string;
+  value?: number;
+}) => {
+  // Get UTM and traffic source data for attribution
+  const utmData = getUTMParameters();
+  const trafficSource = getTrafficSource();
+  
+  const baseEventData = {
+    lead_type: leadData.leadType,
+    ...(leadData.productName && { content_name: leadData.productName }),
+    ...(leadData.productId && { content_ids: [leadData.productId] }),
+    ...(leadData.value && { value: leadData.value }),
+    currency: 'INR',
+    // Campaign attribution data
+    utm_source: utmData?.utm_source || trafficSource?.source,
+    utm_medium: utmData?.utm_medium || trafficSource?.medium,
+    utm_campaign: utmData?.utm_campaign,
+    traffic_source: trafficSource?.source,
+  };
+
+  // Enhanced Conversions - Hash user data if provided
+  const userData: Record<string, unknown> = {};
+  const metaUserData: Record<string, unknown> = {};
+
+  if (leadData.userEmail) {
+    const hashedEmail = await sha256Hash(leadData.userEmail);
+    userData.email_address = hashedEmail;
+    metaUserData.em = hashedEmail; // Meta Pixel Advanced Matching
+  }
+
+  if (leadData.userName) {
+    const hashedName = await sha256Hash(leadData.userName);
+    userData.name = hashedName;
+    metaUserData.fn = hashedName; // Meta Pixel Advanced Matching
+  }
+
+  if (leadData.userPhone) {
+    const hashedPhone = await sha256Hash(leadData.userPhone);
+    userData.phone_number = hashedPhone;
+    metaUserData.ph = hashedPhone; // Meta Pixel Advanced Matching
+  }
+
+  // GA4 Event with user data
+  const ga4EventData = {
+    ...baseEventData,
+    ...(Object.keys(userData).length > 0 && { user_data: userData })
+  };
+
+  trackGA4Event('generate_lead', ga4EventData);
+
+  // Meta Pixel Lead Event with user data
+  const metaEventData = {
+    ...baseEventData,
+    content_type: 'product',
+    ...metaUserData
+  };
+
+  trackMetaEvent('Lead', metaEventData);
+  
+  console.log('🎯 Lead tracked with attribution:', {
+    type: leadData.leadType,
+    product: leadData.productName,
+    utm: utmData,
+    source: trafficSource,
+    hasUserData: Object.keys(userData).length > 0
+  });
+};
+
+// 10. Login/Register Events
 export const trackLogin = async (method: string = 'email', userData?: { email?: string; name?: string }) => {
   const params: Record<string, unknown> = { method };
   const metaParams: Record<string, unknown> = {
