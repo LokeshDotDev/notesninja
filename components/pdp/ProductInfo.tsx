@@ -27,21 +27,21 @@ interface Product {
   id: string;
   title: string;
   description: string;
-  imageUrl?: string;
-  price?: number;
-  compareAtPrice?: number;
+  imageUrl?: string | null;
+  price?: number | null;
+  compareAtPrice?: number | null;
   discountPercentage?: number | null;
-  isDigital?: boolean;
+  isDigital?: boolean | null;
   category?: {
     id: string;
     name: string;
     slug: string;
-  };
+  } | null;
   subcategory?: {
     id: string;
     name: string;
-    slug: string;
-  };
+    slug?: string;
+  } | null;
 }
 
 interface ProductSubject {
@@ -289,10 +289,10 @@ export function ProductInfo({
     trackBeginCheckout({
       id: product.id,
       title: product.title,
-      price: pricingAtClick.price,
+      price: product.price ?? undefined,
       category: product.category?.name,
       subcategory: product.subcategory?.name,
-      imageUrl: product.imageUrl,
+      imageUrl: product.imageUrl ?? undefined,
     });
     
     if (onPurchase) {

@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { deleteContent } from '@/lib/Cloudinary'
-
-const prisma = new PrismaClient()
+import prisma from '@/lib/prisma-optimized'
 
 type CloudinaryResourceType = 'image' | 'video' | 'raw'
 
@@ -92,6 +91,73 @@ export interface Article {
   authorId: string
 }
 
+export interface ArticlePreview {
+  id: string
+  title: string
+  slug: string
+  excerpt: string | null
+  coverImage?: string | null
+  published: boolean
+  featured: boolean
+  views: number
+  readingTime: number
+  tags: string[]
+  createdAt: string
+  publishedAt?: string | null
+  author: {
+    id: string
+    name: string | null
+    email: string
+  }
+}
+
+function buildArticleWhere(options: {
+  published: boolean
+  featured?: boolean
+  search?: string
+  publishedAfter?: Date
+  searchInContent?: boolean
+}): Prisma.ArticleWhereInput {
+  const { published, featured, search, publishedAfter, searchInContent = true } = options
+  const where: Prisma.ArticleWhereInput = { published }
+
+  if (featured !== undefined) {
+    where.featured = featured
+  }
+
+  if (publishedAfter) {
+    where.publishedAt = { gte: publishedAfter }
+  }
+
+  if (search) {
+    const searchClauses: Prisma.ArticleWhereInput[] = [
+      { title: { contains: search, mode: 'insensitive' } },
+      { excerpt: { contains: search, mode: 'insensitive' } },
+      { tags: { hasSome: [search] } },
+    ]
+
+    if (searchInContent) {
+      searchClauses.push({ content: { contains: search, mode: 'insensitive' } })
+    }
+
+    where.OR = searchClauses
+  }
+
+  return where
+}
+
+function buildArticleOrderBy(sortBy: 'latest' | 'popular' | 'oldest'): Prisma.ArticleOrderByWithRelationInput {
+  switch (sortBy) {
+    case 'popular':
+      return { views: 'desc' }
+    case 'oldest':
+      return { createdAt: 'asc' }
+    case 'latest':
+    default:
+      return { publishedAt: 'desc' }
+  }
+}
+
 export async function getArticles(options: {
   published?: boolean
   featured?: boolean
@@ -109,48 +175,8 @@ export async function getArticles(options: {
     search
   } = options
 
-  const where: {
-    published: boolean
-    featured?: boolean
-    OR?: Array<{
-      title?: { contains: string; mode: 'insensitive' }
-      excerpt?: { contains: string; mode: 'insensitive' }
-      content?: { contains: string; mode: 'insensitive' }
-      tags?: { hasSome: string[] }
-    }>
-  } = {
-    published,
-  }
-
-  if (featured !== undefined) {
-    where.featured = featured
-  }
-
-  if (search) {
-    where.OR = [
-      { title: { contains: search, mode: 'insensitive' } },
-      { excerpt: { contains: search, mode: 'insensitive' } },
-      { content: { contains: search, mode: 'insensitive' } },
-      { tags: { hasSome: [search] } }
-    ]
-  }
-
-  const orderBy: {
-    views?: 'desc'
-    createdAt?: 'asc' | 'desc'
-    publishedAt?: 'desc'
-  } = {}
-  switch (sortBy) {
-    case 'popular':
-      orderBy.views = 'desc'
-      break
-    case 'oldest':
-      orderBy.createdAt = 'asc'
-      break
-    case 'latest':
-    default:
-      orderBy.publishedAt = 'desc'
-  }
+  const where = buildArticleWhere({ published, featured, search, searchInContent: true })
+  const orderBy = buildArticleOrderBy(sortBy)
 
   // Optimized query with specific fields only
   const articles = await prisma.article.findMany({
@@ -173,6 +199,69 @@ export async function getArticles(options: {
     ...article,
     createdAt: article.createdAt.toISOString(),
     updatedAt: article.updatedAt.toISOString(),
+    publishedAt: article.publishedAt?.toISOString(),
+  }))
+}
+
+export async function getArticlePreviews(options: {
+  published?: boolean
+  featured?: boolean
+  limit?: number
+  offset?: number
+  sortBy?: 'latest' | 'popular' | 'oldest'
+  search?: string
+  publishedAfter?: Date
+} = {}): Promise<ArticlePreview[]> {
+  const {
+    published = true,
+    featured,
+    limit = 20,
+    offset = 0,
+    sortBy = 'latest',
+    search,
+    publishedAfter,
+  } = options
+
+  const where = buildArticleWhere({
+    published,
+    featured,
+    search,
+    publishedAfter,
+    searchInContent: false,
+  })
+  const orderBy = buildArticleOrderBy(sortBy)
+
+  const articles = await prisma.article.findMany({
+    where,
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      excerpt: true,
+      coverImage: true,
+      published: true,
+      featured: true,
+      views: true,
+      readingTime: true,
+      tags: true,
+      createdAt: true,
+      publishedAt: true,
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy,
+    take: limit,
+    skip: offset,
+  })
+
+  return articles.map(article => ({
+    ...article,
+    createdAt: article.createdAt.toISOString(),
     publishedAt: article.publishedAt?.toISOString(),
   }))
 }

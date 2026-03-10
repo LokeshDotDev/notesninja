@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 
 interface Screenshot {
 	id: number;
@@ -22,6 +23,24 @@ const screenshots: Screenshot[] = [
 		image: "/assets/trustscreenshoots/Screenshot2.webp",
 		title:
 			"Your notes are really helpful. I would like to have notes for other marked subjects too.",
+	},
+	{
+		id: 3,
+		image: "/assets/trustscreenshoots/3.webp",
+		title:
+			"The quality of notes exceeded my expectations. Clear, concise, and exactly what I needed for my preparation.",
+	},
+	{
+		id: 4,
+		image: "/assets/trustscreenshoots/4.webp",
+		title:
+			"These notes helped me understand complex topics so easily. My grades have improved significantly. Thank you!",
+	},
+	{
+		id: 5,
+		image: "/assets/trustscreenshoots/5 (1).webp",
+		title:
+			"Best study material I've found online. The organization and clarity of content is outstanding. Highly recommend!",
 	},
 ];
 
@@ -127,62 +146,53 @@ export function TrustScreenshots() {
 											&quot;
 										</div>
 
-										{/* Image */}
-										<div className='relative aspect-[9/16] bg-white rounded-2xl overflow-hidden mb-6'>
-											{/* eslint-disable-next-line @next/next/no-img-element */}
-											<img
-												src={screenshot.image}
-												alt={`Student testimonial ${screenshot.id}`}
-												className='w-full h-full object-cover '
-												loading='lazy'
-											/>
-										</div>
+                    {/* Image */}
+                    <div className="relative aspect-[9/16] bg-white rounded-2xl overflow-hidden mb-6">
+                      <Image
+                        src={screenshot.image}
+                        alt={`Student testimonial ${screenshot.id}`}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        quality={85}
+                      />
+                    </div>
 
-										{/* Text Content */}
-										<p className='text-gray-800 text-base leading-relaxed mb-6 font-normal flex-1'>
-											{screenshot.title}
-										</p>
+                    {/* Text Content */}
+                    <p className="text-gray-800 text-base leading-relaxed mb-6 font-normal flex-1">
+                      {screenshot.title}
+                    </p>
 
-										{/* Verified Badge */}
-										<div className='flex items-center gap-2'>
-											<div className='w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0'>
-												<svg
-													className='w-4 h-4 text-blue-600'
-													fill='currentColor'
-													viewBox='0 0 20 20'>
-													<path
-														fillRule='evenodd'
-														d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
-														clipRule='evenodd'
-													/>
-												</svg>
-											</div>
-											<span className='text-sm font-medium text-gray-600'>
-												Verified Student
-											</span>
-										</div>
-									</motion.div>
-								))}
-							</motion.div>
-						</AnimatePresence>
-					</div>
+                    {/* Verified Badge */}
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <span className="text-sm font-medium text-gray-600">Verified Student</span>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-					{/* Pagination Dots */}
-					<div className='flex justify-center items-center gap-2 mt-12'>
-						{Array.from({ length: totalPages }).map((_, index) => (
-							<button
-								key={index}
-								onClick={() => setCurrentPage(index)}
-								className={`transition-all duration-300 ${
-									currentPage === index
-										? "w-8 h-2 bg-gray-900 rounded-full"
-										: "w-2 h-2 bg-gray-300 rounded-full hover:bg-gray-400"
-								}`}
-								aria-label={`Go to page ${index + 1}`}
-							/>
-						))}
-					</div>
-				</div>
+          {/* Pagination Dots */}
+          <div className="flex justify-center items-center gap-2 mt-12">
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentPage(index)}
+                className={`transition-all duration-300 ${currentPage === index
+                  ? 'w-8 h-2 bg-gray-900 rounded-full'
+                  : 'w-2 h-2 bg-gray-300 rounded-full hover:bg-gray-400'
+                  }`}
+                aria-label={`Go to page ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
 
 				{/* Bottom CTA */}
 				<motion.div
@@ -206,3 +216,4 @@ export function TrustScreenshots() {
 		</section>
 	);
 }
+
